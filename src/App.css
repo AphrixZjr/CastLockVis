@@ -49,38 +49,11 @@
   justify-content: center;
   width: 100%;
   height: 100%;
-  min-height: 120px;
+  min-height: var(--panel-state-min-height);
   border: var(--border);
   border-radius: var(--radius-sm);
   color: var(--color-text-dim);
   font-size: var(--fs-sm);
-}
-
-.stage-toggle {
-  display: inline-flex;
-  border: var(--border);
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-}
-
-.stage-toggle button {
-  border: 0;
-  border-right: var(--border);
-  background: transparent;
-  color: var(--color-text-dim);
-  font: inherit;
-  font-size: var(--fs-sm);
-  padding: var(--space-1) var(--space-2);
-  cursor: pointer;
-}
-
-.stage-toggle button:last-child {
-  border-right: 0;
-}
-
-.stage-toggle button[data-active='true'] {
-  background: var(--color-accent);
-  color: var(--color-text);
 }
 
 .status-text {
@@ -91,7 +64,6 @@
 @media (max-width: 1100px) {
   .app-grid {
     grid-template-columns: 1fr;
-    grid-template-rows: repeat(4, minmax(220px, 1fr));
+    grid-template-rows: repeat(4, minmax(var(--panel-mobile-row-min-height), 1fr));
   }
 }
-

@@ -33,12 +33,11 @@ export function filterAlignmentTracks(
   const [votesMin, votesMax] = filters.numVotes;
 
   return tracks.filter((track) => {
-    const { directorHeterogeneity, rating, numVotes } = track.covariatesAtT0;
-
-    if (directorHeterogeneity === null || rating === null || numVotes === null) {
+    if (track.outcome === 'none') {
       return false;
     }
 
+    const { directorHeterogeneity, rating, numVotes } = track.covariatesAtT0;
     return (
       directorHeterogeneity >= dhMin &&
       directorHeterogeneity <= dhMax &&

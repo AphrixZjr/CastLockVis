@@ -1,14 +1,10 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { ViewPanel } from './components/ViewPanel';
-import { buildIndexes, loadDataBundle } from './data/loadData';
-import type { DataBundle, DataIndexes, MarkovStage } from './data/types';
+import { Toggle } from './components/controls/Toggle';
+import { useDataRuntime } from './data/dataRuntimeContext';
+import type { MarkovStage } from './data/types';
 import { useVizStore } from './store/useVizStore';
 import './App.css';
-
-type LoadState =
-  | { status: 'loading' }
-  | { status: 'error'; message: string }
-  | { status: 'ready'; bundle: DataBundle; indexes: DataIndexes };
 
 const PANEL_TITLES = [
   'A · Genre-Space Cluster',
@@ -22,51 +18,21 @@ function StageToggle() {
   const setMarkovStage = useVizStore((state) => state.setMarkovStage);
 
   return (
-    <div className="stage-toggle" role="group" aria-label="Markov stage switch">
-      {(['early', 'mid', 'late'] as MarkovStage[]).map((entry) => (
-        <button
-          key={entry}
-          type="button"
-          data-active={stage === entry}
-          onClick={() => setMarkovStage(entry)}
-        >
-          {entry}
-        </button>
-      ))}
-    </div>
+    <Toggle<MarkovStage>
+      ariaLabel="Markov stage switch"
+      value={stage}
+      onChange={setMarkovStage}
+      options={[
+        { label: 'early', value: 'early' },
+        { label: 'mid', value: 'mid' },
+        { label: 'late', value: 'late' },
+      ]}
+    />
   );
 }
 
 export function App() {
-  const [loadState, setLoadState] = useState<LoadState>({ status: 'loading' });
-
-  useEffect(() => {
-    let active = true;
-
-    async function bootstrap() {
-      try {
-        const bundle = await loadDataBundle();
-        const indexes = buildIndexes(bundle);
-        if (!active) {
-          return;
-        }
-        setLoadState({ status: 'ready', bundle, indexes });
-      } catch (error) {
-        if (!active) {
-          return;
-        }
-        setLoadState({
-          status: 'error',
-          message: error instanceof Error ? error.message : String(error),
-        });
-      }
-    }
-
-    bootstrap();
-    return () => {
-      active = false;
-    };
-  }, []);
+  const loadState = useDataRuntime();
 
   const metaText = useMemo(() => {
     if (loadState.status !== 'ready') {

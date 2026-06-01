@@ -1,0 +1,26 @@
+.toggle {
+  display: inline-flex;
+  border: var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.toggle button {
+  border: 0;
+  border-right: var(--border);
+  background: transparent;
+  color: var(--color-text-dim);
+  font: inherit;
+  font-size: var(--fs-sm);
+  padding: var(--space-1) var(--space-2);
+  cursor: pointer;
+}
+
+.toggle button:last-child {
+  border-right: 0;
+}
+
+.toggle button[data-active='true'] {
+  background: var(--color-accent);
+  color: var(--color-text);
+}

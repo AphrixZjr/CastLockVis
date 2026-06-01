@@ -1,6 +1,8 @@
 import type {
   Actor,
   AlignmentTrack,
+  AlignmentTrackNone,
+  AlignmentTrackPivot,
   DataBundle,
   DataIndexes,
   EntropyCurve,
@@ -21,6 +23,7 @@ const DATA_PATHS = {
 
 const OUTCOME_SET = new Set<Outcome>(['success', 'snapback', 'none']);
 const MARKOV_STAGE_SET = new Set<MarkovStage>(['early', 'mid', 'late']);
+let dataBundlePromise: Promise<DataBundle> | null = null;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
@@ -38,6 +41,29 @@ function createTypeError(resourceName: string, details: string): Error {
   return new Error(`[${resourceName}] shape validation failed: ${details}`);
 }
 
+function requireRecord(
+  value: unknown,
+  resourceName: string,
+  details: string,
+): Record<string, unknown> {
+  if (!isRecord(value)) {
+    throw createTypeError(resourceName, details);
+  }
+  return value;
+}
+
+function requireArray<T>(
+  value: unknown,
+  guard: (entry: unknown) => entry is T,
+  resourceName: string,
+  details: string,
+): T[] {
+  if (!Array.isArray(value) || !value.every(guard)) {
+    throw createTypeError(resourceName, details);
+  }
+  return value;
+}
+
 async function fetchJson(resourcePath: string): Promise<unknown> {
   const url = `${import.meta.env.BASE_URL}${resourcePath}`;
   const response = await fetch(url);
@@ -48,16 +74,12 @@ async function fetchJson(resourcePath: string): Promise<unknown> {
 }
 
 function parseActors(raw: unknown): Actor[] {
-  if (!Array.isArray(raw)) {
-    throw createTypeError('actors.json', 'root is not an array');
-  }
+  const entries = requireArray(raw, isRecord, 'actors.json', 'root is not object[]');
 
-  return raw.map((entry, index) => {
-    if (!isRecord(entry)) {
-      throw createTypeError('actors.json', `index ${index} is not an object`);
-    }
+  return entries.map((entry, index) => {
+    const actor = requireRecord(entry, 'actors.json', `index ${index} is not an object`);
 
-    const projection = entry.projection;
+    const projection = actor.projection;
     if (
       !Array.isArray(projection) ||
       projection.length !== 2 ||
@@ -68,124 +90,113 @@ function parseActors(raw: unknown): Actor[] {
     }
 
     if (
-      typeof entry.id !== 'string' ||
-      typeof entry.name !== 'string' ||
-      typeof entry.dominantEarlyGenre !== 'string' ||
-      !isNumberArray(entry.earlyGenreVector) ||
-      typeof entry.filmCount !== 'number' ||
-      typeof entry.t0Index !== 'number' ||
-      typeof entry.clusterId !== 'number' ||
-      typeof entry.outcome !== 'string' ||
-      !OUTCOME_SET.has(entry.outcome as Outcome)
+      typeof actor.id !== 'string' ||
+      typeof actor.name !== 'string' ||
+      typeof actor.dominantEarlyGenre !== 'string' ||
+      !isNumberArray(actor.earlyGenreVector) ||
+      typeof actor.filmCount !== 'number' ||
+      typeof actor.t0Index !== 'number' ||
+      typeof actor.clusterId !== 'number' ||
+      typeof actor.outcome !== 'string' ||
+      !OUTCOME_SET.has(actor.outcome as Outcome)
     ) {
       throw createTypeError('actors.json', `index ${index} has invalid fields`);
     }
 
     return {
-      id: entry.id,
-      name: entry.name,
-      dominantEarlyGenre: entry.dominantEarlyGenre,
-      earlyGenreVector: entry.earlyGenreVector,
-      filmCount: entry.filmCount,
-      t0Index: entry.t0Index,
-      outcome: entry.outcome as Outcome,
+      id: actor.id,
+      name: actor.name,
+      dominantEarlyGenre: actor.dominantEarlyGenre,
+      earlyGenreVector: actor.earlyGenreVector,
+      filmCount: actor.filmCount,
+      t0Index: actor.t0Index,
+      outcome: actor.outcome as Outcome,
       projection: [projection[0], projection[1]],
-      clusterId: entry.clusterId,
+      clusterId: actor.clusterId,
     };
   });
 }
 
 function parseFilms(raw: unknown): Film[] {
-  if (!Array.isArray(raw)) {
-    throw createTypeError('films.json', 'root is not an array');
-  }
+  const entries = requireArray(raw, isRecord, 'films.json', 'root is not object[]');
 
-  return raw.map((entry, index) => {
-    if (!isRecord(entry)) {
-      throw createTypeError('films.json', `index ${index} is not an object`);
-    }
+  return entries.map((entry, index) => {
+    const film = requireRecord(entry, 'films.json', `index ${index} is not an object`);
 
     if (
-      typeof entry.actorId !== 'string' ||
-      typeof entry.seqIndex !== 'number' ||
-      typeof entry.title !== 'string' ||
-      typeof entry.year !== 'number' ||
-      !isStringArray(entry.genres) ||
-      typeof entry.dominantGenre !== 'string' ||
-      typeof entry.rating !== 'number' ||
-      typeof entry.numVotes !== 'number' ||
-      typeof entry.directorId !== 'string'
+      typeof film.actorId !== 'string' ||
+      typeof film.seqIndex !== 'number' ||
+      typeof film.title !== 'string' ||
+      typeof film.year !== 'number' ||
+      !isStringArray(film.genres) ||
+      typeof film.dominantGenre !== 'string' ||
+      typeof film.rating !== 'number' ||
+      typeof film.numVotes !== 'number' ||
+      typeof film.directorId !== 'string'
     ) {
       throw createTypeError('films.json', `index ${index} has invalid fields`);
     }
 
     return {
-      actorId: entry.actorId,
-      seqIndex: entry.seqIndex,
-      title: entry.title,
-      year: entry.year,
-      genres: entry.genres,
-      dominantGenre: entry.dominantGenre,
-      rating: entry.rating,
-      numVotes: entry.numVotes,
-      directorId: entry.directorId,
+      actorId: film.actorId,
+      seqIndex: film.seqIndex,
+      title: film.title,
+      year: film.year,
+      genres: film.genres,
+      dominantGenre: film.dominantGenre,
+      rating: film.rating,
+      numVotes: film.numVotes,
+      directorId: film.directorId,
     };
   });
 }
 
 function parseEntropy(raw: unknown): EntropyCurve[] {
-  if (!Array.isArray(raw)) {
-    throw createTypeError('entropy.json', 'root is not an array');
-  }
+  const entries = requireArray(raw, isRecord, 'entropy.json', 'root is not object[]');
 
-  return raw.map((entry, index) => {
-    if (!isRecord(entry)) {
-      throw createTypeError('entropy.json', `index ${index} is not an object`);
-    }
+  return entries.map((entry, index) => {
+    const entropy = requireRecord(entry, 'entropy.json', `index ${index} is not an object`);
 
-    if (typeof entry.actorId !== 'string' || !Array.isArray(entry.curve)) {
+    if (typeof entropy.actorId !== 'string' || !Array.isArray(entropy.curve)) {
       throw createTypeError('entropy.json', `index ${index} has invalid fields`);
     }
 
-    const curve = entry.curve.map((point, pointIndex) => {
-      if (
-        !isRecord(point) ||
-        typeof point.n !== 'number' ||
-        typeof point.entropy !== 'number'
-      ) {
+    const curve = entropy.curve.map((point, pointIndex) => {
+      const entropyPoint = requireRecord(
+        point,
+        'entropy.json',
+        `index ${index} curve[${pointIndex}] has invalid fields`,
+      );
+      if (typeof entropyPoint.n !== 'number' || typeof entropyPoint.entropy !== 'number') {
         throw createTypeError(
           'entropy.json',
           `index ${index} curve[${pointIndex}] has invalid fields`,
         );
       }
-      return { n: point.n, entropy: point.entropy };
+      return { n: entropyPoint.n, entropy: entropyPoint.entropy };
     });
 
-    return { actorId: entry.actorId, curve };
+    return { actorId: entropy.actorId, curve };
   });
 }
 
 function parseMarkov(raw: unknown): MarkovMatrix[] {
-  if (!Array.isArray(raw)) {
-    throw createTypeError('markov.json', 'root is not an array');
-  }
+  const entries = requireArray(raw, isRecord, 'markov.json', 'root is not object[]');
 
-  return raw.map((entry, index) => {
-    if (!isRecord(entry)) {
-      throw createTypeError('markov.json', `index ${index} is not an object`);
-    }
+  return entries.map((entry, index) => {
+    const markov = requireRecord(entry, 'markov.json', `index ${index} is not an object`);
 
     if (
-      typeof entry.cohortId !== 'number' ||
-      typeof entry.stage !== 'string' ||
-      !MARKOV_STAGE_SET.has(entry.stage as MarkovStage) ||
-      !isStringArray(entry.genres) ||
-      !Array.isArray(entry.matrix)
+      typeof markov.cohortId !== 'number' ||
+      typeof markov.stage !== 'string' ||
+      !MARKOV_STAGE_SET.has(markov.stage as MarkovStage) ||
+      !isStringArray(markov.genres) ||
+      !Array.isArray(markov.matrix)
     ) {
       throw createTypeError('markov.json', `index ${index} has invalid fields`);
     }
 
-    const matrix = entry.matrix.map((row, rowIndex) => {
+    const matrix = markov.matrix.map((row, rowIndex) => {
       if (!isNumberArray(row)) {
         throw createTypeError('markov.json', `index ${index} matrix[${rowIndex}] is invalid`);
       }
@@ -193,38 +204,34 @@ function parseMarkov(raw: unknown): MarkovMatrix[] {
     });
 
     return {
-      cohortId: entry.cohortId,
-      stage: entry.stage as MarkovStage,
-      genres: entry.genres,
+      cohortId: markov.cohortId,
+      stage: markov.stage as MarkovStage,
+      genres: markov.genres,
       matrix,
     };
   });
 }
 
 function parseAlignment(raw: unknown): AlignmentTrack[] {
-  if (!Array.isArray(raw)) {
-    throw createTypeError('alignment.json', 'root is not an array');
-  }
+  const entries = requireArray(raw, isRecord, 'alignment.json', 'root is not object[]');
 
-  return raw.map((entry, index) => {
-    if (!isRecord(entry)) {
-      throw createTypeError('alignment.json', `index ${index} is not an object`);
-    }
+  return entries.map((entry, index) => {
+    const alignment = requireRecord(entry, 'alignment.json', `index ${index} is not an object`);
 
     if (
-      typeof entry.actorId !== 'string' ||
-      typeof entry.t0Index !== 'number' ||
-      typeof entry.clusterId !== 'number' ||
-      typeof entry.outcome !== 'string' ||
-      !OUTCOME_SET.has(entry.outcome as Outcome) ||
-      !Array.isArray(entry.points) ||
-      !isRecord(entry.covariatesAtT0)
+      typeof alignment.actorId !== 'string' ||
+      typeof alignment.t0Index !== 'number' ||
+      typeof alignment.clusterId !== 'number' ||
+      typeof alignment.outcome !== 'string' ||
+      !OUTCOME_SET.has(alignment.outcome as Outcome) ||
+      !Array.isArray(alignment.points) ||
+      !isRecord(alignment.covariatesAtT0)
     ) {
       throw createTypeError('alignment.json', `index ${index} has invalid fields`);
     }
 
-    const outcome = entry.outcome as Outcome;
-    const covariates = entry.covariatesAtT0 as Record<string, unknown>;
+    const outcome = alignment.outcome as Outcome;
+    const covariates = alignment.covariatesAtT0 as Record<string, unknown>;
     const numVotes = typeof covariates.numVotes === 'number' ? covariates.numVotes : null;
     const rating = typeof covariates.rating === 'number' ? covariates.rating : null;
     const directorHeterogeneity =
@@ -234,39 +241,55 @@ function parseAlignment(raw: unknown): AlignmentTrack[] {
     const hasNumericCovariates =
       numVotes !== null && rating !== null && directorHeterogeneity !== null;
 
-    // `outcome=none` has no T=0 pivot by definition, so empty covariates are valid.
-    if (outcome === 'none') {
-      const emptyCovariates = Object.keys(covariates).length === 0;
-      if (!emptyCovariates) {
+    const points = alignment.points.map((point, pointIndex) => {
+      const alignmentPoint = requireRecord(
+        point,
+        'alignment.json',
+        `index ${index} points[${pointIndex}] has invalid fields`,
+      );
+      if (typeof alignmentPoint.tau !== 'number' || typeof alignmentPoint.entropy !== 'number') {
         throw createTypeError(
           'alignment.json',
-          `index ${index} outcome=none expects empty covariatesAtT0`,
+          `index ${index} points[${pointIndex}] has invalid fields`,
         );
       }
-    } else if (!hasNumericCovariates) {
+      return { tau: alignmentPoint.tau, entropy: alignmentPoint.entropy };
+    });
+
+    if (outcome === 'none') {
+      const emptyCovariates = Object.keys(covariates).length === 0;
+      if (!emptyCovariates || points.length > 0) {
+        throw createTypeError(
+          'alignment.json',
+          `index ${index} outcome=none expects empty points and covariatesAtT0`,
+        );
+      }
+
+      const noneTrack: AlignmentTrackNone = {
+        actorId: alignment.actorId,
+        t0Index: alignment.t0Index,
+        outcome: 'none',
+        points,
+        covariatesAtT0: {
+          numVotes: null,
+          rating: null,
+          directorHeterogeneity: null,
+        },
+        clusterId: alignment.clusterId,
+      };
+      return noneTrack;
+    }
+
+    if (!hasNumericCovariates) {
       throw createTypeError(
         'alignment.json',
         `index ${index} outcome=${outcome} requires numeric covariatesAtT0`,
       );
     }
 
-    const points = entry.points.map((point, pointIndex) => {
-      if (
-        !isRecord(point) ||
-        typeof point.tau !== 'number' ||
-        typeof point.entropy !== 'number'
-      ) {
-        throw createTypeError(
-          'alignment.json',
-          `index ${index} points[${pointIndex}] has invalid fields`,
-        );
-      }
-      return { tau: point.tau, entropy: point.entropy };
-    });
-
-    return {
-      actorId: entry.actorId,
-      t0Index: entry.t0Index,
+    const pivotTrack: AlignmentTrackPivot = {
+      actorId: alignment.actorId,
+      t0Index: alignment.t0Index,
       outcome,
       points,
       covariatesAtT0: {
@@ -274,16 +297,14 @@ function parseAlignment(raw: unknown): AlignmentTrack[] {
         rating,
         directorHeterogeneity,
       },
-      clusterId: entry.clusterId,
+      clusterId: alignment.clusterId,
     };
+    return pivotTrack;
   });
 }
 
 function parseGenres(raw: unknown): string[] {
-  if (!isStringArray(raw)) {
-    throw createTypeError('genres.json', 'root is not string[]');
-  }
-  return raw;
+  return requireArray(raw, (entry): entry is string => typeof entry === 'string', 'genres.json', 'root is not string[]');
 }
 
 export function buildIndexes(bundle: DataBundle): DataIndexes {
@@ -316,7 +337,7 @@ export function buildIndexes(bundle: DataBundle): DataIndexes {
   return { actorsById, filmsByActor, markovByClusterStage, alignmentByActor };
 }
 
-export async function loadDataBundle(): Promise<DataBundle> {
+async function loadDataBundleInternal(): Promise<DataBundle> {
   const [rawGenres, rawActors, rawFilms, rawEntropy, rawMarkov, rawAlignment] =
     await Promise.all([
       fetchJson(DATA_PATHS.genres),
@@ -335,4 +356,14 @@ export async function loadDataBundle(): Promise<DataBundle> {
     markov: parseMarkov(rawMarkov),
     alignment: parseAlignment(rawAlignment),
   };
+}
+
+export async function loadDataBundle(): Promise<DataBundle> {
+  if (dataBundlePromise === null) {
+    dataBundlePromise = loadDataBundleInternal().catch((error) => {
+      dataBundlePromise = null;
+      throw error;
+    });
+  }
+  return dataBundlePromise;
 }

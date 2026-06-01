@@ -48,20 +48,36 @@ export interface AlignmentPoint {
   entropy: number;
 }
 
-export interface AlignmentCovariates {
+export interface AlignmentCovariatesAtT0 {
+  numVotes: number;
+  rating: number;
+  directorHeterogeneity: number;
+}
+
+export interface AlignmentCovariatesMissing {
   numVotes: number | null;
   rating: number | null;
   directorHeterogeneity: number | null;
 }
 
-export interface AlignmentTrack {
+interface AlignmentTrackBase {
   actorId: string;
   t0Index: number;
-  outcome: Outcome;
   points: AlignmentPoint[];
-  covariatesAtT0: AlignmentCovariates;
   clusterId: number;
 }
+
+export interface AlignmentTrackNone extends AlignmentTrackBase {
+  outcome: 'none';
+  covariatesAtT0: AlignmentCovariatesMissing;
+}
+
+export interface AlignmentTrackPivot extends AlignmentTrackBase {
+  outcome: 'success' | 'snapback';
+  covariatesAtT0: AlignmentCovariatesAtT0;
+}
+
+export type AlignmentTrack = AlignmentTrackNone | AlignmentTrackPivot;
 
 export interface DataBundle {
   genres: string[];
