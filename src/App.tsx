@@ -3,14 +3,34 @@ import { ViewPanel } from './components/ViewPanel';
 import { Toggle } from './components/controls/Toggle';
 import { useDataRuntime } from './data/dataRuntimeContext';
 import type { MarkovStage } from './data/types';
+import { getCohortActorIds, getDominantClusterId, getMarkovMatrixForCohort } from './store/selectors';
 import { useVizStore } from './store/useVizStore';
+import { AlignmentSampleView } from './views/static-samples/AlignmentSampleView';
+import { ClusterSampleView } from './views/static-samples/ClusterSampleView';
+import { MarkovSampleView } from './views/static-samples/MarkovSampleView';
+import {
+  AlignmentLegend,
+  ClusterLegend,
+  GenreColorLegend,
+  MarkovLegend,
+  RiverLegend,
+} from './views/static-samples/PanelLegends';
+import { RiverSampleView } from './views/static-samples/RiverSampleView';
 import './App.css';
+import './views/static-samples/staticSamples.css';
+
+interface ReadyPanel {
+  title: string;
+  legend: JSX.Element;
+  content: JSX.Element;
+  toolbar?: JSX.Element;
+}
 
 const PANEL_TITLES = [
   'A · Genre-Space Cluster',
   'B · Career River',
-  'D · Markov Transition Gate',
   'C · Transformation Alignment',
+  'D · Markov Transition Gate',
 ] as const;
 
 function StageToggle() {
@@ -33,6 +53,8 @@ function StageToggle() {
 
 export function App() {
   const loadState = useDataRuntime();
+  const stage = useVizStore((state) => state.markovStage);
+  const brushedActorIds = useVizStore((state) => state.brushedActorIds);
 
   const metaText = useMemo(() => {
     if (loadState.status !== 'ready') {
@@ -41,39 +63,84 @@ export function App() {
     return `数据已加载：genres=${loadState.bundle.genres.length} · actors=${loadState.bundle.actors.length} · films=${loadState.bundle.films.length} · entropy=${loadState.bundle.entropy.length} · markov=${loadState.bundle.markov.length} · alignment=${loadState.bundle.alignment.length}`;
   }, [loadState]);
 
+  const readyPanels = useMemo(() => {
+    if (loadState.status !== 'ready') {
+      return null;
+    }
+
+    const allActorIds = loadState.bundle.actors.map((actor) => actor.id);
+    const cohortActorIds = getCohortActorIds(allActorIds, brushedActorIds);
+    const dominantClusterId = getDominantClusterId(loadState.indexes, cohortActorIds);
+    const markovMatrix = getMarkovMatrixForCohort(loadState.indexes, stage, dominantClusterId);
+
+    const panels: ReadyPanel[] = [
+      {
+        title: PANEL_TITLES[0],
+        legend: <ClusterLegend />,
+        content: (
+          <ClusterSampleView actors={loadState.bundle.actors} genres={loadState.bundle.genres} />
+        ),
+      },
+      {
+        title: PANEL_TITLES[1],
+        legend: <RiverLegend />,
+        content: <RiverSampleView bundle={loadState.bundle} indexes={loadState.indexes} />,
+      },
+      {
+        title: PANEL_TITLES[2],
+        legend: <AlignmentLegend />,
+        content: <AlignmentSampleView tracks={loadState.bundle.alignment} />,
+      },
+      {
+        title: PANEL_TITLES[3],
+        legend: <MarkovLegend />,
+        toolbar: <StageToggle />,
+        content: <MarkovSampleView matrix={markovMatrix} />,
+      },
+    ];
+
+    return panels;
+  }, [brushedActorIds, loadState, stage]);
+
   return (
     <main className="app-shell">
       <header className="app-header">
         <h1 className="app-title">CastLock-Vis</h1>
-        <p className="app-subtitle">演员类型锁定与转型窗口期可视分析系统（S1 骨架）</p>
+        <p className="app-subtitle">
+          演员类型锁定与转型窗口期可视分析系统（S1 骨架 + S2/S3 静态样例）
+        </p>
         <div className="app-meta">
           <span className="status-text">{metaText}</span>
         </div>
       </header>
 
-      <section className="app-grid">
-        {PANEL_TITLES.map((title) => {
-          const isMarkovPanel = title.startsWith('D');
-          const panelStatus =
-            loadState.status === 'loading'
-              ? 'loading'
-              : loadState.status === 'error'
-                ? 'error'
-                : 'empty';
+      {loadState.status === 'ready' && <GenreColorLegend genres={loadState.bundle.genres} />}
 
-          return (
+      <section className="app-grid">
+        {loadState.status !== 'ready' &&
+          PANEL_TITLES.map((title) => (
             <ViewPanel
               key={title}
               title={title}
-              toolbar={isMarkovPanel ? <StageToggle /> : undefined}
+              toolbar={title.startsWith('D') ? <StageToggle /> : undefined}
               legend={<span className="status-text">Legend 占位</span>}
-              status={panelStatus}
+              status={loadState.status}
               message={loadState.status === 'error' ? loadState.message : undefined}
+            />
+          ))}
+
+        {loadState.status === 'ready' &&
+          readyPanels?.map((panel) => (
+            <ViewPanel
+              key={panel.title}
+              title={panel.title}
+              toolbar={panel.toolbar}
+              legend={panel.legend}
+              status="ready"
             >
-              <div className="panel-placeholder">视图内容将在 S2/S3 接入</div>
+              {panel.content}
             </ViewPanel>
-          );
-        })}
+          ))}
       </section>
     </main>
   );

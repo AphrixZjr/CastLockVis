@@ -29,15 +29,36 @@
   --color-text: #e6e8ea;
   --color-text-dim: #9aa0a6;
   --color-accent: #4c8bf5; /* 选中/交互高亮（占位） */
+  --color-chart-bg: #202326;
+  --color-chart-grid: #2c3035;
+  --color-chart-axis: #5f6872;
 
   /* 分叉语义色（视图 C，proposal 明确要求绿/红） */
   --color-success: #3fb27f; /* 成功转型「多维演化区」 */
   --color-snapback: #e0564f; /* 被弹回「重新固化区」 */
 
   /* 类型分类色：阶段一先用占位序列，第二阶段定稿 */
-  --genre-1: #888;
-  --genre-2: #888;
-  --genre-3: #888;
+  --genre-1: #4e79a7;
+  --genre-2: #f28e2b;
+  --genre-3: #e15759;
+  --genre-4: #76b7b2;
+  --genre-5: #59a14f;
+  --genre-6: #edc949;
+  --genre-7: #af7aa1;
+  --genre-8: #ff9da7;
+  --genre-9: #9c755f;
+  --genre-10: #bab0ab;
+  --genre-11: #1f77b4;
+  --genre-12: #ff7f0e;
+  --genre-13: #2ca02c;
+  --genre-14: #d62728;
+  --genre-15: #9467bd;
+  --genre-16: #8c564b;
+  --genre-17: #e377c2;
+  --genre-18: #7f7f7f;
+  --genre-19: #bcbd22;
+  --genre-20: #17becf;
+  --genre-21: #6b6f76;
 
   /* 字体（阶段一用系统栈，第二阶段定稿） */
   --font-sans: system-ui, -apple-system, 'Segoe UI', sans-serif;
