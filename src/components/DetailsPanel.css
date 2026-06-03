@@ -1,0 +1,112 @@
+.details-panel {
+  position: fixed;
+  right: var(--space-4);
+  bottom: var(--space-4);
+  z-index: 20;
+  width: 360px;
+  max-width: calc(100vw - 2 * var(--space-4));
+  padding: var(--space-3);
+  border: var(--border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: var(--shadow-panel);
+}
+
+.details-panel__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.details-panel__title {
+  margin: 0;
+  font-size: var(--fs-md);
+  font-weight: 600;
+}
+
+.details-panel__meta {
+  margin: var(--space-1) 0 0;
+  color: var(--color-text-dim);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+}
+
+.details-panel__close {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--color-chart-bg);
+  color: var(--color-text-dim);
+  font-size: var(--fs-md);
+  line-height: 1;
+  cursor: pointer;
+}
+
+.details-panel__close:hover {
+  color: var(--color-text);
+  border-color: var(--color-accent);
+}
+
+.details-panel__hint {
+  margin: var(--space-3) 0 var(--space-2);
+  color: var(--color-text-dim);
+  font-size: var(--fs-sm);
+}
+
+.details-panel__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.details-panel__table th {
+  padding: var(--space-1);
+  border-bottom: var(--border);
+  color: var(--color-text-dim);
+  font-weight: 500;
+  text-align: left;
+}
+
+.details-panel__table td {
+  padding: var(--space-1);
+  border-bottom: 1px solid var(--color-chart-grid);
+}
+
+.details-panel__row--pivot td {
+  background: var(--color-chart-bg);
+}
+
+.details-panel__row--pivot .details-panel__seq {
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+.details-panel__seq {
+  font-family: var(--font-mono);
+}
+
+.details-panel__genre {
+  color: var(--color-text);
+}
+
+.details-panel__genres-extra {
+  color: var(--color-text-dim);
+}
+
+.details-panel__delta--up {
+  color: var(--color-success);
+}
+
+.details-panel__delta--down {
+  color: var(--color-snapback);
+}
+
+.details-panel__delta--flat {
+  color: var(--color-text-dim);
+}

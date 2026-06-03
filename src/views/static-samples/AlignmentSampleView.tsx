@@ -1,6 +1,26 @@
 import { useMemo, useState } from 'react';
-import type { AlignmentPoint, AlignmentTrack } from '../../data/types';
+import type { AlignmentPoint, AlignmentTrack, AlignmentTrackPivot } from '../../data/types';
+import { alignmentTrackInFilter } from '../../lib/aggregate';
+import { RangeSlider } from '../../components/controls/RangeSlider';
+import { useVizStore } from '../../store/useVizStore';
 import { linearScale, polylinePath } from './chartUtils';
+
+function formatCompact(value: number): string {
+  if (Math.abs(value) >= 1_000_000) {
+    return `${(value / 1_000_000).toFixed(1)}M`;
+  }
+  if (Math.abs(value) >= 1_000) {
+    return `${(value / 1_000).toFixed(1)}K`;
+  }
+  return `${Math.round(value)}`;
+}
+
+function domainOf(values: number[]): [number, number] {
+  if (values.length === 0) {
+    return [0, 1];
+  }
+  return [Math.min(...values), Math.max(...values)];
+}
 
 interface AlignmentSampleViewProps {
   tracks: AlignmentTrack[];
@@ -8,6 +28,16 @@ interface AlignmentSampleViewProps {
 
 /** 视图 C 的 y 轴可在「类型偏离度 dist」(默认) 与「类型熵 entropy」之间切换，便于调试对比。 */
 type YAxisMode = 'dist' | 'entropy';
+
+/** 一条轨迹的"几何"（SVG 路径）。只随 tracks/yAxis 变化，与过滤器/选区无关。 */
+interface TrackGeom {
+  track: AlignmentTrack;
+  actorId: string;
+  outcome: AlignmentTrack['outcome'];
+  clusterId: number;
+  t0Index: number;
+  path: string;
+}
 
 const Y_AXIS_META: Record<YAxisMode, { label: string; accessor: (p: AlignmentPoint) => number; anchorZero: boolean }> = {
   dist: { label: '类型偏离度（距舒适圈）', accessor: (p) => p.dist, anchorZero: true },
@@ -21,86 +51,220 @@ const MARGIN = { top: 18, right: 20, bottom: 30, left: 34 };
 export function AlignmentSampleView({ tracks }: AlignmentSampleViewProps) {
   const [yAxis, setYAxis] = useState<YAxisMode>('dist');
 
-  const chart = useMemo(() => {
+  const selectedActorId = useVizStore((state) => state.selectedActorId);
+  const selectedFilmIndex = useVizStore((state) => state.selectedFilmIndex);
+  const alignmentFilters = useVizStore((state) => state.alignmentFilters);
+  const setAlignmentFilter = useVizStore((state) => state.setAlignmentFilter);
+
+  // 控制变量过滤器的数据域（仅 pivot 轨迹有 T=0 协变量）。
+  const domains = useMemo(() => {
+    const pivots = tracks.filter((track): track is AlignmentTrackPivot => track.outcome !== 'none');
+    return {
+      directorHeterogeneity: domainOf(pivots.map((track) => track.covariatesAtT0.directorHeterogeneity)),
+      rating: domainOf(pivots.map((track) => track.covariatesAtT0.rating)),
+      numVotes: domainOf(pivots.map((track) => track.covariatesAtT0.numVotes)),
+    };
+  }, [tracks]);
+
+  const resetFilters = () => {
+    setAlignmentFilter('directorHeterogeneity', [
+      Number.NEGATIVE_INFINITY,
+      Number.POSITIVE_INFINITY,
+    ]);
+    setAlignmentFilter('rating', [Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY]);
+    setAlignmentFilter('numVotes', [Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY]);
+  };
+
+  // 几何层：路径 + 坐标轴。只随 tracks / yAxis 变化——拖动滑块或改选区时不会重建 1157 条路径。
+  const geometry = useMemo(() => {
     const drawable = tracks.filter((track) => track.points.length > 0);
-    const pivotTracks = drawable.filter((track) => track.outcome !== 'none');
-    const noneTracks = drawable.filter((track) => track.outcome === 'none');
-    if (pivotTracks.length === 0) {
+    const hasPivot = drawable.some((track) => track.outcome !== 'none');
+    if (!hasPivot) {
       return null;
     }
 
     const { label: yLabel, accessor, anchorZero } = Y_AXIS_META[yAxis];
-    // 坐标域覆盖所有可绘轨迹（含 none 背景），保证淡灰线与分叉线同尺度。
-    const taus = drawable.flatMap((track) => track.points.map((point) => point.tau));
-    const yVals = drawable.flatMap((track) => track.points.map(accessor));
 
-    const tauMin = Math.min(...taus);
-    const tauMax = Math.max(...taus);
-    // dist 锚定 0（=贴着早期舒适圈）在底部，让“重新固化”落回低位；entropy 用数据自身范围。
-    const yMin = anchorZero ? 0 : Math.min(...yVals);
-    const yMax = Math.max(yMin + 0.1, Math.max(...yVals));
+    // 坐标域覆盖所有可绘轨迹（含 none 背景），用循环避免对 ~1 万点做 Math.min(...spread)。
+    let tauMin = Infinity;
+    let tauMax = -Infinity;
+    let yLo = Infinity;
+    let yHi = -Infinity;
+    for (const track of drawable) {
+      for (const point of track.points) {
+        if (point.tau < tauMin) tauMin = point.tau;
+        if (point.tau > tauMax) tauMax = point.tau;
+        const value = accessor(point);
+        if (value < yLo) yLo = value;
+        if (value > yHi) yHi = value;
+      }
+    }
+    // dist 锚定 0（=贴着早期舒适圈）在底部；entropy 用数据自身范围。
+    const yMin = anchorZero ? 0 : yLo;
+    const yMax = Math.max(yMin + 0.1, yHi);
 
-    const x = (tau: number) =>
+    const xScale = (tau: number) =>
       linearScale(tau, tauMin, tauMax, MARGIN.left, WIDTH - MARGIN.right);
-    const y = (value: number) =>
+    const yScale = (value: number) =>
       linearScale(value, yMin, yMax, HEIGHT - MARGIN.bottom, MARGIN.top);
 
-    const toItem = (track: AlignmentTrack) => ({
-      id: `${track.actorId}-${track.outcome}`,
+    const trackGeoms: TrackGeom[] = drawable.map((track) => ({
+      track,
+      actorId: track.actorId,
       outcome: track.outcome,
-      path: polylinePath(track.points.map((point) => ({ x: x(point.tau), y: y(accessor(point)) }))),
-    });
-    const lineItems = pivotTracks.map(toItem);
-    const noneItems = noneTracks.map(toItem);
-
-    const summary = summarizeByOutcome(pivotTracks);
-    const t0x = x(0);
-    const xTicks = buildLinearTicks(tauMin, tauMax, 9).map((value) => ({
-      value,
-      x: x(value),
-    }));
-    const yTicks = buildLinearTicks(yMin, yMax, 6).map((value) => ({
-      value,
-      y: y(value),
+      clusterId: track.clusterId,
+      t0Index: track.t0Index,
+      path: polylinePath(
+        track.points.map((point) => ({ x: xScale(point.tau), y: yScale(accessor(point)) })),
+      ),
     }));
 
     return {
+      trackGeoms,
       tauMin,
       tauMax,
-      lineItems,
-      noneItems,
-      summary,
-      t0x,
-      xTicks,
-      yTicks,
+      xScale,
+      t0x: xScale(0),
+      xTicks: buildLinearTicks(tauMin, tauMax, 9).map((value) => ({ value, x: xScale(value) })),
+      yTicks: buildLinearTicks(yMin, yMax, 6).map((value) => ({ value, y: yScale(value) })),
       yLabel,
     };
   }, [tracks, yAxis]);
 
-  if (!chart) {
+  // 分类层：把每条轨迹归入"样式桶"，并把同桶路径拼成单个 <path>（~1100 DOM 节点 → ~7）。
+  // 轻量：随选区/过滤器变化即时重算，不重建几何。同侪定义 = 同 clusterId（选择性强、有语义）。
+  const view = useMemo(() => {
+    if (!geometry) {
+      return null;
+    }
+    const { trackGeoms } = geometry;
+
+    const selectedGeom =
+      selectedActorId !== null
+        ? trackGeoms.find((geom) => geom.actorId === selectedActorId) ?? null
+        : null;
+    const selectedClusterId = selectedGeom ? selectedGeom.clusterId : null;
+    // 选中作品序号 → 对齐辅助线位置（仅信息提示，不参与同侪判定）。
+    const selectedTau =
+      selectedGeom !== null && selectedFilmIndex !== null
+        ? selectedFilmIndex - selectedGeom.t0Index
+        : null;
+
+    const contextOut: string[] = []; // 灰 faint：过滤外（含过滤外同侪）
+    const none: string[] = []; // 灰：未检出转型上下文
+    const contextInSuccess: string[] = [];
+    const contextInSnapback: string[] = [];
+    const peerSuccess: string[] = [];
+    const peerSnapback: string[] = [];
+    let selectedItem: TrackGeom | null = null;
+    let success = 0;
+    let snapback = 0;
+
+    for (const geom of trackGeoms) {
+      const inFilter = alignmentTrackInFilter(geom.track, alignmentFilters);
+      if (inFilter) {
+        if (geom.outcome === 'success') success += 1;
+        else if (geom.outcome === 'snapback') snapback += 1;
+      }
+
+      if (selectedGeom !== null && geom.actorId === selectedGeom.actorId) {
+        selectedItem = geom;
+        continue;
+      }
+      if (geom.outcome === 'none') {
+        none.push(geom.path);
+        continue;
+      }
+      const isPeer = selectedClusterId !== null && geom.clusterId === selectedClusterId;
+      if (!inFilter) {
+        contextOut.push(geom.path);
+        continue;
+      }
+      if (isPeer) {
+        (geom.outcome === 'success' ? peerSuccess : peerSnapback).push(geom.path);
+      } else {
+        (geom.outcome === 'success' ? contextInSuccess : contextInSnapback).push(geom.path);
+      }
+    }
+
+    const selectedGuideX =
+      selectedTau !== null && selectedTau >= geometry.tauMin && selectedTau <= geometry.tauMax
+        ? geometry.xScale(selectedTau)
+        : null;
+
+    return {
+      contextOutD: contextOut.join(' '),
+      noneD: none.join(' '),
+      contextInSuccessD: contextInSuccess.join(' '),
+      contextInSnapbackD: contextInSnapback.join(' '),
+      peerSuccessD: peerSuccess.join(' '),
+      peerSnapbackD: peerSnapback.join(' '),
+      selectedItem,
+      summary: { success, snapback },
+      peerCount: peerSuccess.length + peerSnapback.length,
+      selectedTau,
+      selectedGuideX,
+    };
+  }, [geometry, selectedActorId, selectedFilmIndex, alignmentFilters]);
+
+  if (!geometry || !view) {
     return <div className="sample-chart__empty">alignment.json 无可用分叉轨迹。</div>;
   }
 
   return (
     <figure className="sample-chart sample-chart--alignment">
-      <div className="sample-chart__controls" role="group" aria-label="视图 C 纵轴切换">
-        <span className="sample-chart__controls-label">纵轴</span>
-        <button
-          type="button"
-          className={`sample-axis-toggle${yAxis === 'dist' ? ' is-active' : ''}`}
-          aria-pressed={yAxis === 'dist'}
-          onClick={() => setYAxis('dist')}
-        >
-          类型偏离度
-        </button>
-        <button
-          type="button"
-          className={`sample-axis-toggle${yAxis === 'entropy' ? ' is-active' : ''}`}
-          aria-pressed={yAxis === 'entropy'}
-          onClick={() => setYAxis('entropy')}
-        >
-          熵
-        </button>
+      <div className="sample-chart__toolbar">
+        <div className="sample-chart__controls" role="group" aria-label="视图 C 纵轴切换">
+          <span className="sample-chart__controls-label">纵轴</span>
+          <button
+            type="button"
+            className={`sample-axis-toggle${yAxis === 'dist' ? ' is-active' : ''}`}
+            aria-pressed={yAxis === 'dist'}
+            onClick={() => setYAxis('dist')}
+          >
+            类型偏离度
+          </button>
+          <button
+            type="button"
+            className={`sample-axis-toggle${yAxis === 'entropy' ? ' is-active' : ''}`}
+            aria-pressed={yAxis === 'entropy'}
+            onClick={() => setYAxis('entropy')}
+          >
+            熵
+          </button>
+        </div>
+        <div className="sample-chart__filters" role="group" aria-label="控制变量过滤器（重分层）">
+          <RangeSlider
+            label="导演异质性"
+            min={domains.directorHeterogeneity[0]}
+            max={domains.directorHeterogeneity[1]}
+            step={0.01}
+            value={alignmentFilters.directorHeterogeneity}
+            onChange={(range) => setAlignmentFilter('directorHeterogeneity', range)}
+            format={(value) => value.toFixed(2)}
+          />
+          <RangeSlider
+            label="评分"
+            min={domains.rating[0]}
+            max={domains.rating[1]}
+            step={0.1}
+            value={alignmentFilters.rating}
+            onChange={(range) => setAlignmentFilter('rating', range)}
+            format={(value) => value.toFixed(1)}
+          />
+          <RangeSlider
+            label="票房"
+            min={domains.numVotes[0]}
+            max={domains.numVotes[1]}
+            step={Math.max(1, Math.round((domains.numVotes[1] - domains.numVotes[0]) / 100))}
+            value={alignmentFilters.numVotes}
+            onChange={(range) => setAlignmentFilter('numVotes', range)}
+            format={formatCompact}
+          />
+          <button type="button" className="sample-axis-toggle" onClick={resetFilters}>
+            重置
+          </button>
+        </div>
       </div>
       <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} aria-label="Transformation Alignment static sample">
         <rect x={0} y={0} width={WIDTH} height={HEIGHT} className="sample-bg" rx={8} />
@@ -108,17 +272,23 @@ export function AlignmentSampleView({ tracks }: AlignmentSampleViewProps) {
         <rect
           x={MARGIN.left}
           y={MARGIN.top}
-          width={Math.max(0, chart.t0x - MARGIN.left)}
+          width={Math.max(0, geometry.t0x - MARGIN.left)}
           height={HEIGHT - MARGIN.top - MARGIN.bottom}
           className="sample-alignment-zone sample-alignment-zone--left"
         />
 
-        <line x1={chart.t0x} y1={MARGIN.top} x2={chart.t0x} y2={HEIGHT - MARGIN.bottom} className="sample-t0-axis" />
-        <text x={chart.t0x + 6} y={MARGIN.top + 12} className="sample-t0-label">
+        <line
+          x1={geometry.t0x}
+          y1={MARGIN.top}
+          x2={geometry.t0x}
+          y2={HEIGHT - MARGIN.bottom}
+          className="sample-t0-axis"
+        />
+        <text x={geometry.t0x + 6} y={MARGIN.top + 12} className="sample-t0-label">
           T=0
         </text>
 
-        {chart.yTicks.map((tick) => (
+        {geometry.yTicks.map((tick) => (
           <g key={`y-${tick.value}`}>
             <line
               x1={MARGIN.left - 4}
@@ -138,7 +308,7 @@ export function AlignmentSampleView({ tracks }: AlignmentSampleViewProps) {
           </g>
         ))}
 
-        {chart.xTicks.map((tick) => (
+        {geometry.xTicks.map((tick) => (
           <g key={`x-${tick.value}`}>
             <line
               x1={tick.x}
@@ -158,18 +328,43 @@ export function AlignmentSampleView({ tracks }: AlignmentSampleViewProps) {
           </g>
         ))}
 
-        {chart.lineItems.map((item) => (
+        {/* 分层绘制（后画在上）：每个样式桶合并为单条 path，上下文沉底、同侪与选中浮顶 */}
+        {view.contextOutD && (
+          <path d={view.contextOutD} className="sample-track sample-track--context-out" />
+        )}
+        {view.noneD && <path d={view.noneD} className="sample-track sample-track--none" />}
+        {view.contextInSuccessD && (
+          <path d={view.contextInSuccessD} className="sample-track sample-track--success" />
+        )}
+        {view.contextInSnapbackD && (
+          <path d={view.contextInSnapbackD} className="sample-track sample-track--snapback" />
+        )}
+        {view.peerSuccessD && (
+          <path d={view.peerSuccessD} className="sample-track sample-track--success sample-track--peer" />
+        )}
+        {view.peerSnapbackD && (
           <path
-            key={item.id}
-            d={item.path}
-            className={`sample-track sample-track--${item.outcome}`}
+            d={view.peerSnapbackD}
+            className="sample-track sample-track--snapback sample-track--peer"
           />
-        ))}
+        )}
+        {view.selectedItem && (
+          <path
+            d={view.selectedItem.path}
+            className={`sample-track sample-track--${view.selectedItem.outcome} sample-track--selected`}
+          />
+        )}
 
-        {/* none 在最上层薄薄一层灰，避免被密集的彩色分叉线整片盖住 */}
-        {chart.noneItems.map((item) => (
-          <path key={item.id} d={item.path} className="sample-track sample-track--none" />
-        ))}
+        {/* 选中 tau 的对齐辅助竖线 */}
+        {view.selectedGuideX !== null && (
+          <line
+            x1={view.selectedGuideX}
+            y1={MARGIN.top}
+            x2={view.selectedGuideX}
+            y2={HEIGHT - MARGIN.bottom}
+            className="sample-selected-guide"
+          />
+        )}
 
         <line
           x1={MARGIN.left}
@@ -200,13 +395,15 @@ export function AlignmentSampleView({ tracks }: AlignmentSampleViewProps) {
           transform={`rotate(-90 12 ${(MARGIN.top + HEIGHT - MARGIN.bottom) / 2})`}
           textAnchor="middle"
         >
-          {chart.yLabel}
+          {geometry.yLabel}
         </text>
       </svg>
 
       <figcaption className="sample-chart__caption">
-        τ 范围 [{chart.tauMin}, {chart.tauMax}] · success={chart.summary.success} · snapback=
-        {chart.summary.snapback}
+        τ 范围 [{geometry.tauMin}, {geometry.tauMax}] · success={view.summary.success} · snapback=
+        {view.summary.snapback}
+        {selectedActorId !== null ? ` · 同群落同侪 ${view.peerCount}` : ''}
+        {view.selectedTau !== null ? ` · 选中 τ=${view.selectedTau}` : ''}
       </figcaption>
     </figure>
   );
@@ -222,19 +419,4 @@ function buildLinearTicks(min: number, max: number, count: number): number[] {
     ticks.push(Number((min + step * i).toFixed(2)));
   }
   return ticks;
-}
-
-function summarizeByOutcome(tracks: AlignmentTrack[]) {
-  return tracks.reduce(
-    (acc, track) => {
-      if (track.outcome === 'success') {
-        acc.success += 1;
-      }
-      if (track.outcome === 'snapback') {
-        acc.snapback += 1;
-      }
-      return acc;
-    },
-    { success: 0, snapback: 0 },
-  );
 }

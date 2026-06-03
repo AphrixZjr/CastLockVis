@@ -1,4 +1,8 @@
-import { averageEntropyCurves, filterAlignmentTracks } from '../lib/aggregate';
+import {
+  averageCohortGenreBands,
+  averageEntropyCurves,
+  filterAlignmentTracks,
+} from '../lib/aggregate';
 import type { DataBundle, DataIndexes, EntropyCurve, MarkovMatrix } from '../data/types';
 import type { AlignmentFilters } from './useVizStore';
 
@@ -64,6 +68,14 @@ export function getMarkovMatrixForCohort(
     return null;
   }
   return indexes.markovByClusterStage.get(`${clusterId}:${stage}`) ?? null;
+}
+
+export function getCohortGenreBands(
+  indexes: DataIndexes,
+  cohortActorIds: string[],
+  maxN: number,
+) {
+  return averageCohortGenreBands(indexes.filmsByActor, cohortActorIds, maxN);
 }
 
 export function getFilteredAlignmentTracks(

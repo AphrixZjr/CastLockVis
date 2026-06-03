@@ -93,7 +93,7 @@
 
 - **F5.1** 事件对齐坐标系：横轴 `tau = seqIndex − t0Index`，T=0 竖轴标记；纵轴默认 = 类型偏离度 `dist`（读 `alignment.json` `points[].dist`，锚定 0 在底部 = 贴着舒适圈），并提供**纵轴切换按钮**在 `dist`/`entropy` 间对比（调试用：熵轴上绿/红重叠、距离轴上分叉，直观说明为何改判据）。
 - **F5.2** 左侧（τ<0）低偏离窄束收拢（`dist≈0`，by construction） + 右侧（τ>0）分叉：`outcome=success` 走绿色「多维演化区」（持续高偏离）、`snapback` 跌入红色「重新固化区」（偏离度回缩）。绿/红主要由轨迹形状区分（snapback 冲高后回落），画原始线而非仅均值带。`none`（未检出转型）以低透明度灰线作背景上下文；τ>0 不加背景底色。
-- **F5.3** 高亮联动：响应 `selectedActorId`，高亮该演员并对齐**同一作品序号尝试转型**的同侪（链路 2 消费）。
+- **F5.3** 高亮联动：响应 `selectedActorId`，高亮该演员并对齐**同 `clusterId`（同一类型锁定群落）**的同侪，按 `outcome` 分绿/红（链路 2 消费）。同侪原拟按"同作品序号 / 同 tau"界定，但对齐轨迹皆为 T=0 窗口（τ∈[−3,5]）且 `t0Index` 73% 集中于 6，按 tau/t0 选侪会匹配近乎全部或零，故改用 `clusterId`；选中 `selectedFilmIndex` 时另画一条 τ 对齐辅助线。可由视图 B 尖峰点击或**视图 A 单击演员**触发。
 - **F5.4** **全局控制变量过滤器**：按 `covariatesAtT0`（导演异质性 / 票房 / 评分）动态重分层线条（链路 3）。
 - **F5.5** 线条叠加可读性：粗细/透明度、成功/弹回区底纹。
 
@@ -124,7 +124,7 @@
 服务：评分核心标准——视图间高密度语义关联。**联动正确性优先于单视图精度。**
 
 - **F8.1 链路 1（宏观→中观）** `ClusterView.brush → setBrush(actorIds)`：B 重渲群落平均叠加态、D 重取该 cohort × stage 矩阵。
-- **F8.2 链路 2（中观→微观）** `RiverView.clickSpike → selectActor + selectSpike(filmIndex)`：C 高亮并对齐同侪、`DetailsPanel` 展开转型作品微观数据。
+- **F8.2 链路 2（中观→微观）** `ClusterView.click(单击演员) / RiverView.clickSpike → selectActor(+selectSpike)`：B 单演员态渲染该演员、C 高亮并对齐同 `clusterId` 同侪、`DetailsPanel` 展开转型作品微观数据。`selectedActorId` 具粘性（点空白只清 brush/尖峰，不清演员；仅拖框进群落态时清）。
 - **F8.3 链路 3（控制变量审计）** `AlignmentView.filter → setAlignmentFilter(...)`：C 线条按导演异质性等外部变量动态重分层。
 - **F8.4** 联动一致性：选区/选择变化时各视图状态同步、清除选区回到全局态、跨视图高亮配色一致。
 - **F8.5 (P1)** 联动可发现性：链路触发的视觉提示、面包屑/当前队列说明文案。

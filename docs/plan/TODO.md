@@ -52,8 +52,8 @@
 - [x] **F3.1 / F3.2** ClusterView 静态散点：`projection` 坐标 + `dominantEarlyGenre` 着色 + 悬停 Tooltip（已增强：簇图标 + 凸包）
 - [x] **F6.1 / F6.2 / F6.5** MarkovView 静态热力矩阵：色阶 + 行列标签 + 单元格 Tooltip + 对角线强调
 - [x] **F6.3** MarkovView 阶段切换 Toggle（early/mid/late，写 `markovStage`）
-- [ ] **F3.3 / F3.4** ClusterView `BrushLayer` 框选 → 写 `brushedActorIds` + 选中/降明度视觉态
-- [~] **F8.1（A→D 部分）/ F6.4** 联动：selectors（`getDominantClusterId`→`getMarkovMatrixForCohort`）+ App 接线已就绪，D 已按主簇渲染；仅差 brush 触发端（F3.4）即可全闭环
+- [x] **F3.3 / F3.4** ClusterView `BrushLayer` 框选 → 写 `brushedActorIds` + 选中/降明度视觉态（指针拖框矩形，空白点击清除）
+- [x] **F8.1（A→D 部分）/ F6.4** 联动：selectors（`getDominantClusterId`→`getMarkovMatrixForCohort`）+ App 接线就绪，brush 触发端落地后 A→D 全闭环
 
 **验收**：在 A 框选一个群落，D 立即切换为该群落矩阵；切换阶段 Toggle 矩阵随之更新；清除选区回到全局态。
 
@@ -64,7 +64,7 @@
 - [x] **F4.1** RiverView Streamgraph：横轴=作品序列 1..N、流厚度=滑动窗口类型比例
 - [x] **F4.2** RiverView 叠加白色香农熵折线（`entropy.json`）
 - [x] **F4.3** RiverView 每部电影圆点：评分/票数编码（位置或大小）
-- [~] **F4.6** RiverView 单演员/群落两模式切换 + 空态：单演员态 + 空态已具备；群落平均态与切换待接（与 S4·F4.4 合并）
+- [x] **F4.6** RiverView 单演员/群落两模式切换 + 空态：brush 空=单演员态、brush 非空=群落平均态（平均熵线 + 群落平均流带）
 - [x] **F5.1** AlignmentView 对齐坐标系：`tau` 横轴 + T=0 竖轴标记（`alignment.json`）
 - [x] **F5.2 / F5.5** AlignmentView 左侧低熵窄束 + 右侧绿/红分叉区（按 `outcome`）
 
@@ -74,20 +74,20 @@
 
 > 把四视图焊成一个分析闭环。本里程碑权重最高。
 
-- [ ] **F4.4** 链路 1 消费端：RiverView 响应 `brushedActorIds` 渲染**群落平均叠加态**熵衰减
-- [ ] **F8.1** 链路 1 完整收口：A.brush → B（平均态）+ D（cohort×stage）同步联动
-- [ ] **F4.5** 链路 2 触发：RiverView 熵曲线尖峰可点击 → 写 `selectedActorId + selectedFilmIndex`
-- [ ] **F5.3** 链路 2 消费：AlignmentView 高亮该演员 + 对齐同序号尝试转型的同侪
-- [ ] **F7.1** 链路 2 详情：`DetailsPanel` 展开转型作品微观数据（评分↑/票房↓ non-trivial pattern）
-- [ ] **F5.4** 链路 3：AlignmentView 全局控制变量过滤器（导演异质性/票房/评分）动态重分层
-- [ ] **F8.4** 联动一致性：跨视图高亮配色统一、清除选区/选择回到全局态
+- [x] **F4.4** 链路 1 消费端：RiverView 响应 `brushedActorIds` 渲染**群落平均叠加态**熵衰减（新增 `averageCohortGenreBands`/`getCohortGenreBands` 聚合，仅汇总 `dominantGenre` 占比）
+- [x] **F8.1** 链路 1 完整收口：A.brush → B（平均态）+ D（cohort×stage）同步联动
+- [x] **F4.5** 链路 2 触发：RiverView 作品圆点可点击 → 写 `selectedActorId + selectedFilmIndex`（再次点击/点空白取消）
+- [x] **F5.3** 链路 2 消费：AlignmentView 单分类器（selected/peer/context）高亮该演员 + **同 clusterId 同侪**（按 outcome 分绿/红）+ 选中 τ 辅助线；亦可由 A 单击演员触发
+- [x] **F7.1** 链路 2 详情：`DetailsPanel` 展开转型窗口 `[sel±2]` 微观数据（相对 T=0 前基线的评分↑/票房↓ 方向标记）
+- [x] **F5.4** 链路 3：AlignmentView 全局控制变量过滤器（导演异质性/票房/评分，`RangeSlider`）动态重分层（in-filter 绿/红、out-of-filter 淡灰）
+- [x] **F8.4** 联动一致性：跨视图统一用 `--color-accent` 高亮；A 空白清 brush、B 空白/再点清选择、C 重置滤镜，各自回全局态
 
 **验收**：能完整复现 proposal §3 的三个联动场景（群落基线探查 / 转型窗口期微观审计 / 控制变量生存审计）。
 
 ## S5 · 通用控件、打磨与部署（P0–P1 · 第一阶段收尾）
 
 - [ ] **F7.2 / F7.3** `Legend` + `Tooltip` 统一组件，各视图复用（现为各视图内联 figcaption + PanelLegends，未抽通用件）
-- [~] **F7.4 / F7.5 / F7.6** `controls/Slider` `controls/Toggle` `controls/BrushLayer` 抽成通用控件：`controls/Toggle` 已抽；Slider / BrushLayer 待做
+- [~] **F7.4 / F7.5 / F7.6** `controls/Slider` `controls/Toggle` `controls/BrushLayer` 抽成通用控件：`controls/Toggle` + `controls/RangeSlider` 已抽；BrushLayer 现内联于 ClusterView，待抽成通用件
 - [ ] **F1.6** 响应式与最小可用宽度
 - [ ] **F8.5 (P1)** 联动可发现性：当前队列说明文案 / 触发提示
 - [x] **F3.5 (P1)** ClusterView 群落 hull / 密度底纹（已做凸包 hull + 每簇图标；密度底纹未做）
@@ -117,4 +117,4 @@
 
 - **关键路径**：S0 → S1 → S2(联动脊柱验证) → S3 → **S4(联动)** → S5。S6 视觉可与 S5 收尾部分并行。
 - **可并行**：S2 完成后，B（S3 前两项）与 C（S3 后两项）可由不同人并行；`Legend/Tooltip/控件`（S5）可在 S2 期间随手抽取。
-- **风险点**：① B 的 streamgraph 横轴语义（序列号非年份）易做错；② C 的 T=0 对齐与同侪对齐是团队核心贡献，须严格按 `alignment.json` 的 `tau`；③ A→D 联动的群落粒度（F0.10）不要误做成实时重算。
+- **风险点**：① B 的 streamgraph 横轴语义（序列号非年份）易做错；② C 的 T=0 对齐（x 轴）须严格按 `alignment.json` 的 `tau`；**同侪界定改用 `clusterId`**（tau/t0 因窗口固定 + t0 高度集中而失效，见 F5.3）；③ A→D 联动的群落粒度（F0.10）不要误做成实时重算。

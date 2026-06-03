@@ -123,9 +123,9 @@ public/
 ```ts
 interface VizState {
   // 选区（谁触发）
-  brushedActorIds: Set<string>;   // 视图 A brush 框选 → 定义 cohort
-  selectedActorId: string | null; // 视图 B 点击某演员
-  selectedFilmIndex: number | null; // 视图 B 点击尖峰对应的作品序号
+  brushedActorIds: Set<string>;   // 视图 A 拖框 → 定义 cohort
+  selectedActorId: string | null; // 视图 A 单击演员 / 视图 B 点击尖峰所选演员（粘性：点空白不清，仅拖框进群落态时清）
+  selectedFilmIndex: number | null; // 视图 B 点击尖峰对应的作品序号（seqIndex；点空白/再点同尖峰清除）
 
   // 联动控制参数
   markovStage: 'early' | 'mid' | 'late'; // 视图 D 阶段过滤
@@ -148,22 +148,32 @@ interface VizState {
 ### 6.3 三条联动数据流（对应 proposal 第 3 节）
 
 ```
-链路1 宏观→中观   ClusterView.brush ─► setBrush(actorIds)
-                  └► RiverView   读 cohort → 渲染“群落平均叠加态”熵衰减
+链路1 宏观→中观   ClusterView.brush(拖框) ─► setBrush(actorIds)
+                  └► RiverView   读 cohort → 渲染“群落平均叠加态”（平均熵线 + 群落平均流带）
                   └► MarkovView  读 cohort + stage → 渲染该群落转移矩阵
 
-链路2 中观→微观   RiverView.clickSpike ─► selectActor + selectSpike(filmIndex)
-                  └► AlignmentView 高亮该演员，并对齐同在该作品序号尝试转型的同侪
-                  └► DetailsPanel  展开第 8/9/10 部转型作品的微观数据(评分↑/票房↓ 等)
+链路2 中观→微观   ClusterView.click(单击演员) / RiverView.clickSpike ─► selectActor(+selectSpike)
+                  └► RiverView    选中演员优先于 cohort，单演员态渲染该演员（带可点尖峰）
+                  └► AlignmentView 高亮该演员 + 同 clusterId 同侪（同一类型锁定群落），按 outcome 分绿/红
+                  └► DetailsPanel  展开转型窗口 [sel±2] 作品微观数据（相对 T=0 前基线的评分↑/票房↓）
 
 链路3 控制变量审计 AlignmentView.filter ─► setAlignmentFilter(...)
                   └► AlignmentView 线条按导演异质性等外部变量动态重分层（绿色成功区 / 红色固化区）
 ```
 
+> **同侪定义（链路2）**：原设计为“同作品序号 / 同 tau 对齐的同侪”，但对齐轨迹皆为 T=0 窗口
+> （τ∈[−3,5]），且 `t0Index` 有 73% 集中在 6——按 tau/t0 选侪会匹配近乎全部或零，联动失去意义。
+> 故同侪改以 **`clusterId`（类型锁定群落）** 界定：选择性强（每簇 62–260 人）、语义直连视图 A 的簇，
+> C 直观展示同一群落如何分化为成功(绿)/被弹回(红)。选中 `selectedFilmIndex` 时另画一条 τ 对齐辅助线。
+
 ### 6.4 加载与渲染生命周期
 
 `loadData.ts` 在应用启动时一次性 `fetch` 全部 JSON 并做轻量类型校验 → 注入只读数据上下文 →
 四视图挂载。交互后仅 store 选区/参数变化，触发派生 selector 重算与受影响视图重绘，**不重新请求数据**。
+
+渲染性能约定：视图把"几何"与"分类"分层 memo——AlignmentView 的轨迹路径只随 `tracks/yAxis`
+重建；选区/过滤器变化时只重算每条轨迹的样式归类，并把**同样式桶的 1000+ 轨迹合并成单条 `<path>`**
+（DOM 由约 1100 降到约 7），保证滑块重分层与高亮即时响应、无卡顿。
 
 ## 7. 部署（GitHub Pages）
 

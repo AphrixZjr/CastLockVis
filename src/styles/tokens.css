@@ -22,6 +22,9 @@
   --radius-md: 8px;
   --border: 1px solid var(--color-border);
 
+  /* 浮层阴影（details-on-demand 面板等） */
+  --shadow-panel: 0 8px 24px rgba(0, 0, 0, 0.4);
+
   /* 颜色角色 (阶段一：中性占位值) */
   --color-bg: #1a1c1f; /* 应用背景（暗色，呼应白色熵线/红黑对角线） */
   --color-surface: #232629; /* 面板表面 */

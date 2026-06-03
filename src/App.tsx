@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { DetailsPanel } from './components/DetailsPanel';
 import { ViewPanel } from './components/ViewPanel';
 import { Toggle } from './components/controls/Toggle';
 import { useDataRuntime } from './data/dataRuntimeContext';
@@ -17,6 +18,7 @@ import {
 } from './views/static-samples/PanelLegends';
 import { RiverSampleView } from './views/static-samples/RiverSampleView';
 import './App.css';
+import './components/DetailsPanel.css';
 import './views/static-samples/staticSamples.css';
 
 interface ReadyPanel {
@@ -142,6 +144,8 @@ export function App() {
             </ViewPanel>
           ))}
       </section>
+
+      {loadState.status === 'ready' && <DetailsPanel />}
     </main>
   );
 }

@@ -59,7 +59,7 @@ S0 smoke test (`App.tsx`) — replace it as S1+ lands.
 
 - **Linking is the grading criterion.** Three required paths (proposal §3 / ARCHITECTURE §6.3):
   1. **A→B+D (macro→meso):** brushing a cluster in A re-aggregates B as the cohort *average* and refilters D by cohort × stage.
-  2. **B→C+details (meso→micro):** clicking an entropy spike in B activates C (highlight actor, align same-index peers) and opens DetailsPanel.
+  2. **B→C+details (meso→micro):** selecting an actor (single-click in A, or clicking an entropy spike in B) activates C (highlight actor + same-`clusterId` peers, split green/red by outcome) and opens DetailsPanel. Peers are cluster-based, **not** same-index/tau — see ARCHITECTURE §6.3 for why.
   3. **Global filters on C:** restratify C's lines by T=0 covariates (e.g. director heterogeneity).
 - **Stable identifiers** every view must preserve so links don't break: `actorId`, `seqIndex`,
   `tau = seqIndex − t0Index`, `clusterId`, `dominantGenre`. Don't change their semantics.
