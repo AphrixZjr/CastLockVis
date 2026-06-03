@@ -1,40 +1,57 @@
-import { useMemo } from 'react';
-import type { AlignmentTrack } from '../../data/types';
+import { useMemo, useState } from 'react';
+import type { AlignmentPoint, AlignmentTrack } from '../../data/types';
 import { linearScale, polylinePath } from './chartUtils';
 
 interface AlignmentSampleViewProps {
   tracks: AlignmentTrack[];
 }
 
+/** 视图 C 的 y 轴可在「类型偏离度 dist」(默认) 与「类型熵 entropy」之间切换，便于调试对比。 */
+type YAxisMode = 'dist' | 'entropy';
+
+const Y_AXIS_META: Record<YAxisMode, { label: string; accessor: (p: AlignmentPoint) => number; anchorZero: boolean }> = {
+  dist: { label: '类型偏离度（距舒适圈）', accessor: (p) => p.dist, anchorZero: true },
+  entropy: { label: '类型熵 (entropy)', accessor: (p) => p.entropy, anchorZero: false },
+};
+
 const WIDTH = 620;
 const HEIGHT = 320;
 const MARGIN = { top: 18, right: 20, bottom: 30, left: 34 };
 
 export function AlignmentSampleView({ tracks }: AlignmentSampleViewProps) {
+  const [yAxis, setYAxis] = useState<YAxisMode>('dist');
+
   const chart = useMemo(() => {
-    const pivotTracks = tracks.filter((track) => track.outcome !== 'none' && track.points.length > 0);
+    const drawable = tracks.filter((track) => track.points.length > 0);
+    const pivotTracks = drawable.filter((track) => track.outcome !== 'none');
+    const noneTracks = drawable.filter((track) => track.outcome === 'none');
     if (pivotTracks.length === 0) {
       return null;
     }
 
-    const taus = pivotTracks.flatMap((track) => track.points.map((point) => point.tau));
-    const entropies = pivotTracks.flatMap((track) => track.points.map((point) => point.entropy));
+    const { label: yLabel, accessor, anchorZero } = Y_AXIS_META[yAxis];
+    // 坐标域覆盖所有可绘轨迹（含 none 背景），保证淡灰线与分叉线同尺度。
+    const taus = drawable.flatMap((track) => track.points.map((point) => point.tau));
+    const yVals = drawable.flatMap((track) => track.points.map(accessor));
 
     const tauMin = Math.min(...taus);
     const tauMax = Math.max(...taus);
-    const entropyMin = Math.min(...entropies);
-    const entropyMax = Math.max(...entropies);
+    // dist 锚定 0（=贴着早期舒适圈）在底部，让“重新固化”落回低位；entropy 用数据自身范围。
+    const yMin = anchorZero ? 0 : Math.min(...yVals);
+    const yMax = Math.max(yMin + 0.1, Math.max(...yVals));
 
     const x = (tau: number) =>
       linearScale(tau, tauMin, tauMax, MARGIN.left, WIDTH - MARGIN.right);
-    const y = (entropy: number) =>
-      linearScale(entropy, entropyMin, entropyMax, HEIGHT - MARGIN.bottom, MARGIN.top);
+    const y = (value: number) =>
+      linearScale(value, yMin, yMax, HEIGHT - MARGIN.bottom, MARGIN.top);
 
-    const lineItems = pivotTracks.map((track) => ({
+    const toItem = (track: AlignmentTrack) => ({
       id: `${track.actorId}-${track.outcome}`,
       outcome: track.outcome,
-      path: polylinePath(track.points.map((point) => ({ x: x(point.tau), y: y(point.entropy) }))),
-    }));
+      path: polylinePath(track.points.map((point) => ({ x: x(point.tau), y: y(accessor(point)) }))),
+    });
+    const lineItems = pivotTracks.map(toItem);
+    const noneItems = noneTracks.map(toItem);
 
     const summary = summarizeByOutcome(pivotTracks);
     const t0x = x(0);
@@ -42,7 +59,7 @@ export function AlignmentSampleView({ tracks }: AlignmentSampleViewProps) {
       value,
       x: x(value),
     }));
-    const yTicks = buildLinearTicks(entropyMin, entropyMax, 6).map((value) => ({
+    const yTicks = buildLinearTicks(yMin, yMax, 6).map((value) => ({
       value,
       y: y(value),
     }));
@@ -51,12 +68,14 @@ export function AlignmentSampleView({ tracks }: AlignmentSampleViewProps) {
       tauMin,
       tauMax,
       lineItems,
+      noneItems,
       summary,
       t0x,
       xTicks,
       yTicks,
+      yLabel,
     };
-  }, [tracks]);
+  }, [tracks, yAxis]);
 
   if (!chart) {
     return <div className="sample-chart__empty">alignment.json 无可用分叉轨迹。</div>;
@@ -64,6 +83,25 @@ export function AlignmentSampleView({ tracks }: AlignmentSampleViewProps) {
 
   return (
     <figure className="sample-chart sample-chart--alignment">
+      <div className="sample-chart__controls" role="group" aria-label="视图 C 纵轴切换">
+        <span className="sample-chart__controls-label">纵轴</span>
+        <button
+          type="button"
+          className={`sample-axis-toggle${yAxis === 'dist' ? ' is-active' : ''}`}
+          aria-pressed={yAxis === 'dist'}
+          onClick={() => setYAxis('dist')}
+        >
+          类型偏离度
+        </button>
+        <button
+          type="button"
+          className={`sample-axis-toggle${yAxis === 'entropy' ? ' is-active' : ''}`}
+          aria-pressed={yAxis === 'entropy'}
+          onClick={() => setYAxis('entropy')}
+        >
+          熵
+        </button>
+      </div>
       <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} aria-label="Transformation Alignment static sample">
         <rect x={0} y={0} width={WIDTH} height={HEIGHT} className="sample-bg" rx={8} />
 
@@ -73,13 +111,6 @@ export function AlignmentSampleView({ tracks }: AlignmentSampleViewProps) {
           width={Math.max(0, chart.t0x - MARGIN.left)}
           height={HEIGHT - MARGIN.top - MARGIN.bottom}
           className="sample-alignment-zone sample-alignment-zone--left"
-        />
-        <rect
-          x={chart.t0x}
-          y={MARGIN.top}
-          width={WIDTH - MARGIN.right - chart.t0x}
-          height={HEIGHT - MARGIN.top - MARGIN.bottom}
-          className="sample-alignment-zone sample-alignment-zone--right"
         />
 
         <line x1={chart.t0x} y1={MARGIN.top} x2={chart.t0x} y2={HEIGHT - MARGIN.bottom} className="sample-t0-axis" />
@@ -135,6 +166,11 @@ export function AlignmentSampleView({ tracks }: AlignmentSampleViewProps) {
           />
         ))}
 
+        {/* none 在最上层薄薄一层灰，避免被密集的彩色分叉线整片盖住 */}
+        {chart.noneItems.map((item) => (
+          <path key={item.id} d={item.path} className="sample-track sample-track--none" />
+        ))}
+
         <line
           x1={MARGIN.left}
           y1={HEIGHT - MARGIN.bottom}
@@ -164,7 +200,7 @@ export function AlignmentSampleView({ tracks }: AlignmentSampleViewProps) {
           transform={`rotate(-90 12 ${(MARGIN.top + HEIGHT - MARGIN.bottom) / 2})`}
           textAnchor="middle"
         >
-          entropy
+          {chart.yLabel}
         </text>
       </svg>
 

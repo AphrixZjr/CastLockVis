@@ -89,12 +89,19 @@ export function AlignmentLegend() {
         <span>虚线竖轴 = T=0（转型起点）</span>
       </span>
       <span className="legend-item">
+        <span>纵轴 = 类型偏离度（高=脱离舒适圈 / 低=重新固化）</span>
+      </span>
+      <span className="legend-item">
         <span className="legend-line legend-line--success" />
         <span>绿线 = success</span>
       </span>
       <span className="legend-item">
         <span className="legend-line legend-line--snap" />
         <span>红线 = snapback</span>
+      </span>
+      <span className="legend-item">
+        <span className="legend-line legend-line--none" />
+        <span>灰线 = none（未检出转型）</span>
       </span>
     </div>
   );

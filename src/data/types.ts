@@ -45,7 +45,10 @@ export interface MarkovMatrix {
 
 export interface AlignmentPoint {
   tau: number;
+  /** EMA 类型熵（视图 B 的交叉参照量；视图 C 不再以此为 y 轴）。 */
   entropy: number;
+  /** 类型偏离度 = 1 − cos(earlyGenreVector, 滚动类型向量) ∈ [0,1]，视图 C 的 y 轴。 */
+  dist: number;
 }
 
 export interface AlignmentCovariatesAtT0 {

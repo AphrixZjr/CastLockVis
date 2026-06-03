@@ -152,6 +152,11 @@
   border-color: var(--color-snapback);
 }
 
+.legend-line--none {
+  border-color: var(--color-text-dim);
+  opacity: 0.6;
+}
+
 .legend-river-band {
   width: 18px;
   height: 10px;

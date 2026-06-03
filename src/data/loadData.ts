@@ -247,21 +247,30 @@ function parseAlignment(raw: unknown): AlignmentTrack[] {
         'alignment.json',
         `index ${index} points[${pointIndex}] has invalid fields`,
       );
-      if (typeof alignmentPoint.tau !== 'number' || typeof alignmentPoint.entropy !== 'number') {
+      if (
+        typeof alignmentPoint.tau !== 'number' ||
+        typeof alignmentPoint.entropy !== 'number' ||
+        typeof alignmentPoint.dist !== 'number'
+      ) {
         throw createTypeError(
           'alignment.json',
           `index ${index} points[${pointIndex}] has invalid fields`,
         );
       }
-      return { tau: alignmentPoint.tau, entropy: alignmentPoint.entropy };
+      return {
+        tau: alignmentPoint.tau,
+        entropy: alignmentPoint.entropy,
+        dist: alignmentPoint.dist,
+      };
     });
 
     if (outcome === 'none') {
+      // none 轨迹锚在「最大上升候选」(伪 T=0)，仅作淡灰背景上下文：可带 points，但无真 T=0 协变量。
       const emptyCovariates = Object.keys(covariates).length === 0;
-      if (!emptyCovariates || points.length > 0) {
+      if (!emptyCovariates) {
         throw createTypeError(
           'alignment.json',
-          `index ${index} outcome=none expects empty points and covariatesAtT0`,
+          `index ${index} outcome=none expects empty covariatesAtT0`,
         );
       }
 

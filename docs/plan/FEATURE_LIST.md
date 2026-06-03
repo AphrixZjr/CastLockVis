@@ -33,10 +33,10 @@
 - **F0.1** 原始 IMDb 数据清洗与实体提取 —— `clean.py`（票数门槛、主演番位、生涯厚度过滤）。✅
 - **F0.2** 特征工程与 6 份数据契约落盘 —— `pipeline_json.py`：`genres / actors / films / entropy / markov / alignment`。✅
 - **F0.3** 早期画像：前 5 部作品类型概率向量 + `dominantEarlyGenre`（视图 A 坐标来源）。✅
-- **F0.4** EMA 香农熵曲线 `n=1..30`（视图 B 白线、视图 C 纵轴）。✅
+- **F0.4** EMA 香农熵曲线 `n=1..30`（视图 B 白线；亦用于 T=0 检测。视图 C 纵轴已改用类型偏离度 `dist`）。✅
 - **F0.5** UMAP 降维 + KMeans 8 群落 → `projection[x,y]` + `clusterId`（联动 cohort 单位）。✅
 - **F0.6** 分阶段（early/mid/late）群落转移矩阵（视图 D，按 `clusterId` 键控）。✅
-- **F0.7** T=0 对齐检测：`t0Index`、`outcome(success|snapback|none)`、`points[{tau,entropy}]`、`covariatesAtT0`。✅
+- **F0.7** T=0 对齐检测：t0 用**熵 onset 变点**（`T0_ONSET_JUMP`）；`outcome` 用**类型偏离度轨迹**（lowflat：末段回吐峰值增益 ≥ `SNAPBACK_RETRACE` **且** 末段斜率 ≤ `SNAPBACK_SLOPE_MAX` → snapback；否则 success；未检出 → none）。`points[{tau,entropy,dist}]`（`dist` = k=5 滚动类型偏离度，C 纵轴）、`covariatesAtT0`。当前分布 success/snapback/none ≈ 856/153/148。✅
 - **F0.8 ⚠️ 待修正（P1）** `films.title` 当前存的是 `tconst`（tt 编号）而非人类可读片名；详情面板需要可读标题时，需在 `clean.py` 引入 `primaryTitle` 后重跑。
 - **F0.9 ⚠️ 待对齐（P1）** `directorHeterogeneity` 仅存在于 `alignment.covariatesAtT0`，`films.json` 无逐片导演异质性；视图 C 全局过滤器以 T=0 协变量为准（与契约一致），不要求逐片字段。
 - **F0.10 ⚠️ 联动粒度说明（P0 设计约束）** `markov.json` 按**预计算 `clusterId`** 键控；A→D 联动在**群落粒度**生效（brush 选区映射到其覆盖的 cluster），而非任意子集实时重算矩阵。前端联动须遵此粒度。
@@ -91,8 +91,8 @@
 
 服务：Task 4（转型分叉与生存分析）；链路 2 的**消费端**、链路 3 的**载体**。
 
-- **F5.1** 事件对齐坐标系：横轴 `tau = seqIndex − t0Index`，T=0 竖轴标记；读 `alignment.json` 的 `points`。
-- **F5.2** 左侧（τ<0）低熵窄束收拢 + 右侧（τ>0）分叉：`outcome=success` 走绿色「多维演化区」、`snapback` 跌入红色「重新固化区」。
+- **F5.1** 事件对齐坐标系：横轴 `tau = seqIndex − t0Index`，T=0 竖轴标记；纵轴默认 = 类型偏离度 `dist`（读 `alignment.json` `points[].dist`，锚定 0 在底部 = 贴着舒适圈），并提供**纵轴切换按钮**在 `dist`/`entropy` 间对比（调试用：熵轴上绿/红重叠、距离轴上分叉，直观说明为何改判据）。
+- **F5.2** 左侧（τ<0）低偏离窄束收拢（`dist≈0`，by construction） + 右侧（τ>0）分叉：`outcome=success` 走绿色「多维演化区」（持续高偏离）、`snapback` 跌入红色「重新固化区」（偏离度回缩）。绿/红主要由轨迹形状区分（snapback 冲高后回落），画原始线而非仅均值带。`none`（未检出转型）以低透明度灰线作背景上下文；τ>0 不加背景底色。
 - **F5.3** 高亮联动：响应 `selectedActorId`，高亮该演员并对齐**同一作品序号尝试转型**的同侪（链路 2 消费）。
 - **F5.4** **全局控制变量过滤器**：按 `covariatesAtT0`（导演异质性 / 票房 / 评分）动态重分层线条（链路 3）。
 - **F5.5** 线条叠加可读性：粗细/透明度、成功/弹回区底纹。

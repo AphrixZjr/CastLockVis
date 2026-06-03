@@ -17,10 +17,16 @@
     分离度优于原 UMAP。注意：clusterId 数变为 7，markov.json 随之为 7×3=21 条（形状不变）。
 [entropy]    EMA 熵曲线：原本只给字母序首位标签加 ALPHA → 改为把 ALPHA 按片内
     标签的 idf 分摊，熵反映整片的全部类型内容（修视图 B 尖峰 / 视图 C 的 y 轴）。
-[t0]         转型窗口期：原本「main genre 跳出早期集」（字母序）→ 改为「首次引入早期
-    5 部未出现、且足够特异（idf ≥ T0_IDF_THRESHOLD）的类型」为转型尝试，避免被无关
-    紧要的 Drama/Comedy 触发；outcome 改判「持久性」——触发类型在 t0 后累计出现
-    ≥ T0_PERSIST_K 次为成功转型，否则回弹（snapback），让 none/snapback/success 三类分明。
+[t0]         转型窗口期：t0 改为「熵 onset 变点」——首个短窗(n..n+2)均熵较早期累积基线
+    (1..n-1)上升 ≥ T0_ONSET_JUMP 的序号 n，即一次脱离舒适圈的转型尝试起点，不再依赖
+    「特异类型切换」（避免单次偶发稀有类型误触发、且让 T<0 的左束由轨迹本身决定）。
+[outcome]    成功/弹回改判「类型偏离度轨迹」：新增 dist = 1 − cos(早期画像 earlyGenreVector,
+    以该片为中心的 k=5 滚动 idf 加权类型向量)，即「在类型空间里离早期舒适圈多远」，作为
+    视图 C 的新 y 轴。分叉判据 lowflat：snapback 须同时 (a) 末段偏离度回吐峰值增益 ≥
+    SNAPBACK_RETRACE 且 (b) 对齐窗 tau∈[+1,+5] 的 dist 斜率 ≤ SNAPBACK_SLOPE_MAX；否则
+    success。(b) 消除「回落后又回升的轨迹被误染红」。把分叉判据放到类型空间距离而非熵高度，
+    因 EMA 熵一旦上升几乎不回落、绿/红在熵轴上必然重叠；偏离度可被聚类的类型语义交叉验证
+    （高内聚簇上右侧类型确实远离早期）。alignment.points 同时带 entropy 与 dist。
 [label]      films.dominantGenre / actors.dominantEarlyGenre：字母序首位 → IDF-argmax
     （最具辨识度的类型）。仅作标签/着色键，不再是任何分析支点。
 [markov]     视图 D 转移矩阵：M2 软转移——每片用 idf 归一化的类型权重向量，相邻两片
@@ -49,15 +55,22 @@ OUTPUT_DIR = 'public/data/'
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 # Step 2 专家参数
-# t0 转型触发门槛：只有引入「idf ≥ 阈值」的陌生类型才算一次真正的类型转向尝试。
-# 现存 idf：Drama 0.51 < Comedy 1.01 < Action 1.39 < Crime 1.58 < Thriller 1.73
-# < Romance 1.74 < Adventure 2.02 < ...；取 1.5 → 只挡住 Drama/Comedy/Action 三个
-# 「默认模式」，踏入 Crime/Thriller 及以上才判为转型尝试（保留这些正当转型目标的可解释性）。
-T0_IDF_THRESHOLD = 1.5
-# 转型结局门槛：t0 触发的类型在 t0 之后（含当部）累计出现 ≥ K 次 → 成功转型，否则判回弹。
-# 把「持久性」放在 outcome 而非 t0，使 none/snapback/success 三类都立得住
-# （当前参数下约 1.7% / 51.7% / 46.6%）。
-T0_PERSIST_K = 3
+# t0（何时转型）= 熵 onset 变点。短窗(n..n+2)平均熵较「早期累积基线(1..n-1)」上升 ≥ 此阈值，
+# 判为一次脱离舒适圈的转型尝试起点（取首个满足者）。判据锚在熵轨迹上，下游用类型偏离度交叉验证。
+# 0.50（较 0.40 更严）：只认清晰的多元化跃迁，外部显著性(T=0 导演异质性 Cohen's d)更高。
+T0_ONSET_JUMP = 0.50
+# t0 最早出现的序号：前 5 部为早期画像，从第 6 部起才可能判转型。
+T0_ONSET_MIN_N = 6
+# 滚动类型向量半窗：k = 2*ROLL_HALF+1 = 5 部，平滑单片噪声后算类型偏离度 dist。
+# 取 2（非 1）：把 tau>0 的类内离散度从 ~0.22 降到 ~0.20，又不至于像 k=7 那样抹平分叉。
+ROLL_HALF = 2
+# 分叉判据（lowflat，取代旧的「末3 vs 初期」单点差）：snapback 须同时满足
+#   (a) 回撤：峰值增益(peak−早期基线)被生涯末 3 部偏离度回吐 ≥ SNAPBACK_RETRACE，且
+#   (b) 不再上升：对齐窗 tau∈[+1,+5] 的 dist 最小二乘斜率 ≤ SNAPBACK_SLOPE_MAX。
+# (b) 直接消除「回落后又回升的轨迹被误染红」——上升尾一律判 success。分叉判据放在「类型空间
+# 距离」而非熵高度（EMA 熵一旦上升几乎不回落、无法在熵轴分叉），且可被聚类的类型语义验证。
+SNAPBACK_RETRACE = 0.50
+SNAPBACK_SLOPE_MAX = 0.01
 # 群落数：在 15 维 IDF 软向量上 KMeans。k=7 为 15 维特征空间内 silhouette(cosine)
 # 的峰值，也是 Western/Musical 两个招牌类型都干净分离的最小 k。
 N_CLUSTERS = 7
@@ -100,6 +113,37 @@ def idf_argmax(tags):
     """片内标签里 idf 最大者（最具辨识度的类型），作展示/着色标签。"""
     cand = [g for g in tags if g in valid_genres]
     return max(cand, key=lambda g: idf[g]) if cand else "Unknown"
+
+
+def genre_vector(genre_lists):
+    """一组电影的 idf 加权、sum 归一化 15 维类型向量（与 earlyGenreVector 同口径）。"""
+    w = {g: 0.0 for g in valid_genres}
+    for gl in genre_lists:
+        for g in gl:
+            if g in idf:
+                w[g] += idf[g]
+    s = sum(w.values()) or 1.0
+    return [w[g] / s for g in valid_genres]
+
+
+def cosine(a, b):
+    """两向量余弦相似度（非负向量 → [0,1]）。"""
+    dot = sum(x * y for x, y in zip(a, b))
+    na = math.sqrt(sum(x * x for x in a))
+    nb = math.sqrt(sum(x * x for x in b))
+    return dot / (na * nb) if na and nb else 0.0
+
+
+def lstsq_slope(points):
+    """点列 [(x, y), ...] 的最小二乘斜率（用于判末段是否仍在上升）。"""
+    k = len(points)
+    if k < 2:
+        return 0.0
+    mx = sum(x for x, _ in points) / k
+    my = sum(y for _, y in points) / k
+    num = sum((x - mx) * (y - my) for x, y in points)
+    den = sum((x - mx) ** 2 for x, _ in points) or 1e-9
+    return num / den
 
 
 print("2. 执行特征工程与序列化...")
@@ -150,39 +194,66 @@ for nconst, group in df.groupby('nconst'):
 
     entropy_dict[nconst] = {"actorId": nconst, "curve": entropy_curve[:30]}
 
-    # --- C. T=0 对齐检测：首次引入「早期未见 + 高 idf」的特异类型 = 一次转型尝试 ---
-    early_set = set(early_genres)
+    # --- C. T=0 检测（熵 onset 变点）+ 类型偏离度轨迹 + 分叉判据 ---
+    # t0：首个「短窗(n..n+2)均熵 − 早期累积基线(1..n-1)」≥ T0_ONSET_JUMP 的序号 n（1-based）。
+    # best_n 同时记录「最大上升候选」（即便不达阈值）——给 none 演员作伪锚点画淡灰轨迹。
+    ent_vals = [p["entropy"] for p in entropy_curve]  # 下标 i → seqIndex i+1
     t0Index = -1
-    t0_genre = None
-    for i in range(5, len(valid_seq)):
-        new_distinctive = [g for g in valid_seq[i]
-                           if g not in early_set and idf[g] >= T0_IDF_THRESHOLD]
-        if new_distinctive:
-            t0Index = i + 1  # seqIndex 是 1-based
-            t0_genre = max(new_distinctive, key=lambda g: idf[g])  # 触发转型的特异类型
-            break
+    best_n, best_delta = -1, -1e9
+    for n in range(T0_ONSET_MIN_N, film_count - 2):
+        pre = ent_vals[0:n - 1]                          # seqIndex 1..n-1
+        short = ent_vals[n - 1:min(film_count, n + 2)]   # seqIndex n..n+2
+        if len(pre) < 3 or len(short) < 2:
+            continue
+        delta = sum(short) / len(short) - sum(pre) / len(pre)
+        if delta > best_delta:
+            best_delta, best_n = delta, n
+        if t0Index == -1 and delta >= T0_ONSET_JUMP:
+            t0Index = n
+
+    # 类型偏离度 d(seqIndex) = 1 − cos(早期画像, 以该片为中心的 k=5 滚动 idf 加权类型向量)。
+    # 距离相对每位演员自己的早期画像 → 左侧(T<0) by construction ≈0 且窄（低偏离窄束）。
+    dist = {}
+    for s in range(1, film_count + 1):
+        win = [valid_seq[j] for j in range(s - 1 - ROLL_HALF, s + ROLL_HALF) if 0 <= j < film_count]
+        dist[s] = round(1 - cosine(early_vector, genre_vector(win)), 3)
 
     outcome = "none"
     align_points = []
     covariates = {}
+    # 对齐锚点：转型者用真 t0；none 用最大上升候选 best_n（其「最接近转型」处），仅供画淡灰背景轨迹。
+    anchor = t0Index if t0Index != -1 else best_n
 
     if t0Index != -1:
         real_idx = t0Index - 1
-        # 获取 T=0 时刻的协变量
+        # outcome（lowflat）：snapback 须同时「回撤够深」且「末段不再上升」，否则 success。
+        pre_vals = [dist[s] for s in range(max(1, t0Index - 3), t0Index) if s in dist]
+        late_vals = [dist[s] for s in range(film_count - 2, film_count + 1) if s in dist]
+        pre_base = sum(pre_vals) / len(pre_vals) if pre_vals else 0.0
+        late = sum(late_vals) / len(late_vals) if late_vals else pre_base
+        peak = max(dist[s] for s in range(t0Index, film_count + 1) if s in dist)
+        gain = peak - pre_base
+        retrace = (peak - late) / gain if gain > 1e-6 else 0.0          # 峰值增益被回吐的比例
+        tail = [(s, dist[s]) for s in range(t0Index + 1, min(film_count, t0Index + 5) + 1) if s in dist]
+        tail_slope = lstsq_slope(tail)                                  # 对齐窗 tau∈[+1,+5] 末段斜率
+        outcome = ("snapback" if retrace >= SNAPBACK_RETRACE and tail_slope <= SNAPBACK_SLOPE_MAX
+                   else "success")
+
+        # 获取 T=0 时刻的协变量（T 窗口导演异质性等）；仅转型者有真 T=0，none 留空。
         window_directors = set([str(m.get('director', '')) for m in seq[max(0, real_idx - 2):real_idx + 3]])
         covariates = {
             "numVotes": int(seq[real_idx]['numVotes']),
             "rating": float(seq[real_idx]['averageRating']),
             "directorHeterogeneity": len(window_directors)
         }
-        # 截取 T-3 到 T+5 的局部熵轨迹（供视图 C 对齐绘制）
-        for i in range(max(0, real_idx - 3), min(film_count, real_idx + 6)):
-            tau = (i + 1) - t0Index
-            align_points.append({"tau": tau, "entropy": entropy_curve[i]["entropy"]})
 
-        # 评判转型结局：t0 触发类型在 t0 之后（含当部）累计出现 ≥ K 次 → 成功转型，否则回弹
-        recur = sum(1 for j in range(real_idx, len(valid_seq)) if t0_genre in valid_seq[j])
-        outcome = "success" if recur >= T0_PERSIST_K else "snapback"
+    # T-3..T+5 对齐点：entropy（视图 B 交叉参照）+ dist（视图 C 新 y 轴）。
+    # 转型者锚在 t0；none 锚在 best_n（伪 T=0），其轨迹仅作淡灰背景上下文（贴近舒适圈低位）。
+    if anchor != -1:
+        for s in range(max(1, anchor - 3), min(film_count, anchor + 5) + 1):
+            align_points.append({"tau": s - anchor,
+                                 "entropy": entropy_curve[s - 1]["entropy"],
+                                 "dist": dist[s]})
 
     alignment_dict[nconst] = {
         "actorId": nconst, "t0Index": t0Index, "outcome": outcome,
@@ -283,7 +354,7 @@ save_json('genres.json', valid_genres)
 save_json('actors.json', list(actors_dict.values()))
 save_json('films.json', films_list)
 save_json('entropy.json', list(entropy_dict.values()))
-save_json('alignment.json', [a for a in alignment_dict.values() if a['t0Index'] != -1])
+save_json('alignment.json', [a for a in alignment_dict.values() if a['points']])
 save_json('markov.json', markov_list)
 
 print("✅ 全部 6 个 JSON 契约文件已成功生成至 public/data/ 目录！")

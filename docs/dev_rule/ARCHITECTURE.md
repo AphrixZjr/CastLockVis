@@ -61,11 +61,11 @@
 1. **清洗 / 规整**：统一演员 id、作品按时间排序生成 `seqIndex (1..N)`、归一类型标签到固定 taxonomy。
 2. **早期画像**：取每位演员前 5 部作品 → IDF 加权类型向量（压低 Drama 等泛在类型）→ 主导早期类型 `dominantEarlyGenre`（取 IDF 最大的标签，非字母序）。
 3. **聚类 + 降维**：早期向量按类型稀有度 IDF 加权后，**直接在 15 维上 KMeans**（k=7，跨种子按 cosine-silhouette 选优）得到 `clusterId`（视图 A 的群落、即联动的 cohort 单位）；再用 **PaCMAP** 仅为散点生成展示用 `projection [x,y]`（不参与聚类，避免在被降维形变的 2D 上聚类）。
-4. **熵曲线**：对每位演员，按滑动窗口在 N=1..30 上算香农熵 → `entropy curve`（视图 B 白线、视图 C 纵轴）。
+4. **熵曲线**：对每位演员，按 EMA 在 N=1..30 上算香农熵 → `entropy curve`（视图 B 白线；亦用于 T=0 检测。视图 C 纵轴已改用类型偏离度 `dist`，熵在 C 仅作交叉参照）。
 5. **马尔可夫矩阵**：按 cohort × 职业阶段(early/mid/late) 统计类型→下一类型转移概率（视图 D）。采用 **M2 软转移**——每部片转成 IDF 归一化的类型权重向量，相邻两片按外积累加，再行归一化，不对耦合片做硬主导选择。
-6. **T=0 对齐**：自动检测每位演员“第一部踏入早期未涉足、且足够特异（IDF≥阈值）的类型”作品，记为 `t0Index`；据此计算对齐坐标 `tau = seqIndex - t0Index`。`outcome (success | snapback | none)` 由**持久性**判定：触发类型在 t0 后累计出现 ≥K 次为 success，否则 snapback（视图 C 的对齐机制）。
+6. **T=0 对齐**：t0 由**熵 onset 变点**判定——首个「短窗(n..n+2)均熵较早期累积基线(1..n-1)上升 ≥ `T0_ONSET_JUMP`」的序号记为 `t0Index`（脱离舒适圈的尝试起点）；据此计算对齐坐标 `tau = seqIndex - t0Index`。每个对齐点带 `dist = 1 − cos(earlyGenreVector, 以该片为中心的 k=5 滚动类型向量)`（类型偏离度，视图 C 纵轴）。`outcome (success | snapback | none)` 由**类型偏离度轨迹**判定（lowflat）：snapback 须同时 (a) 末 3 部偏离度回吐峰值增益 ≥ `SNAPBACK_RETRACE` 且 (b) 对齐窗 `tau∈[+1,+5]` 的 dist 斜率 ≤ `SNAPBACK_SLOPE_MAX`（(b) 杜绝「回落后又回升的轨迹被误染红」），否则 success；未检出 onset 者为 none。判据锚在轨迹上、与视图 C 纵轴同量，并可被聚类的类型语义交叉验证（高内聚簇上右侧类型确实远离早期；success 的 T=0 导演异质性显著高于 snapback，呼应 proposal §76）。
 
-> 检测规则、聚类 k、IDF/持久性阈值等参数集中写在 `pipeline/pipeline_json_expert.py` 顶部常量（`T0_IDF_THRESHOLD` / `T0_PERSIST_K` / `N_CLUSTERS` / `N_SEEDS`），便于复现与调参。
+> 检测规则、聚类 k、onset/回撤/斜率阈值等参数集中写在 `pipeline/pipeline_json_expert.py` 顶部常量（`T0_ONSET_JUMP` / `T0_ONSET_MIN_N` / `ROLL_HALF` / `SNAPBACK_RETRACE` / `SNAPBACK_SLOPE_MAX` / `N_CLUSTERS` / `N_SEEDS`），便于复现与调参。
 
 ## 5. 数据契约（联动的生命线）
 
@@ -79,9 +79,9 @@
 | `genres.json` | 类型 taxonomy 与稳定 key（颜色映射的 key 基准） | 全部 |
 | `actors.json` | 每位演员：`id, name, projection[x,y], clusterId, dominantEarlyGenre, earlyGenreVector, filmCount, t0Index, outcome` | A（点）、联动 cohort 源 |
 | `films.json` | 作品序列：`actorId, seqIndex, title, year, genres[], dominantGenre, rating, numVotes, directorId` | B（流+圆点）、详情面板 |
-| `entropy.json` | 每位演员熵曲线 `{actorId, curve:[{n, entropy}]}` | B（白线）、C（纵轴） |
+| `entropy.json` | 每位演员熵曲线 `{actorId, curve:[{n, entropy}]}` | B（白线）、C（交叉参照） |
 | `markov.json` | 转移矩阵，按 `{cohortId, stage}` 键控 `{genres[], matrix[][]}` | D |
-| `alignment.json` | 对齐轨迹 `{actorId, clusterId, t0Index, outcome, points:[{tau, entropy}], covariatesAtT0:{numVotes, rating, directorHeterogeneity}}` | C |
+| `alignment.json` | 对齐轨迹 `{actorId, clusterId, t0Index, outcome, points:[{tau, entropy, dist}], covariatesAtT0:{numVotes, rating, directorHeterogeneity}}`；`dist` 为类型偏离度(C 纵轴)；`none` 轨迹锚在伪 T=0(最大上升候选)、协变量留空，仅作淡灰背景上下文 | C |
 
 **贯穿全契约的稳定标识符**：`actorId`、`seqIndex`、`tau`(=seqIndex−t0Index)、`clusterId`、
 `dominantGenre`。任何视图新增数据时不得改变这些字段语义，否则联动断裂。

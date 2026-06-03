@@ -6,6 +6,40 @@
   min-height: 0;
 }
 
+/* 带纵轴切换控件的图（视图 C）：控件行 / 图 / 脚注 三行。 */
+.sample-chart--alignment {
+  grid-template-rows: auto 1fr auto;
+}
+
+.sample-chart__controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 0 var(--space-1);
+}
+
+.sample-chart__controls-label {
+  color: var(--color-text-dim);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+}
+
+.sample-axis-toggle {
+  padding: var(--space-1) var(--space-2);
+  border: var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text-dim);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  cursor: pointer;
+}
+
+.sample-axis-toggle.is-active {
+  border-color: var(--color-accent);
+  color: var(--color-text);
+}
+
 .sample-chart svg {
   width: 100%;
   height: 100%;
@@ -132,10 +166,6 @@
   fill: var(--color-border);
 }
 
-.sample-alignment-zone--right {
-  fill: var(--color-success);
-}
-
 .sample-t0-axis {
   stroke: var(--color-accent);
   stroke-width: 1.1;
@@ -161,7 +191,14 @@
 
 .sample-track--snapback {
   stroke: var(--color-snapback);
-  opacity: 0.55;
+  opacity: 0.72;
+}
+
+/* none：未检出转型，淡灰上下文层。绘在彩色分叉线之上薄薄一层，否则会被整片盖住。 */
+.sample-track--none {
+  stroke: var(--color-text-dim);
+  stroke-width: 1;
+  opacity: 0.25;
 }
 
 .sample-markov-cell {
