@@ -55,4 +55,3 @@ export const useVizStore = create<VizState>((set) => ({
   openDetails: () => set({ detailsOpen: true }),
   closeDetails: () => set({ detailsOpen: false }),
 }));
-

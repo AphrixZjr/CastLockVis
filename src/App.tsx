@@ -57,6 +57,13 @@ export function App() {
   const loadState = useDataRuntime();
   const stage = useVizStore((state) => state.markovStage);
   const brushedActorIds = useVizStore((state) => state.brushedActorIds);
+  // 视图 B（River）沿用 main 的 props 驱动：选中态 + spike 回调由 App 提供，
+  // 其余视图（A/C/D、DetailsPanel）自取 store，App 在此保持薄壳。
+  const selectedActorId = useVizStore((state) => state.selectedActorId);
+  const selectedFilmIndex = useVizStore((state) => state.selectedFilmIndex);
+  const selectActor = useVizStore((state) => state.selectActor);
+  const selectSpike = useVizStore((state) => state.selectSpike);
+  const openDetails = useVizStore((state) => state.openDetails);
 
   const metaText = useMemo(() => {
     if (loadState.status !== 'ready') {
@@ -86,7 +93,21 @@ export function App() {
       {
         title: PANEL_TITLES[1],
         legend: <RiverLegend />,
-        content: <RiverSampleView bundle={loadState.bundle} indexes={loadState.indexes} />,
+        content: (
+          <RiverSampleView
+            bundle={loadState.bundle}
+            indexes={loadState.indexes}
+            cohortActorIds={cohortActorIds}
+            isCohortMode={brushedActorIds.size > 0}
+            selectedActorId={selectedActorId}
+            selectedFilmIndex={selectedFilmIndex}
+            onSpikeSelect={(actorId, filmIndex) => {
+              selectActor(actorId);
+              selectSpike(filmIndex);
+              openDetails();
+            }}
+          />
+        ),
       },
       {
         title: PANEL_TITLES[2],
@@ -102,7 +123,16 @@ export function App() {
     ];
 
     return panels;
-  }, [brushedActorIds, loadState, stage]);
+  }, [
+    brushedActorIds,
+    loadState,
+    openDetails,
+    selectActor,
+    selectSpike,
+    selectedActorId,
+    selectedFilmIndex,
+    stage,
+  ]);
 
   return (
     <main className="app-shell">

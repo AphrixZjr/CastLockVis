@@ -274,16 +274,29 @@ export function ClusterSampleView({ actors, genres }: ClusterSampleViewProps) {
         {/* 演员点：形状=群落(cluster)，填色=早期主导类型(genre) */}
         {chart.points.map(({ actor, x, y, tokenIndex, clusterId }) => {
           const isHovered = hoveredActorId === actor.id;
-          const isSelected = selectedActorId === actor.id;
-          const isActive = isHovered || isSelected;
-          const isDimmed = hasBrush && !brushedActorIds.has(actor.id) && !isSelected;
+          // 单击选中的演员（链路 2 起点）：保持高亮，且 brush 激活时不被调暗。
+          const isActorSelected = selectedActorId === actor.id;
+          // 群落框选命中的演员：沿用 main 的 brush 视觉（--selected 描边 + 放大）。
+          const isBrushed = brushedActorIds.has(actor.id);
+          const isActive = isHovered || isActorSelected;
+          const isDimmed = hasBrush && !isBrushed && !isActorSelected;
           return (
             <path
               key={actor.id}
-              d={clusterSymbolPath(clusterId, x, y, isActive ? POINT_R_ACTIVE : POINT_R)}
-              className={`sample-point${isActive ? ' sample-point--active' : ''}${
-                isDimmed ? ' sample-point--dimmed' : ''
-              }`}
+              d={clusterSymbolPath(
+                clusterId,
+                x,
+                y,
+                isActive || isBrushed ? POINT_R_ACTIVE : POINT_R,
+              )}
+              className={[
+                'sample-point',
+                isActive ? 'sample-point--active' : '',
+                isBrushed ? 'sample-point--selected' : '',
+                isDimmed ? 'sample-point--dimmed' : '',
+              ]
+                .filter(Boolean)
+                .join(' ')}
               style={{ fill: `var(--genre-${tokenIndex})` }}
               onMouseEnter={() => setHoveredActorId(actor.id)}
               onMouseLeave={() => setHoveredActorId(null)}
@@ -298,7 +311,7 @@ export function ClusterSampleView({ actors, genres }: ClusterSampleViewProps) {
             y={brushRect.y}
             width={brushRect.w}
             height={brushRect.h}
-            className="sample-brush"
+            className="sample-brush-box"
           />
         )}
       </svg>

@@ -1,21 +1,16 @@
 import { useMemo } from 'react';
-import type { Actor, DataBundle, DataIndexes, Film } from '../../data/types';
-import {
-  getCohortActorIds,
-  getCohortAverageEntropy,
-  getCohortGenreBands,
-} from '../../store/selectors';
-import { useVizStore } from '../../store/useVizStore';
-import {
-  buildGenreTokenLookup,
-  linearScale,
-  pathFromBands,
-  polylinePath,
-} from './chartUtils';
+import { averageEntropyCurves } from '../../lib/aggregate';
+import type { DataBundle, DataIndexes, EntropyCurve, EntropyPoint } from '../../data/types';
+import { buildGenreTokenLookup, linearScale, pathFromBands, polylinePath } from './chartUtils';
 
 interface RiverSampleViewProps {
   bundle: DataBundle;
   indexes: DataIndexes;
+  cohortActorIds: string[];
+  isCohortMode: boolean;
+  selectedActorId: string | null;
+  selectedFilmIndex: number | null;
+  onSpikeSelect: (actorId: string, filmIndex: number) => void;
 }
 
 interface SeriesBand {
@@ -24,92 +19,43 @@ interface SeriesBand {
   points: Array<{ x: number; y0: number; y1: number }>;
 }
 
-interface FilmDot {
-  film: Film;
-  x: number;
-  y: number;
-  r: number;
-}
-
-interface SingleChart {
-  mode: 'single';
-  sampleActor: Actor;
-  maxN: number;
-  streamTop: number;
-  streamBottom: number;
-  ratingTop: number;
-  ratingBottom: number;
-  series: SeriesBand[];
-  entropyPath: string;
-  dots: FilmDot[];
-  highlightFilms: Array<{ film: Film; x: number; y: number }>;
-}
-
-interface CohortChart {
-  mode: 'cohort';
-  cohortSize: number;
-  maxN: number;
-  streamTop: number;
-  streamBottom: number;
-  series: SeriesBand[];
-  entropyPath: string;
-}
-
-type RiverChart = SingleChart | CohortChart;
-
 const WIDTH = 620;
 const HEIGHT = 320;
 const MARGIN = { top: 16, right: 16, bottom: 22, left: 32 };
 const WINDOW_SIZE = 3;
-const MAX_SEQ = 30; // 与 entropy.json 的 n=1..30 对齐
+const MAX_COHORT_N = 30;
+const CORE_GENRE_COUNT = 6;
 
-export function RiverSampleView({ bundle, indexes }: RiverSampleViewProps) {
-  const brushedActorIds = useVizStore((state) => state.brushedActorIds);
-  const selectedActorId = useVizStore((state) => state.selectedActorId);
-  const selectedFilmIndex = useVizStore((state) => state.selectedFilmIndex);
-  const selectActor = useVizStore((state) => state.selectActor);
-  const selectSpike = useVizStore((state) => state.selectSpike);
-  const openDetails = useVizStore((state) => state.openDetails);
-  const closeDetails = useVizStore((state) => state.closeDetails);
-
-  // 仅清除尖峰（作品序号）与详情，保留当前演员——B 仍停在该演员。
-  const clearSpike = () => {
-    selectSpike(null);
-    closeDetails();
-  };
-
-  const chart = useMemo<RiverChart | null>(() => {
-    // 优先级：单选某演员（链路：A 单击 / B 尖峰）> 群落框选（链路 1）> 默认演员。
-    if (selectedActorId !== null) {
-      return buildSingleChart(bundle, indexes, selectedActorId);
-    }
-    if (brushedActorIds.size > 0) {
-      const cohortActorIds = getCohortActorIds(
-        bundle.actors.map((actor) => actor.id),
-        brushedActorIds,
-      );
+export function RiverSampleView({
+  bundle,
+  indexes,
+  cohortActorIds,
+  isCohortMode,
+  selectedActorId,
+  selectedFilmIndex,
+  onSpikeSelect,
+}: RiverSampleViewProps) {
+  const chart = useMemo(() => {
+    if (isCohortMode) {
       return buildCohortChart(bundle, indexes, cohortActorIds);
     }
-    return buildSingleChart(bundle, indexes, null);
-  }, [bundle, indexes, brushedActorIds, selectedActorId]);
+    return buildSingleActorChart(bundle, indexes);
+  }, [bundle, cohortActorIds, indexes, isCohortMode]);
 
   if (!chart) {
-    return <div className="sample-chart__empty">样例演员缺少 films/entropy 数据，无法渲染。</div>;
+    return (
+      <div className="sample-chart__empty">
+        {isCohortMode
+          ? '当前选区缺少 cohort 数据，无法渲染平均河流。'
+          : '样例演员缺少 films/entropy 数据，无法渲染。'}
+      </div>
+    );
   }
 
   return (
     <figure className="sample-chart sample-chart--river">
       <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} aria-label="Career River static sample">
-        {/* 点击空白背景清除尖峰/详情，但保留当前演员 */}
-        <rect
-          x={0}
-          y={0}
-          width={WIDTH}
-          height={HEIGHT}
-          className="sample-bg"
-          rx={8}
-          onClick={clearSpike}
-        />
+        <rect x={0} y={0} width={WIDTH} height={HEIGHT} className="sample-bg" rx={8} />
 
         <line
           x1={MARGIN.left}
@@ -118,15 +64,13 @@ export function RiverSampleView({ bundle, indexes }: RiverSampleViewProps) {
           y2={chart.streamBottom}
           className="sample-axis"
         />
-        {chart.mode === 'single' && (
-          <line
-            x1={MARGIN.left}
-            y1={chart.ratingBottom}
-            x2={WIDTH - MARGIN.right}
-            y2={chart.ratingBottom}
-            className="sample-axis sample-axis--subtle"
-          />
-        )}
+        <line
+          x1={MARGIN.left}
+          y1={chart.ratingBottom}
+          x2={WIDTH - MARGIN.right}
+          y2={chart.ratingBottom}
+          className="sample-axis sample-axis--subtle"
+        />
 
         {chart.series.map((band) => (
           <path
@@ -143,83 +87,96 @@ export function RiverSampleView({ bundle, indexes }: RiverSampleViewProps) {
 
         <path d={chart.entropyPath} className="sample-entropy-line" />
 
-        {chart.mode === 'single' &&
-          chart.dots.map(({ film, x, y, r }) => (
-            <circle
-              key={`${film.actorId}-${film.seqIndex}`}
-              cx={x}
-              cy={y}
-              r={r}
-              className="sample-film-dot sample-film-dot--clickable"
-              onClick={(event) => {
-                event.stopPropagation();
-                const isSelected =
-                  selectedActorId === film.actorId && selectedFilmIndex === film.seqIndex;
-                if (isSelected) {
-                  clearSpike(); // 再点同一尖峰：清除作品序号/详情，保留演员
-                  return;
+        {chart.dots.map(({ id, x, y, r }) => (
+          <circle key={id} cx={x} cy={y} r={r} className="sample-film-dot" />
+        ))}
+
+        {chart.spikes.map(({ id, actorId, seqIndex, x, y }) => {
+          const isActive = selectedActorId === actorId && selectedFilmIndex === seqIndex;
+          return (
+            <g
+              key={`peak-${id}`}
+              className="sample-spike-hit"
+              role="button"
+              aria-label={`Select entropy spike N${seqIndex}`}
+              tabIndex={0}
+              onClick={() => onSpikeSelect(actorId, seqIndex)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  onSpikeSelect(actorId, seqIndex);
                 }
-                selectActor(film.actorId);
-                selectSpike(film.seqIndex);
-                openDetails();
               }}
             >
-              <title>{`N${film.seqIndex} · rating ${film.rating} · votes ${film.numVotes}`}</title>
-            </circle>
-          ))}
-
-        {/* 选中尖峰高亮环（与链路 2 联动一致） */}
-        {chart.mode === 'single' &&
-          selectedActorId === chart.sampleActor.id &&
-          chart.dots
-            .filter((dot) => dot.film.seqIndex === selectedFilmIndex)
-            .map((dot) => (
               <circle
-                key={`selected-${dot.film.seqIndex}`}
-                cx={dot.x}
-                cy={dot.y}
-                r={9}
-                className="sample-peak-ring sample-peak-ring--selected"
+                cx={x}
+                cy={y}
+                r={7.5}
+                className={`sample-peak-ring ${isActive ? 'sample-peak-ring--active' : ''}`}
               />
-            ))}
-
-        {chart.mode === 'single' &&
-          chart.highlightFilms.map(({ film, x, y }) => (
-            <g key={`peak-${film.seqIndex}`}>
-              <circle cx={x} cy={y} r={7.5} className="sample-peak-ring" />
+              <circle cx={x} cy={y} r={2.6} className="sample-peak-core" />
               <text x={x} y={y - 11} className="sample-peak-label" textAnchor="middle">
-                N{film.seqIndex}
+                N{seqIndex}
               </text>
             </g>
-          ))}
+          );
+        })}
       </svg>
 
-      <figcaption className="sample-chart__caption">
-        {chart.mode === 'cohort'
-          ? `群落平均态 · cohort n=${chart.cohortSize} · 平均熵衰减 + 平均类型流带`
-          : `单演员 ${chart.sampleActor.name} · N=${chart.maxN} · 框选 A 切换群落平均态`}
-      </figcaption>
+      <figcaption className="sample-chart__caption">{chart.caption}</figcaption>
     </figure>
   );
 }
 
-function buildSingleChart(
-  bundle: DataBundle,
-  indexes: DataIndexes,
-  targetActorId: string | null,
-): SingleChart | null {
-  let sampleActor =
-    targetActorId !== null ? indexes.actorsById.get(targetActorId) ?? null : null;
-  if (!sampleActor) {
-    const actorsByFilmCount = [...bundle.actors].sort(
-      (left, right) => right.filmCount - left.filmCount,
-    );
-    sampleActor =
-      actorsByFilmCount.find((actor) => actor.id === 'nm0000129') ??
-      actorsByFilmCount.find((actor) => actor.filmCount >= 18) ??
-      actorsByFilmCount[0] ??
-      null;
-  }
+interface RiverDot {
+  id: string;
+  seqIndex: number;
+  x: number;
+  y: number;
+  r: number;
+  rating: number;
+}
+
+interface RiverHighlight {
+  id: string;
+  actorId: string;
+  seqIndex: number;
+  x: number;
+  y: number;
+}
+
+interface RiverChart {
+  maxN: number;
+  streamTop: number;
+  streamBottom: number;
+  ratingTop: number;
+  ratingBottom: number;
+  series: SeriesBand[];
+  entropyPath: string;
+  dots: RiverDot[];
+  spikes: RiverHighlight[];
+  caption: string;
+}
+
+function getChartLayout() {
+  return {
+    innerLeft: MARGIN.left,
+    innerRight: WIDTH - MARGIN.right,
+    streamTop: MARGIN.top + 8,
+    streamBottom: HEIGHT - 114,
+    ratingTop: HEIGHT - 92,
+    ratingBottom: HEIGHT - 30,
+  };
+}
+
+function buildSingleActorChart(bundle: DataBundle, indexes: DataIndexes): RiverChart | null {
+  const actorsByFilmCount = [...bundle.actors].sort(
+    (left, right) => right.filmCount - left.filmCount,
+  );
+  const sampleActor =
+    actorsByFilmCount.find((actor) => actor.id === 'nm0000129') ??
+    actorsByFilmCount.find((actor) => actor.filmCount >= 18) ??
+    actorsByFilmCount[0];
 
   if (!sampleActor) {
     return null;
@@ -232,12 +189,8 @@ function buildSingleChart(
   }
 
   const maxN = films[films.length - 1].seqIndex;
-  const innerLeft = MARGIN.left;
-  const innerRight = WIDTH - MARGIN.right;
-  const streamTop = MARGIN.top + 8;
-  const streamBottom = HEIGHT - 114;
-  const ratingTop = HEIGHT - 92;
-  const ratingBottom = HEIGHT - 30;
+  const { innerLeft, innerRight, streamTop, streamBottom, ratingTop, ratingBottom } =
+    getChartLayout();
 
   const genreTokenLookup = buildGenreTokenLookup(bundle.genres);
 
@@ -248,7 +201,7 @@ function buildSingleChart(
 
   const coreGenres = [...dominantCounts.entries()]
     .sort((left, right) => right[1] - left[1])
-    .slice(0, 6)
+    .slice(0, CORE_GENRE_COUNT)
     .map(([genre]) => genre);
 
   const seriesKeys = [...coreGenres, 'Other'];
@@ -257,7 +210,7 @@ function buildSingleChart(
       key,
       {
         key,
-        tokenIndex: key === 'Other' ? 10 : genreTokenLookup.get(key) ?? 1,
+        tokenIndex: key === 'Other' ? 10 : (genreTokenLookup.get(key) ?? 1),
         points: [],
       },
     ]),
@@ -284,7 +237,8 @@ function buildSingleChart(
     let cumulative = 0;
 
     for (const key of seriesKeys) {
-      const value = key === 'Other' ? otherCount / windowTotal : (proportions.get(key) ?? 0) / windowTotal;
+      const value =
+        key === 'Other' ? otherCount / windowTotal : (proportions.get(key) ?? 0) / windowTotal;
       const y0 = linearScale(cumulative, 0, 1, streamBottom, streamTop);
       cumulative += value;
       const y1 = linearScale(cumulative, 0, 1, streamBottom, streamTop);
@@ -292,15 +246,18 @@ function buildSingleChart(
     }
   }
 
-  const maxEntropy = Math.max(...entropy.curve.map((point) => point.entropy), 0.01);
+  const entropyPoints = entropy.curve.filter((point) => point.n <= maxN);
+  const maxEntropy = Math.max(...entropyPoints.map((point) => point.entropy), 0.01);
   const entropyPath = polylinePath(
-    entropy.curve
-      .filter((point) => point.n <= maxN)
-      .map((point) => ({
-        x: linearScale(point.n, 1, maxN, innerLeft, innerRight),
-        y: linearScale(point.entropy, 0, maxEntropy, streamBottom, streamTop),
-      })),
+    entropyPoints.map((point) => ({
+      x: linearScale(point.n, 1, maxN, innerLeft, innerRight),
+      y: linearScale(point.entropy, 0, maxEntropy, streamBottom, streamTop),
+    })),
   );
+  const spikes = pickEntropySpikes(entropyPoints, sampleActor.id, (point) => ({
+    x: linearScale(point.n, 1, maxN, innerLeft, innerRight),
+    y: linearScale(point.entropy, 0, maxEntropy, streamBottom, streamTop),
+  }));
 
   const voteValues = films.map((film) => film.numVotes);
   const voteMin = Math.min(...voteValues);
@@ -309,16 +266,16 @@ function buildSingleChart(
   const dots = films.map((film) => {
     const voteRatio = voteMax === voteMin ? 0.5 : (film.numVotes - voteMin) / (voteMax - voteMin);
     return {
-      film,
+      id: `${film.actorId}-${film.seqIndex}`,
+      seqIndex: film.seqIndex,
       x: linearScale(film.seqIndex, 1, maxN, innerLeft, innerRight),
       y: linearScale(film.rating, 0, 10, ratingBottom, ratingTop),
       r: 2 + Math.sqrt(voteRatio) * 5,
+      rating: film.rating,
     };
   });
 
   return {
-    mode: 'single',
-    sampleActor,
     maxN,
     streamTop,
     streamBottom,
@@ -327,7 +284,11 @@ function buildSingleChart(
     series: [...series.values()],
     entropyPath,
     dots,
-    highlightFilms: pickPeakFilms(dots),
+    spikes,
+    caption:
+      spikes.length > 0
+        ? `${sampleActor.name} · films=${films.length} · entropy local peaks clickable`
+        : `${sampleActor.name} · films=${films.length} · no local entropy peak`,
   };
 }
 
@@ -335,70 +296,242 @@ function buildCohortChart(
   bundle: DataBundle,
   indexes: DataIndexes,
   cohortActorIds: string[],
-): CohortChart | null {
-  const avgEntropy = getCohortAverageEntropy(bundle, cohortActorIds);
-  if (avgEntropy.length === 0) {
+): RiverChart | null {
+  const actorSet = new Set(cohortActorIds);
+  const cohortFilmsByActor = cohortActorIds
+    .map((actorId) => indexes.filmsByActor.get(actorId) ?? [])
+    .filter((films) => films.length > 0);
+
+  if (actorSet.size === 0 || cohortFilmsByActor.length === 0) {
     return null;
   }
 
-  const maxN = Math.min(MAX_SEQ, Math.max(...avgEntropy.map((point) => point.n)));
+  const entropyCurves = bundle.entropy.filter((curve) => actorSet.has(curve.actorId));
+  const averageEntropy = averageEntropyCurves(entropyCurves).slice(0, MAX_COHORT_N);
+  if (averageEntropy.length === 0) {
+    return null;
+  }
+
+  const maxFilmN = Math.max(...cohortFilmsByActor.map((films) => films[films.length - 1].seqIndex));
+  const maxN = Math.min(MAX_COHORT_N, maxFilmN, averageEntropy[averageEntropy.length - 1].n);
   if (maxN < 1) {
     return null;
   }
 
-  const innerLeft = MARGIN.left;
-  const innerRight = WIDTH - MARGIN.right;
-  const streamTop = MARGIN.top + 8;
-  // 群落态无评分圆点，流带可占满纵向空间。
-  const streamBottom = HEIGHT - 30;
-
+  const { innerLeft, innerRight, streamTop, streamBottom, ratingTop, ratingBottom } =
+    getChartLayout();
   const genreTokenLookup = buildGenreTokenLookup(bundle.genres);
-  const bands = getCohortGenreBands(indexes, cohortActorIds, maxN);
+  const dominantCounts = new Map<string, number>();
 
-  const series: SeriesBand[] = bands.series.map((band) => ({
-    key: band.key,
-    tokenIndex: band.key === 'Other' ? 10 : genreTokenLookup.get(band.key) ?? 1,
-    points: [],
-  }));
+  for (const films of cohortFilmsByActor) {
+    for (const film of films.slice(0, maxN)) {
+      dominantCounts.set(film.dominantGenre, (dominantCounts.get(film.dominantGenre) ?? 0) + 1);
+    }
+  }
+
+  const coreGenres = [...dominantCounts.entries()]
+    .sort((left, right) => right[1] - left[1])
+    .slice(0, CORE_GENRE_COUNT)
+    .map(([genre]) => genre);
+  const coreGenreSet = new Set(coreGenres);
+
+  const seriesKeys = [...coreGenres, 'Other'];
+  const series = new Map<string, SeriesBand>(
+    seriesKeys.map((key) => [
+      key,
+      {
+        key,
+        tokenIndex: key === 'Other' ? 10 : (genreTokenLookup.get(key) ?? 1),
+        points: [],
+      },
+    ]),
+  );
+  const averageDots: RiverDot[] = [];
 
   for (let n = 1; n <= maxN; n += 1) {
+    const totals = new Map<string, number>(seriesKeys.map((key) => [key, 0]));
+    const ratings: number[] = [];
+    const votes: number[] = [];
+    let actorCountAtN = 0;
+
+    for (const films of cohortFilmsByActor) {
+      if (films.length < n) {
+        continue;
+      }
+      actorCountAtN += 1;
+      const windowFilms = films.slice(Math.max(0, n - WINDOW_SIZE), n);
+      const windowTotal = windowFilms.length || 1;
+      let otherCount = 0;
+
+      for (const film of windowFilms) {
+        if (coreGenreSet.has(film.dominantGenre)) {
+          totals.set(film.dominantGenre, (totals.get(film.dominantGenre) ?? 0) + 1 / windowTotal);
+        } else {
+          otherCount += 1;
+        }
+      }
+      totals.set('Other', (totals.get('Other') ?? 0) + otherCount / windowTotal);
+
+      const filmAtN = films[n - 1];
+      ratings.push(filmAtN.rating);
+      votes.push(filmAtN.numVotes);
+    }
+
+    if (actorCountAtN === 0) {
+      continue;
+    }
+
     const x = linearScale(n, 1, maxN, innerLeft, innerRight);
     let cumulative = 0;
-    bands.series.forEach((band, index) => {
-      const value = band.proportions[n - 1];
+
+    for (const key of seriesKeys) {
+      const value = (totals.get(key) ?? 0) / actorCountAtN;
       const y0 = linearScale(cumulative, 0, 1, streamBottom, streamTop);
       cumulative += value;
       const y1 = linearScale(cumulative, 0, 1, streamBottom, streamTop);
-      series[index].points.push({ x, y0, y1 });
+      series.get(key)?.points.push({ x, y0, y1 });
+    }
+
+    const meanRating = ratings.reduce((sum, value) => sum + value, 0) / ratings.length;
+    const meanVotes = votes.reduce((sum, value) => sum + value, 0) / votes.length;
+    averageDots.push({
+      id: `cohort-${n}`,
+      seqIndex: n,
+      x,
+      y: linearScale(meanRating, 0, 10, ratingBottom, ratingTop),
+      r: Math.max(2.2, Math.min(6.5, 2 + Math.sqrt(meanVotes / 100000))),
+      rating: meanRating,
     });
   }
 
-  const maxEntropy = Math.max(...avgEntropy.map((point) => point.entropy), 0.01);
+  const maxEntropy = Math.max(...averageEntropy.map((point) => point.entropy), 0.01);
   const entropyPath = polylinePath(
-    avgEntropy
+    averageEntropy
       .filter((point) => point.n <= maxN)
       .map((point) => ({
         x: linearScale(point.n, 1, maxN, innerLeft, innerRight),
         y: linearScale(point.entropy, 0, maxEntropy, streamBottom, streamTop),
       })),
   );
+  const spikes = pickEntropySpikes(
+    averageEntropy.filter((point) => point.n <= maxN),
+    null,
+    (point) => ({
+      x: linearScale(point.n, 1, maxN, innerLeft, innerRight),
+      y: linearScale(point.entropy, 0, maxEntropy, streamBottom, streamTop),
+    }),
+    (point) => pickRepresentativeSpikeActor(bundle, indexes, cohortActorIds, point.n),
+  );
 
   return {
-    mode: 'cohort',
-    cohortSize: cohortActorIds.length,
     maxN,
     streamTop,
     streamBottom,
-    series,
+    ratingTop,
+    ratingBottom,
+    series: [...series.values()],
     entropyPath,
+    dots: averageDots,
+    spikes,
+    caption:
+      spikes.length > 0
+        ? `cohort average mode · actors=${actorSet.size} · local peaks choose representative actor`
+        : `cohort average mode · actors=${actorSet.size} · no local entropy peak`,
   };
 }
 
-function pickPeakFilms(dots: FilmDot[]): Array<{ film: Film; x: number; y: number }> {
-  if (dots.length <= 3) {
-    return dots.map(({ film, x, y }) => ({ film, x, y }));
+function pickEntropySpikes(
+  points: EntropyPoint[],
+  actorId: string | null,
+  positionForPoint: (point: EntropyPoint) => { x: number; y: number },
+  actorForPoint?: (point: EntropyPoint) => string | null,
+): RiverHighlight[] {
+  if (points.length === 0) {
+    return [];
   }
 
-  const sorted = [...dots].sort((left, right) => right.film.rating - left.film.rating);
-  return sorted.slice(0, 3).map(({ film, x, y }) => ({ film, x, y }));
+  const candidates = points
+    .map((point, index) => {
+      const previous = points[index - 1];
+      const next = points[index + 1];
+      if (!previous || !next) {
+        return null;
+      }
+
+      const isLocalPeak = point.entropy > previous.entropy && point.entropy >= next.entropy;
+      if (!isLocalPeak) {
+        return null;
+      }
+
+      return {
+        point,
+        prominence: point.entropy - Math.max(previous.entropy, next.entropy),
+      };
+    })
+    .filter(
+      (candidate): candidate is { point: EntropyPoint; prominence: number } => candidate !== null,
+    )
+    .filter((candidate) => candidate.prominence > 0)
+    .sort((left, right) => right.prominence - left.prominence)
+    .slice(0, 3);
+
+  return candidates
+    .map(({ point }) => {
+      const resolvedActorId = actorForPoint?.(point) ?? actorId;
+      if (!resolvedActorId) {
+        return null;
+      }
+      const { x, y } = positionForPoint(point);
+      return {
+        id: `${resolvedActorId}-${point.n}`,
+        actorId: resolvedActorId,
+        seqIndex: point.n,
+        x,
+        y,
+      };
+    })
+    .filter((entry): entry is RiverHighlight => entry !== null);
+}
+
+function pickRepresentativeSpikeActor(
+  bundle: DataBundle,
+  indexes: DataIndexes,
+  cohortActorIds: string[],
+  seqIndex: number,
+): string | null {
+  let bestActorId: string | null = null;
+  let bestProminence = Number.NEGATIVE_INFINITY;
+
+  for (const actorId of cohortActorIds) {
+    const films = indexes.filmsByActor.get(actorId) ?? [];
+    if (films.length < seqIndex) {
+      continue;
+    }
+
+    const curve = bundle.entropy.find((entry) => entry.actorId === actorId);
+    if (!curve) {
+      continue;
+    }
+
+    const prominence = entropyPeakProminenceAt(curve, seqIndex);
+    if (prominence > bestProminence) {
+      bestProminence = prominence;
+      bestActorId = actorId;
+    }
+  }
+
+  return bestActorId;
+}
+
+function entropyPeakProminenceAt(curve: EntropyCurve, seqIndex: number): number {
+  const current = curve.curve.find((point) => point.n === seqIndex)?.entropy;
+  const previous = curve.curve.find((point) => point.n === seqIndex - 1)?.entropy;
+  const next = curve.curve.find((point) => point.n === seqIndex + 1)?.entropy;
+  if (current === undefined || previous === undefined || next === undefined) {
+    return Number.NEGATIVE_INFINITY;
+  }
+  if (current <= previous || current < next) {
+    return Number.NEGATIVE_INFINITY;
+  }
+  return current - Math.max(previous, next);
 }
