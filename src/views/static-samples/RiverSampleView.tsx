@@ -36,11 +36,15 @@ export function RiverSampleView({
   onSpikeSelect,
 }: RiverSampleViewProps) {
   const chart = useMemo(() => {
+    // 单击 A 中演员（链路 2）优先在 B 显示该演员；其次才是框选群落平均态。
+    if (selectedActorId !== null) {
+      return buildSingleActorChart(bundle, indexes, selectedActorId);
+    }
     if (isCohortMode) {
       return buildCohortChart(bundle, indexes, cohortActorIds);
     }
-    return buildSingleActorChart(bundle, indexes);
-  }, [bundle, cohortActorIds, indexes, isCohortMode]);
+    return buildSingleActorChart(bundle, indexes, null);
+  }, [bundle, cohortActorIds, indexes, isCohortMode, selectedActorId]);
 
   if (!chart) {
     return (
@@ -169,11 +173,19 @@ function getChartLayout() {
   };
 }
 
-function buildSingleActorChart(bundle: DataBundle, indexes: DataIndexes): RiverChart | null {
+function buildSingleActorChart(
+  bundle: DataBundle,
+  indexes: DataIndexes,
+  targetActorId: string | null,
+): RiverChart | null {
   const actorsByFilmCount = [...bundle.actors].sort(
     (left, right) => right.filmCount - left.filmCount,
   );
+  // 选中演员优先；未选中（targetActorId=null）时回退到演示样例演员。
+  const selectedActor =
+    targetActorId !== null ? (indexes.actorsById.get(targetActorId) ?? null) : null;
   const sampleActor =
+    selectedActor ??
     actorsByFilmCount.find((actor) => actor.id === 'nm0000129') ??
     actorsByFilmCount.find((actor) => actor.filmCount >= 18) ??
     actorsByFilmCount[0];
