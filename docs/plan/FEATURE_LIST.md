@@ -37,8 +37,8 @@
 - **F0.5** UMAP 降维 + KMeans 8 群落 → `projection[x,y]` + `clusterId`（联动 cohort 单位）。✅
 - **F0.6** 分阶段（early/mid/late）群落转移矩阵（视图 D，按 `clusterId` 键控）。✅
 - **F0.7** T=0 对齐检测：t0 用**熵 onset 变点**（`T0_ONSET_JUMP`）；`outcome` 用**类型偏离度轨迹**（lowflat：末段回吐峰值增益 ≥ `SNAPBACK_RETRACE` **且** 末段斜率 ≤ `SNAPBACK_SLOPE_MAX` → snapback；否则 success；未检出 → none）。`points[{tau,entropy,dist}]`（`dist` = k=5 滚动类型偏离度，C 纵轴）、`covariatesAtT0`。当前分布 success/snapback/none ≈ 856/153/148。✅
-- **F0.8 ⚠️ 待修正（P1）** `films.title` 当前存的是 `tconst`（tt 编号）而非人类可读片名；详情面板需要可读标题时，需在 `clean.py` 引入 `primaryTitle` 后重跑。
-- **F0.9 ⚠️ 待对齐（P1）** `directorHeterogeneity` 仅存在于 `alignment.covariatesAtT0`，`films.json` 无逐片导演异质性；视图 C 全局过滤器以 T=0 协变量为准（与契约一致），不要求逐片字段。
+- **F0.8** `clean.py` / `clean_expert.py` 已引入 IMDb `primaryTitle`，`pipeline_json*.py` 生成 `films.title` 时优先使用可读片名、旧 CSV 无该列时回退 `tconst`；用带 `primaryTitle` 的 Step 1 CSV 重跑后详情面板即可显示可读标题。✅
+- **F0.9** `films.json` 已新增逐片 `directorHeterogeneity`（当前作品 ±2 序列窗口内导演集合大小），详情面板展示当前作品局部导演异质性；视图 C 全局过滤器仍按 `alignment.covariatesAtT0` 的 T=0 协变量重分层。✅
 - **F0.10 ⚠️ 联动粒度说明（P0 设计约束）** `markov.json` 按**预计算 `clusterId`** 键控；A→D 联动在**群落粒度**生效（brush 选区映射到其覆盖的 cluster），而非任意子集实时重算矩阵。前端联动须遵此粒度。
 
 ---

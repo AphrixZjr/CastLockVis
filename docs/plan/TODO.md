@@ -86,14 +86,14 @@
 
 ## S5 · 通用控件、打磨与部署（P0–P1 · 第一阶段收尾）
 
-- [ ] **F7.2 / F7.3** `Legend` + `Tooltip` 统一组件，各视图复用（现为各视图内联 figcaption + PanelLegends，未抽通用件）
+- [x] **F7.2 / F7.3** `Legend` + `Tooltip` 统一组件，各视图复用：新增 `components/common/ChartLegend`、`GenreColorLegend`、`ChartTooltip`；四视图图例与底部 hover/状态提示均改为通用组件承载
 - [~] **F7.4 / F7.5 / F7.6** `controls/Slider` `controls/Toggle` `controls/BrushLayer` 抽成通用控件：`controls/Toggle` + `controls/RangeSlider` 已抽；BrushLayer 现内联于 ClusterView，待抽成通用件
-- [ ] **F1.6** 响应式与最小可用宽度
-- [ ] **F8.5 (P1)** 联动可发现性：当前队列说明文案 / 触发提示
+- [x] **F1.6** 响应式与最小可用宽度：新增全局最小宽度与布局尺寸 token；桌面双列、中宽单列、窄屏保持 `--app-min-width` 横向可滚动；面板标题/图例/tooltip/过滤器/详情面板均补充换行、最小高度与小屏布局规则
+- [x] **F8.5 (P1)** 联动可发现性：新增 `InteractionGuide` 联动状态条，实时显示 A→B/D cohort 队列、A/B→C 选中演员/详情状态、C 控制变量过滤状态，并给出每条链路的触发入口提示
 - [x] **F3.5 (P1)** ClusterView 群落 hull / 密度底纹（已做凸包 hull + 每簇图标；密度底纹未做）
 - [x] **F10.1** `vite.config.ts` 设 `base`，确认 `dist/` 含 `data/*.json`
-- [ ] **F10.2** GitHub Actions：build → upload → deploy-pages
-- [ ] **F0.8 / F0.9 (P1)** 如需可读片名：`clean.py` 引入 `primaryTitle` 重跑流水线
+- [x] **F10.2** GitHub Actions：新增 Pages workflow，push main / 手动触发后执行 `npm ci` → `npm run build` → upload `dist/` → deploy-pages
+- [x] **F0.8 / F0.9 (P1)** `clean.py`/`clean_expert.py` 已引入 `primaryTitle`，pipeline 优先写可读 `films.title`；`films.json` 新增逐片 `directorHeterogeneity`，详情面板展示当前作品局部导演异质性
 
 **验收**：Pages 部署成功，子路径下静态资源与数据可达，三联动在线可用。
 

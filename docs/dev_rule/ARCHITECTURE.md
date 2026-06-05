@@ -78,7 +78,7 @@
 | --- | --- | --- |
 | `genres.json` | 类型 taxonomy 与稳定 key（颜色映射的 key 基准） | 全部 |
 | `actors.json` | 每位演员：`id, name, projection[x,y], clusterId, dominantEarlyGenre, earlyGenreVector, filmCount, t0Index, outcome` | A（点）、联动 cohort 源 |
-| `films.json` | 作品序列：`actorId, seqIndex, title, year, genres[], dominantGenre, rating, numVotes, directorId` | B（流+圆点）、详情面板 |
+| `films.json` | 作品序列：`actorId, seqIndex, title, year, genres[], dominantGenre, rating, numVotes, directorId, directorHeterogeneity` | B（流+圆点）、详情面板 |
 | `entropy.json` | 每位演员熵曲线 `{actorId, curve:[{n, entropy}]}` | B（白线）、C（交叉参照） |
 | `markov.json` | 转移矩阵，按 `{cohortId, stage}` 键控 `{genres[], matrix[][]}` | D |
 | `alignment.json` | 对齐轨迹 `{actorId, clusterId, t0Index, outcome, points:[{tau, entropy, dist}], covariatesAtT0:{numVotes, rating, directorHeterogeneity}}`；`dist` 为类型偏离度(C 纵轴)；`none` 轨迹锚在伪 T=0(最大上升候选)、协变量留空，仅作淡灰背景上下文 | C |
