@@ -60,16 +60,16 @@ pip install -r pipeline/requirements.txt
 两步生成数据契约：
 
 ```bash
-# 1) 清洗（需先把 IMDb 原始 tsv.gz 放到 pipeline/imdb_data/，见 clean.py 顶部注释）
-#    产出 imdb_cleaned_flat.csv
-python pipeline/clean.py
+# 1) 专家清洗（需先把 IMDb 原始 tsv.gz 放到 pipeline/imdb_data/，见 clean_expert.py 顶部注释）
+#    产出 imdb_cleaned_flat.csv（含 primaryTitle / directorName）
+python pipeline/clean_expert.py
 
 # 2) 特征工程 + 降维/聚类/熵/马尔可夫/T=0 对齐 → public/data/*.json
-python pipeline/pipeline_json.py
+python pipeline/pipeline_json_expert.py
 ```
 
-> 原始 IMDb 数据集体积大且不入库（见 `.gitignore`）；`public/original_data/imdb_cleaned_flat.csv`
-> 为已清洗的中间产物，可直接喂给第 2 步。
+> 原始 IMDb 数据集体积大且不入库（见 `.gitignore`）；第 1 步产出的 `imdb_cleaned_flat.csv`
+> 同样不入库，作为第 2 步的中间产物。
 
 ---
 

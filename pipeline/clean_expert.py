@@ -1,12 +1,13 @@
-"""专家知识驱动的数据清洗（逐步演进版）。
+"""专家知识驱动的数据清洗（Step 1）。
 
-本脚本是 clean.py 的演进替代：在保持产出 CSV **schema 完全一致** 的前提下，
-逐步引入关于电影工业的领域专家知识，剔除会污染聚类与时序分析的噪声。
-每完成一步即可运行 `python pipeline/pipeline_json.py` 复算 public/data/*.json 检验效果。
+本脚本引入关于电影工业的领域专家知识，剔除会污染聚类与时序分析的噪声，
+产出展平后的 CSV 供 Step 2（pipeline_json_expert.py）按列名消费。
+运行后可执行 `python pipeline/pipeline_json_expert.py` 复算 public/data/*.json 检验效果。
 
-产出列（与 clean.py 一致，供 pipeline_json.py 按列名消费）：
+产出列（供 pipeline_json_expert.py 按列名消费）：
     tconst, ordering, nconst, category, titleType, startYear,
-    primaryTitle, genres, averageRating, numVotes, primaryName, birthYear, director
+    primaryTitle, genres, averageRating, numVotes, primaryName, birthYear,
+    director, directorName
 
 == 已实现的专家知识步骤 ==
 [Step 1] 当代好莱坞（New Hollywood）框定：
@@ -33,8 +34,8 @@ import pandas as pd
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.dirname(SCRIPT_DIR)
 DATA_DIR = os.path.join(SCRIPT_DIR, 'imdb_data')
-# 与 pipeline_json.py 的 INPUT_CSV（工作目录下的 imdb_cleaned_flat.csv）对接：
-# 落盘到仓库根目录，便于从仓库根运行 `python pipeline/pipeline_json.py`。
+# 与 pipeline_json_expert.py 的 INPUT_CSV（工作目录下的 imdb_cleaned_flat.csv）对接：
+# 落盘到仓库根目录，便于从仓库根运行 `python pipeline/pipeline_json_expert.py`。
 OUTPUT_CSV = os.path.join(REPO_ROOT, 'imdb_cleaned_flat.csv')
 
 # ── Step 1 专家知识参数 ────────────────────────────────────────────────

@@ -25,7 +25,7 @@ npm run dev        # 开发服务器 → http://localhost:5173/CastLockVis/
 | `npm run format` | Prettier 格式化 `src/` |
 
 离线流水线（数据已入库，**通常无需运行**，仅在重算数据时）：
-`pip install -r pipeline/requirements.txt`，然后 `python pipeline/clean.py` → `python pipeline/pipeline_json.py`。
+`pip install -r pipeline/requirements.txt`，然后 `python pipeline/clean_expert.py` → `python pipeline/pipeline_json_expert.py`。
 详见 [`docs/contribution/config.md`](docs/contribution/config.md)。
 
 ---
@@ -109,7 +109,7 @@ UMAP / MDS 散点投影。**每个点 = 一位演员**，坐标由其**前 5 部
 | `markov.json` | 24 × `{cohortId,stage,genres[21],matrix[21][21]}`（8 群落 × early/mid/late） | D |
 | `alignment.json` | 707 × `{actorId,clusterId,t0Index,outcome,points:[{tau,entropy}],covariatesAtT0:{numVotes,rating,directorHeterogeneity}}` | C |
 
-> **已知数据注意**（见 FEATURE_LIST F0.8–F0.10）：`films.title` 当前存的是 `tconst` 而非可读片名；`directorHeterogeneity` 仅存在于 `alignment.covariatesAtT0`（非按作品）。若某功能需要不同形态，请在 `clean.py`/`pipeline_json.py` 修改并重跑流水线。
+> **数据说明**：`films.title` 现为可读片名（`tconst` 另存于 `films.titleId`）；`films` 已逐片带 `directorName` 与 `directorHeterogeneity`，`alignment.covariatesAtT0` 亦保留 T=0 时刻的 `directorHeterogeneity`。若某功能需要不同形态，请在 `clean_expert.py`/`pipeline_json_expert.py` 修改并重跑流水线。
 
 ---
 
@@ -129,10 +129,9 @@ CastLockVis/
 │   │   └── DESIGN_SYSTEM.md           # 两阶段视觉方案（骨架 → 完备）
 │   └── contribution/config.md         # 环境配置
 ├── pipeline/                          # 离线 Python 流水线 + requirements.txt
-│   ├── clean.py · pipeline_json.py
+│   ├── clean_expert.py · pipeline_json_expert.py
 ├── public/
-│   ├── data/*.json                    # 6 份数据契约（已入库，构建拷入 dist/data/）
-│   └── original_data/                 # 已清洗的中间 CSV
+│   └── data/*.json                    # 6 份数据契约（已入库，构建拷入 dist/data/）
 └── src/                               # 前端源码（当前为 S0 冒烟测试，S1+ 起填充四视图）
     ├── main.tsx · App.tsx
     └── styles/{tokens,global}.css     # 设计 token（第一阶段占位，换肤只改这里）

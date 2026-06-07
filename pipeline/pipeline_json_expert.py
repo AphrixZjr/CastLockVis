@@ -1,15 +1,14 @@
 """专家知识驱动的特征工程（Step 2）。
 
-本脚本是 pipeline_json.py 的演进替代：在保持 6 个 JSON 数据契约 **schema 完全一致**
-的前提下，铲除原管线对 `genres[0]`（IMDb 字段恰好是字母序，并非主次序）的依赖，
-改用「方案 C + A」：
+本脚本铲除「以 `genres[0]` 为主导类型」（IMDb 字段恰好是字母序，并非主次序）的朴素
+做法，改用「方案 C + A」产出 6 个 JSON 数据契约：
 
   · A（IDF 加权）— 类型按稀有度 idf=log(N/df) 加权，压低 Drama 这类泛在标签、
     抬升 Western/Musical 等稀有但高辨识度的类型。
   · C（特异性）— 不再硬选「主导类型」做分析支点；`dominantGenre` 降级为纯展示/
     着色标签（取片内标签里 idf 最大者，即最具辨识度的类型）。
 
-== 相对 pipeline_json.py 的具体改动 ==
+== 相对「genres[0] 朴素管线」的具体改动 ==
 [clustering] earlyGenreVector：多热计数分布 → 各维 ×idf 再归一化（15 维软向量，
     不截断、不选主导）。耦合类型（Comedy+Romance、Crime+Thriller）各占一维、各带权重。
     KMeans 直接在 15 维向量上跑（原管线在 UMAP 2D 上聚，等于切降维产物）；k=N_CLUSTERS=7
@@ -32,8 +31,8 @@
 [markov]     视图 D 转移矩阵：M2 软转移——每片用 idf 归一化的类型权重向量，相邻两片
     按外积累加成软转移矩阵，行归一化。完全不挑主导类型。
 
-数据来源与产出与 pipeline_json.py 一致：读 imdb_cleaned_flat.csv（由 clean_expert.py
-的 Step 1 清洗产出），写 public/data/*.json。
+数据来源与产出：读 imdb_cleaned_flat.csv（由 clean_expert.py 的 Step 1 清洗产出），
+写 public/data/*.json。
 """
 
 import pandas as pd

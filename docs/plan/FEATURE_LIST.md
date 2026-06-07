@@ -27,17 +27,17 @@
 
 ## M0 · 离线数据流水线与数据契约（已完成）
 
-> 现状：`pipeline/clean.py` + `pipeline/pipeline_json.py` 已产出 `public/data/` 下 6 个 JSON。
+> 现状：`pipeline/clean_expert.py` + `pipeline/pipeline_json_expert.py` 已产出 `public/data/` 下 6 个 JSON。
 > 前端**不做任何重计算**，仅消费这些静态契约。本模块列出已交付内容与待修正项，供前端对齐字段语义。
 
-- **F0.1** 原始 IMDb 数据清洗与实体提取 —— `clean.py`（票数门槛、主演番位、生涯厚度过滤）。✅
-- **F0.2** 特征工程与 6 份数据契约落盘 —— `pipeline_json.py`：`genres / actors / films / entropy / markov / alignment`。✅
+- **F0.1** 原始 IMDb 数据清洗与实体提取 —— `clean_expert.py`（后 1967 年、剔 6 类噪声、票数门槛、主演番位、生涯厚度过滤）。✅
+- **F0.2** 特征工程与 6 份数据契约落盘 —— `pipeline_json_expert.py`：`genres / actors / films / entropy / markov / alignment`。✅
 - **F0.3** 早期画像：前 5 部作品类型概率向量 + `dominantEarlyGenre`（视图 A 坐标来源）。✅
 - **F0.4** EMA 香农熵曲线 `n=1..30`（视图 B 白线；亦用于 T=0 检测。视图 C 纵轴已改用类型偏离度 `dist`）。✅
-- **F0.5** UMAP 降维 + KMeans 8 群落 → `projection[x,y]` + `clusterId`（联动 cohort 单位）。✅
+- **F0.5** PaCMAP 降维 + 15 维 KMeans 7 群落（cosine-silhouette 选种）→ `projection[x,y]` + `clusterId`（联动 cohort 单位）。✅
 - **F0.6** 分阶段（early/mid/late）群落转移矩阵（视图 D，按 `clusterId` 键控）。✅
 - **F0.7** T=0 对齐检测：t0 用**熵 onset 变点**（`T0_ONSET_JUMP`）；`outcome` 用**类型偏离度轨迹**（lowflat：末段回吐峰值增益 ≥ `SNAPBACK_RETRACE` **且** 末段斜率 ≤ `SNAPBACK_SLOPE_MAX` → snapback；否则 success；未检出 → none）。`points[{tau,entropy,dist}]`（`dist` = k=5 滚动类型偏离度，C 纵轴）、`covariatesAtT0`。当前分布 success/snapback/none ≈ 856/153/148。✅
-- **F0.8** `clean.py` / `clean_expert.py` 已引入 IMDb `primaryTitle`，`pipeline_json*.py` 生成 `films.title` 时优先使用可读片名、旧 CSV 无该列时回退 `tconst`；用带 `primaryTitle` 的 Step 1 CSV 重跑后详情面板即可显示可读标题。✅
+- **F0.8** `clean_expert.py` 已引入 IMDb `primaryTitle`，`pipeline_json_expert.py` 生成 `films.title` 时优先使用可读片名、旧 CSV 无该列时回退 `tconst`（`tconst` 另存于 `films.titleId`）；流水线已重跑，`public/data/films.json` 标题均为可读片名，详情面板直接显示。✅
 - **F0.9** `films.json` 已新增逐片 `directorHeterogeneity`（当前作品 ±2 序列窗口内导演集合大小），详情面板展示当前作品局部导演异质性；视图 C 全局过滤器仍按 `alignment.covariatesAtT0` 的 T=0 协变量重分层。✅
 - **F0.10 ⚠️ 联动粒度说明（P0 设计约束）** `markov.json` 按**预计算 `clusterId`** 键控；A→D 联动在**群落粒度**生效（brush 选区映射到其覆盖的 cluster），而非任意子集实时重算矩阵。前端联动须遵此粒度。
 

@@ -41,8 +41,8 @@ Pipeline (rarely — only to regenerate data): `pip install -r pipeline/requirem
 **expert pipeline** that produced the committed `public/data/`: `python pipeline/clean_expert.py`
 (Step 1 cleaning — post-1967 US films, drops 6 noise genres, votes>2000) → `python
 pipeline/pipeline_json_expert.py` (Step 2 features — IDF-weighted vectors, 15D KMeans k=7, PaCMAP
-projection, soft Markov, IDF-threshold t0). The original `clean.py` / `pipeline_json.py` are the
-pre-expert baseline and emit a **different, older** contract (21 genres / 8 clusters). See config.md.
+projection, soft Markov, IDF-threshold t0). This is the **only** pipeline — the pre-expert
+`clean.py` / `pipeline_json.py` baselines were removed. See config.md.
 
 ## Architecture in one breath
 
@@ -73,13 +73,14 @@ S0 smoke test (`App.tsx`) — replace it as S1+ lands.
 | --- | --- | --- |
 | `genres.json` | `string[]` (15 genres, color-key basis) | all |
 | `actors.json` | 1157 × `{id,name,dominantEarlyGenre,earlyGenreVector,filmCount,t0Index,outcome,projection[x,y],clusterId}` | A, cohort source |
-| `films.json` | 30336 × `{actorId,seqIndex,title,year,genres[],dominantGenre,rating,numVotes,directorId}` | B, details |
+| `films.json` | 30336 × `{actorId,seqIndex,title,titleId,year,genres[],dominantGenre,rating,numVotes,directorId,directorName,directorHeterogeneity}` | B, details |
 | `entropy.json` | 1157 × `{actorId,curve:[{n,entropy}]}` (n=1..30) | B (white line), C (y) |
 | `markov.json` | 21 × `{cohortId,stage,genres[15],matrix[15][15]}` (7 clusters × early/mid/late) | D |
 | `alignment.json` | 1137 × `{actorId,clusterId,t0Index,outcome,points:[{tau,entropy}],covariatesAtT0:{numVotes,rating,directorHeterogeneity}}` | C |
 
-Known data caveats (see FEATURE_LIST F0.8–F0.10): `films.title` currently holds the `tconst`, not a
-human title; `directorHeterogeneity` lives only in `alignment.covariatesAtT0` (not per-film). Fix in
+Data notes (see FEATURE_LIST F0.8–F0.10): `films.title` is now the human-readable title (the `tconst`
+is kept in `films.titleId`); `films` carries per-film `directorName` + `directorHeterogeneity`, and
+`alignment.covariatesAtT0` still keeps the T=0 `directorHeterogeneity`. Adjust in
 `clean_expert.py`/`pipeline_json_expert.py` and regenerate if a feature needs otherwise.
 
 ## Conventions

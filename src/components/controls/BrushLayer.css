@@ -1,0 +1,9 @@
+/* 通用框选层矩形（沿用 main 视觉，颜色/间距走 token）。 */
+.brush-layer__rect {
+  fill: var(--color-accent);
+  fill-opacity: 0.12;
+  stroke: var(--color-accent);
+  stroke-dasharray: 4 3;
+  stroke-width: 1.2;
+  pointer-events: none;
+}

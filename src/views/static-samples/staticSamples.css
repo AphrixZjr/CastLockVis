@@ -156,16 +156,6 @@
   user-select: none;
 }
 
-/* 框选矩形（main 视觉）。 */
-.sample-brush-box {
-  fill: var(--color-accent);
-  fill-opacity: 0.12;
-  stroke: var(--color-accent);
-  stroke-dasharray: 4 3;
-  stroke-width: 1.2;
-  pointer-events: none;
-}
-
 .sample-river-band {
   opacity: 0.88;
   shape-rendering: geometricPrecision;

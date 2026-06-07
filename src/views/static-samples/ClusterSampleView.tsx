@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
+import { BrushLayer } from '../../components/controls/BrushLayer';
 import { ChartTooltip } from '../../components/common/ChartTooltip';
 import type { Actor } from '../../data/types';
 import { useVizStore } from '../../store/useVizStore';
@@ -24,57 +25,6 @@ const CLUSTER_TOKENS = 8; // tokens.css 提供 --cluster-0..7
 const HULL_KEEP_QUANTILE = 0.85; // 凸包只包住每簇最近 85% 的点，剔除离群点导致的虚胖
 const HULL_PAD_PX = 10; // 凸包外扩像素（让 Music 这类小簇可见）
 const HULL_MIN_RADIUS = 18; // 凸包最小半径（让坍缩成点的 Western/Musical 仍可见）
-const BRUSH_CLICK_THRESHOLD = 3; // 拖动小于该 SVG 单位视作点击（选演员 / 清除）
-const POINT_HIT_RADIUS = 8; // 单击命中演员点的半径（SVG 单位）
-
-interface BrushRect {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-}
-
-interface ChartPoint {
-  actor: Actor;
-  x: number;
-  y: number;
-  tokenIndex: number;
-  clusterId: number;
-}
-
-/** 找到离 (x,y) 最近、且在命中半径内的演员点。 */
-function nearestPoint(
-  points: ChartPoint[],
-  x: number,
-  y: number,
-  radius: number,
-): ChartPoint | null {
-  let best: ChartPoint | null = null;
-  let bestDistSq = radius * radius;
-  for (const point of points) {
-    const dx = point.x - x;
-    const dy = point.y - y;
-    const distSq = dx * dx + dy * dy;
-    if (distSq <= bestDistSq) {
-      bestDistSq = distSq;
-      best = point;
-    }
-  }
-  return best;
-}
-
-/** 把屏幕坐标换算到 SVG viewBox 坐标，兼容 width:100% 的等比缩放。 */
-function clientToSvg(svg: SVGSVGElement, clientX: number, clientY: number) {
-  const point = svg.createSVGPoint();
-  point.x = clientX;
-  point.y = clientY;
-  const ctm = svg.getScreenCTM();
-  if (!ctm) {
-    return null;
-  }
-  const local = point.matrixTransform(ctm.inverse());
-  return { x: local.x, y: local.y };
-}
 
 export function ClusterSampleView({ actors, genres }: ClusterSampleViewProps) {
   const [hoveredActorId, setHoveredActorId] = useState<string | null>(null);
@@ -94,8 +44,6 @@ export function ClusterSampleView({ actors, genres }: ClusterSampleViewProps) {
   };
 
   const svgRef = useRef<SVGSVGElement>(null);
-  const dragStart = useRef<{ x: number; y: number } | null>(null);
-  const [brushRect, setBrushRect] = useState<BrushRect | null>(null);
 
   const genreTokenLookup = useMemo(() => buildGenreTokenLookup(genres), [genres]);
 
@@ -159,78 +107,21 @@ export function ClusterSampleView({ actors, genres }: ClusterSampleViewProps) {
 
   const points = chart.points;
 
-  const handlePointerDown = (event: React.PointerEvent<SVGSVGElement>) => {
-    const svg = svgRef.current;
-    if (!svg) {
-      return;
-    }
-    const local = clientToSvg(svg, event.clientX, event.clientY);
-    if (!local) {
-      return;
-    }
-    dragStart.current = local;
-    setBrushRect({ x: local.x, y: local.y, w: 0, h: 0 });
-    svg.setPointerCapture?.(event.pointerId);
-  };
-
-  const handlePointerMove = (event: React.PointerEvent<SVGSVGElement>) => {
-    const start = dragStart.current;
-    const svg = svgRef.current;
-    if (!start || !svg) {
-      return;
-    }
-    const local = clientToSvg(svg, event.clientX, event.clientY);
-    if (!local) {
-      return;
-    }
-    setBrushRect({
-      x: Math.min(start.x, local.x),
-      y: Math.min(start.y, local.y),
-      w: Math.abs(local.x - start.x),
-      h: Math.abs(local.y - start.y),
-    });
-  };
-
-  const handlePointerUp = () => {
-    const start = dragStart.current;
-    const rect = brushRect;
-    dragStart.current = null;
-    setBrushRect(null);
-    if (!start || !rect) {
-      return;
-    }
-
-    // 极小拖动 = 单击。命中某演员点 → 单选该演员（B 切到该演员、C 高亮其轨迹）；
-    // 点空白 → 清除 brush + 选择，回到全局态。
-    if (rect.w < BRUSH_CLICK_THRESHOLD && rect.h < BRUSH_CLICK_THRESHOLD) {
-      const hit = nearestPoint(points, start.x, start.y, POINT_HIT_RADIUS);
-      if (hit) {
-        selectActor(hit.actor.id);
-        selectSpike(null); // 在 A 选人不携带具体作品序号
-        closeDetails();
-      } else {
-        // 点空白仅清除群落框选，保留当前选中演员（B 维持该演员，等同"默认演员被每次选取更新"）。
-        clearBrush();
-      }
-      return;
-    }
-
-    // 拖框 = 群落选择（链路 1）。进入群落平均态，清除单演员选择。
-    const ids = points
-      .filter(
-        (point) =>
-          point.x >= rect.x &&
-          point.x <= rect.x + rect.w &&
-          point.y >= rect.y &&
-          point.y <= rect.y + rect.h,
-      )
-      .map((point) => point.actor.id);
+  // 拖框结束：空列表回到全局态，否则进入群落平均态；任一情况都清掉单演员选择。
+  const handleBrush = (ids: string[]) => {
     if (ids.length === 0) {
       clearBrush();
     } else {
       setBrush(ids);
     }
     clearSelection();
+  };
+
+  // 单击命中演员点（链路 2 起点）：单选该演员，不携带具体作品序号。
+  const handleSelectPoint = (actorId: string) => {
+    selectActor(actorId);
+    selectSpike(null);
+    closeDetails();
   };
 
   const hasBrush = brushedActorIds.size > 0;
@@ -256,9 +147,6 @@ export function ClusterSampleView({ actors, genres }: ClusterSampleViewProps) {
         viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
         aria-label="Genre-Space Cluster static sample"
         className="sample-chart__brushable"
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
       >
         <rect x={0} y={0} width={WIDTH} height={HEIGHT} className="sample-bg" rx={8} />
 
@@ -344,16 +232,14 @@ export function ClusterSampleView({ actors, genres }: ClusterSampleViewProps) {
           );
         })}
 
-        {/* 框选矩形：拖动时实时绘制 */}
-        {brushRect && brushRect.w > 0 && brushRect.h > 0 && (
-          <rect
-            x={brushRect.x}
-            y={brushRect.y}
-            width={brushRect.w}
-            height={brushRect.h}
-            className="sample-brush-box"
-          />
-        )}
+        {/* 通用框选层：绑定拖框/单击逻辑并绘制框选矩形 */}
+        <BrushLayer
+          svgRef={svgRef}
+          points={points}
+          onBrush={handleBrush}
+          onSelectPoint={handleSelectPoint}
+          onClearBrush={clearBrush}
+        />
       </svg>
 
       <ChartTooltip
