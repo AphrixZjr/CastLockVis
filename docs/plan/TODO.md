@@ -97,10 +97,66 @@
 
 **验收**：Pages 部署成功，子路径下静态资源与数据可达，三联动在线可用。
 
+## S5.5 · 交互与布局前置改造（P0–P1 · S6 前置）
+
+> 目标：在进入 S6 视觉定稿前，先修掉当前会妨碍视觉收口与后续调参的三个结构性问题：
+> ① `DetailsPanel` 的移动交互过于反直觉；② 四视图面板空间分配固定且不可调；③ 视图 A 缺少对 `clusterId`
+> 构成的直接摘要。此阶段允许改少量视图逻辑 / 布局接线，但应保持既有数据流与三条联动主语义不变。
+
+- [ ] **DetailsPanel 鼠标拖动替代方向按钮**
+  - 现状：视图 B 点击熵峰值后弹出的 `DetailsPanel` 只能通过 4 个方向按钮移动，使用中间圆点按钮归位；同时支持键盘方向键平移。这套交互不自然，且占用面板顶部空间。
+  - 改造目标：改为**鼠标拖动面板标题栏移动**，关闭按钮不参与拖动；可保留键盘方向键作为无障碍后备，但不再把方向按钮作为主交互暴露。
+  - 实施约束：
+    - 继续沿用 Zustand 中的 `detailsPanelPosition` 状态，不引入视图间直接通信。
+    - 优先给 store 增加显式的 `setDetailsPanelPosition(position)`，避免用按钮式 `delta` 逻辑硬凑连续拖动。
+    - 使用 Pointer Events（`pointerdown / pointermove / pointerup`）实现拖动；拖动手柄建议放在 `DetailsPanel` header。
+    - 拖动时暂时关闭 `transform` 过渡，避免面板跟手发黏；空闲时保留轻量 transition 即可。
+    - 第一版可不做强边界约束，但不得出现“轻轻一拖即丢失面板焦点 / 误触关闭 / 文本被选中”的问题。
+  - 预期落点：`src/components/DetailsPanel.tsx`、`src/components/DetailsPanel.css`、`src/store/useVizStore.ts`。
+
+- [ ] **四视图空间重新分配 + 参数化布局**
+  - 现状：`App.css` 中 `.app-grid` 仍是固定的 2×2 均分网格；`ViewPanel` 不接受布局 class / area；四个视图获得的空间完全一致。结果是：
+    - 视图 D（Markov）因矩阵天然偏正方形，横向面板里只占了约一半可用空间；
+    - 视图 C 相较之下更拥挤，尤其在保留顶部 controls / filters 时更明显；
+    - 后续想微调 A/B/C/D 各自占比时，需要直接改散落的 CSS，而不是改一组集中参数。
+  - 改造目标：把顶层 panel 布局改成**可参数化的命名 grid area**，使 A/B/C/D 的空间比例可在少量集中变量中调节。
+  - 推荐方案：
+    - 给 `ViewPanel` 增加 `className` 或 `area` 接口，由 `App.tsx` 在 panel 配置里显式声明 `cluster / river / alignment / markov`。
+    - 在 `App.css` 中改用 `grid-template-areas` + `--layout-*` 变量，而不是固定 `repeat(2, 1fr)`。
+    - 至少暴露 4 个一眼可调的布局参数，例如左右列宽、上下行高，便于后续 session 快速试比例。
+    - 第一版先解决 panel 外层空间分配，不强求同步重写每个视图内部的 SVG 比例逻辑。
+  - Markov 特别说明：
+    - 视图 D 的“空一半”既来自外层均分，也来自内部矩阵是正方形这一事实。
+    - 第一阶段先通过外层 grid 改善整体比例；若仍显局促，再决定是否为 D 做“矩阵 + 辅助摘要”式内部布局，而不是一开始就硬拉伸矩阵。
+  - 预期落点：`src/App.tsx`、`src/App.css`、`src/components/ViewPanel.tsx`、`src/components/ViewPanel.css`，必要时少量触及 `src/views/Views.css`。
+
+- [ ] **视图 A 增加 cluster composition 摘要图**
+  - 目标：在 A 中直接呈现各 `clusterId` 的构成比例，帮助用户在 brush 前就理解“哪个 cluster 大、哪个小”。
+  - 推荐第一版：**柱状图优先于饼图**。
+    - 理由：当前 A 已经有散点、hull、点形状，若再塞一个饼图，中心角与颜色块的可读性不如横向条形图稳定；7 个簇做条形图更利于比较，也更适合在窄侧栏中放置。
+    - 若最终 panel 结构调整后出现合适的近正方形摘要位，可再评估饼图版本，但不作为第一实现目标。
+  - 放置建议：
+    - 在 `ClusterView` 内改成“主散点区 + 侧边摘要栏”两栏布局；窄屏再降级为上下布局。
+    - 摘要图使用 `--cluster-*` 色，避免新增硬编码色值；每一行至少展示 `clusterId`、count、percent。
+  - 数据与实现约束：
+    - 这只是对 `actors[].clusterId` 的轻量汇总，不涉及任何运行时重算统计，可直接在 `ClusterView` 的 `useMemo` 中做；若后续复用需要明显增长，再抽到 `lib/aggregate.ts`。
+    - 第一版不要求 hover 柱子反向高亮散点，避免引入多余联动复杂度。
+  - **可选增强（进度允许时一并做）**：
+    - 点击某个柱子，自动选择该 `clusterId` 下的全部演员，效果等价于“程序化 brush 该 cluster 的所有点”。
+    - 实现上不要求真的驱动 `BrushLayer` 画出矩形，只需写入 `brushedActorIds` 并使 B/D 响应即可。
+    - 若当前已有单演员选择，应遵循与 A 拖框一致的语义：进入 cluster cohort 模式时清掉 `selectedActorId / selectedFilmIndex / detailsOpen`，避免联动状态冲突。
+    - 这一增强完成后，A 将同时支持“自由拖框定义 cohort”和“点击摘要栏按整簇选择 cohort”两种入口。
+  - 预期落点：`src/views/ClusterView.tsx`、`src/views/Views.css`，必要时少量触及 `src/store/selectors.ts` 或 `src/lib/aggregate.ts`。
+
+**验收**：
+1. `DetailsPanel` 可通过鼠标拖动标题栏平滑移动，关闭按钮正常，方向按钮不再作为主交互暴露。
+2. 四视图 panel 使用命名 grid area，A/B/C/D 的空间比例可通过少量集中参数调整；默认布局下 D 不再显著空置、C 获得更充足空间。
+3. 视图 A 出现 cluster composition 摘要图；若增强项落地，则点击某柱子可直接进入该 cluster 的 cohort 联动态。
+
 ## S6 · 第二阶段完备视觉（视觉，P2 · 第二阶段）
 
 > **唯一规则：只改 `tokens.css` 与 `ViewPanel`/视图样式表，不改视图逻辑与数据流。**
-> 进入本阶段的前提：S1–S5 全部组件已无硬编码颜色/间距。
+> 进入本阶段的前提：S1–S5.5 全部组件已无硬编码颜色/间距，且前述交互/布局前置改造已收口。
 
 - [ ] **F9.1** 配色定稿并回填 token：中性阶（≥WCAG AA）、类型分类色（Tableau10 调校，key 对齐 `genres.json`）、矩阵顺序色阶、绿/红分叉色、交互态
 - [ ] **F9.2 / F9.3** 版式与字体字号定稿（4px 节奏、type scale、等宽数字）
@@ -115,6 +171,6 @@
 
 ## 关键路径与并行建议
 
-- **关键路径**：S0 → S1 → S2(联动脊柱验证) → S3 → **S4(联动)** → S5。S6 视觉可与 S5 收尾部分并行。
+- **关键路径**：S0 → S1 → S2(联动脊柱验证) → S3 → **S4(联动)** → S5 → **S5.5(交互/布局前置改造)** → S6。
 - **可并行**：S2 完成后，B（S3 前两项）与 C（S3 后两项）可由不同人并行；`Legend/Tooltip/控件`（S5）可在 S2 期间随手抽取。
 - **风险点**：① B 的 streamgraph 横轴语义（序列号非年份）易做错；② C 的 T=0 对齐（x 轴）须严格按 `alignment.json` 的 `tau`；**同侪界定改用 `clusterId`**（tau/t0 因窗口固定 + t0 高度集中而失效，见 F5.3）；③ A→D 联动的群落粒度（F0.10）不要误做成实时重算。
