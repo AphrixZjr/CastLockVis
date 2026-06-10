@@ -99,11 +99,12 @@
 
 ## S5.5 · 交互与布局前置改造（P0–P1 · S6 前置）
 
-> 目标：在进入 S6 视觉定稿前，先修掉当前会妨碍视觉收口与后续调参的三个结构性问题：
+> 目标：在进入 S6 视觉定稿前，先修掉当前会妨碍视觉收口与后续调参的结构性问题：
 > ① `DetailsPanel` 的移动交互过于反直觉；② 四视图面板空间分配固定且不可调；③ 视图 A 缺少对 `clusterId`
-> 构成的直接摘要。此阶段允许改少量视图逻辑 / 布局接线，但应保持既有数据流与三条联动主语义不变。
+> 构成的直接摘要与整簇选择入口；④ 视图 A 单选 / 圈选状态覆盖、回退与高亮层级不稳定；⑤ 多 cluster cohort 下 Markov
+> 矩阵语义不明确。此阶段允许改少量视图逻辑 / 布局接线，但应保持既有数据流与三条联动主语义不变。
 
-- [ ] **DetailsPanel 鼠标拖动替代方向按钮**
+- [x] **DetailsPanel 鼠标拖动替代方向按钮**
   - 现状：视图 B 点击熵峰值后弹出的 `DetailsPanel` 只能通过 4 个方向按钮移动，使用中间圆点按钮归位；同时支持键盘方向键平移。这套交互不自然，且占用面板顶部空间。
   - 改造目标：改为**鼠标拖动面板标题栏移动**，关闭按钮不参与拖动；可保留键盘方向键作为无障碍后备，但不再把方向按钮作为主交互暴露。
   - 实施约束：
@@ -130,7 +131,7 @@
     - 第一阶段先通过外层 grid 改善整体比例；若仍显局促，再决定是否为 D 做“矩阵 + 辅助摘要”式内部布局，而不是一开始就硬拉伸矩阵。
   - 预期落点：`src/App.tsx`、`src/App.css`、`src/components/ViewPanel.tsx`、`src/components/ViewPanel.css`，必要时少量触及 `src/views/Views.css`。
 
-- [ ] **视图 A 增加 cluster composition 摘要图**
+- [ ] **视图 A 增加 cluster composition 摘要图 + 点击柱子选择 cluster**
   - 目标：在 A 中直接呈现各 `clusterId` 的构成比例，帮助用户在 brush 前就理解“哪个 cluster 大、哪个小”。
   - 推荐第一版：**柱状图优先于饼图**。
     - 理由：当前 A 已经有散点、hull、点形状，若再塞一个饼图，中心角与颜色块的可读性不如横向条形图稳定；7 个簇做条形图更利于比较，也更适合在窄侧栏中放置。
@@ -141,17 +142,67 @@
   - 数据与实现约束：
     - 这只是对 `actors[].clusterId` 的轻量汇总，不涉及任何运行时重算统计，可直接在 `ClusterView` 的 `useMemo` 中做；若后续复用需要明显增长，再抽到 `lib/aggregate.ts`。
     - 第一版不要求 hover 柱子反向高亮散点，避免引入多余联动复杂度。
-  - **可选增强（进度允许时一并做）**：
     - 点击某个柱子，自动选择该 `clusterId` 下的全部演员，效果等价于“程序化 brush 该 cluster 的所有点”。
     - 实现上不要求真的驱动 `BrushLayer` 画出矩形，只需写入 `brushedActorIds` 并使 B/D 响应即可。
-    - 若当前已有单演员选择，应遵循与 A 拖框一致的语义：进入 cluster cohort 模式时清掉 `selectedActorId / selectedFilmIndex / detailsOpen`，避免联动状态冲突。
+    - 若当前已有单演员选择，不清掉 cached `selectedActorId`；只让非空 `brushedActorIds` 成为当前 active cohort，并关闭 `detailsOpen`，避免 cohort 联动时仍展示单点详情。
     - 这一增强完成后，A 将同时支持“自由拖框定义 cohort”和“点击摘要栏按整簇选择 cohort”两种入口。
   - 预期落点：`src/views/ClusterView.tsx`、`src/views/Views.css`，必要时少量触及 `src/store/selectors.ts` 或 `src/lib/aggregate.ts`。
+
+- [ ] **视图 A 单选 / 圈选交互状态修复**
+  - 目标：明确 A 的 active selection 规则，消除单选、圈选、空白点击之间的状态震荡与跨视图不一致。
+  - 期望交互：
+    - 单选与圈选之间，新操作覆盖旧操作的 active 状态：单选后圈选时高亮圈选并联动；圈选后单选时取消圈选高亮并联动单点。
+    - 点击空白区域时：若当前 active 状态是单选，不做任何操作；若当前 active 状态是圈选，清空圈选并回退到 cached 单选。
+    - 圈选空白区域也按“清空圈选并回退 cached 单选”处理，避免出现“圈空白显示 fallback、点空白又恢复旧演员”的空白震荡。
+    - 单选与圈选状态允许同时存在：`brushedActorIds` 非空时 active selection 为圈选；为空时 active selection 为 `selectedActorId`；两者均空时再 fallback 到默认演员。
+  - 高亮与命中修复：
+    - 单选高亮必须渲染在上层，避免被下层点遮住导致看不见。
+    - A 中“视觉上已选中”的演员应与实际写入 store、并被 B/C/D 接收的演员一致；优先按鼠标命中的实际 actor 决定高亮，而不是让放大后的视觉半径制造误判。
+  - 实施约束：
+    - 推荐集中梳理 `ClusterView` 的 click / brush end / empty brush 分支，避免在多个事件回调里各自猜 active selection。
+    - 必要时增加轻量 selector，例如 `getActiveActorIds` / `getActiveSelectionMode`，但不要引入新的跨视图通信通道。
+  - 建议实现路径：
+    - 单击点时先 `clearBrush()`，再写入 `selectedActorId` / 清空 `selectedFilmIndex` / 关闭 `detailsOpen`，使单选明确覆盖旧圈选。
+    - 非空拖框时只写入 `brushedActorIds` 并关闭 `detailsOpen`，不要清掉 cached `selectedActorId`；这样后续清空圈选时可以自然回退到旧单选。
+    - 空拖框与点击空白统一处理为“只清空 `brushedActorIds`”：若 cached 单选存在，active selection 回到该单选；若不存在，再进入默认 fallback。
+    - A 内部的 tooltip / dimming / active class 都从同一套 active selection 派生，避免显示状态与实际联动状态分叉。
+  - 当前代码评估：
+    - 现有 `ClusterView.handleBrush()` 会在空 / 非空拖框后都 `clearSelection()`，这是需要改掉的核心分支。
+    - 现有 `ClusterView.handleSelectPoint()` 不会 `clearBrush()`，这是“圈选后单选仍残留圈选高亮”的主要原因。
+    - 现有 `BrushLayer` 已经把小拖动视作单击、并用 `nearestPoint()` 返回实际命中 actor；第一版可以复用这套命中结果，只需保证 A 的高亮完全跟随写入 store 的 actor。
+    - 单选置顶可通过把 selected / hovered / brushed 点拆成上层渲染 pass 解决，不需要改 store。
+  - 预期落点：`src/views/ClusterView.tsx`、`src/components/controls/BrushLayer.tsx`、`src/store/useVizStore.ts`，必要时触及 `src/store/selectors.ts`。
+
+- [ ] **Markov 矩阵仅在单 cluster 语义下显示**
+  - 现状：当 A 里选中来自多个 `clusterId` 的点时，D 似乎会按点数最多的 cluster 显示 Markov 矩阵，导致“当前矩阵代表谁”不明确。
+  - 改造目标：
+    - D 仅在两类状态下显示矩阵：单点模式；或非空圈选 / 柱子选择的点全部来自同一个 `clusterId`。
+    - 当 active cohort 跨越多个 cluster，或当前状态无法唯一确定 cluster 时，关闭 Markov 矩阵显示，改为明确的空态 / 提示态。
+    - 第三个任务中的“点击柱子选择 cluster”必须作为进入单 cluster cohort 的正式入口，而不是可选增强。
+  - 推荐判定：
+    - `brushedActorIds` 非空时，统计其对应 `clusterId` 集合；集合大小为 1 才允许 D 显示。
+    - `brushedActorIds` 为空且 `selectedActorId` 存在时，按该 actor 的 `clusterId` 显示。
+    - 两者均空时沿用默认 fallback 演员 / cluster；但如果后续决定空态不显示 D，应在实现前同步更新验收。
+  - 实施约束：
+    - 不再使用“多数 cluster”作为隐式默认规则。
+    - Markov 的 cluster 判定逻辑应集中在 selector / memo 中，避免 D 自己重复推断多套状态。
+  - 建议实现路径：
+    - 用新的 selector（例如 `getResolvedMarkovClusterId`）替代 `getDominantClusterId` 在 D 上的用法。
+    - `brushedActorIds` 非空时，从 brush 内 actor 计算 cluster 集合；集合大小为 1 返回该 cluster，否则返回 `null`。
+    - `brushedActorIds` 为空且 `selectedActorId` 存在时，返回该 actor 的 `clusterId`，确保单点模式下 D 与 B/C 接收的是同一个演员语义。
+    - selector 返回 `null` 时，`App` 直接向 `MarkovView` 传 `matrix=null`；`MarkovView` 复用现有空态，再视需要把文案从“当前 stage 无可用矩阵”改成“多 cluster cohort 不显示 Markov”。
+  - 当前代码评估：
+    - 现有 `selectors.getDominantClusterId()` 正是“多数 cluster”规则，应避免继续用于 D。
+    - 现有 `App.readyPanels` 在无 brush 时通过 `getCohortActorIds(allActorIds, brushedActorIds)` 得到全体演员，再计算 dominant cluster；因此 D 当前会忽略单选演员，这是任务 5 需要一并修掉的关键问题。
+    - `MarkovView` 本身只依赖 `matrix`，且已经能处理 `null`，所以主要改动在 selector 与 `App.tsx` 接线，视图组件只需补更准确的空态文案。
+  - 预期落点：`src/views/MarkovView.tsx`、`src/store/selectors.ts` 或 `src/lib/aggregate.ts`，必要时少量触及 `src/views/ClusterView.tsx`。
 
 **验收**：
 1. `DetailsPanel` 可通过鼠标拖动标题栏平滑移动，关闭按钮正常，方向按钮不再作为主交互暴露。
 2. 四视图 panel 使用命名 grid area，A/B/C/D 的空间比例可通过少量集中参数调整；默认布局下 D 不再显著空置、C 获得更充足空间。
-3. 视图 A 出现 cluster composition 摘要图；若增强项落地，则点击某柱子可直接进入该 cluster 的 cohort 联动态。
+3. 视图 A 出现 cluster composition 摘要图，点击某柱子可直接进入该 cluster 的 cohort 联动态。
+4. 视图 A 单选 / 圈选遵循 active selection 覆盖与 cached 单选回退规则；空白点击和圈选空白不再触发 fallback 震荡；单选高亮层级与实际联动 actor 一致。
+5. Markov 矩阵仅在单点或单 cluster cohort 下显示；多 cluster cohort 时不显示矩阵，也不再隐式选择多数 cluster。
 
 ## S6 · 第二阶段完备视觉（视觉，P2 · 第二阶段）
 

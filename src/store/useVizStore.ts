@@ -31,6 +31,7 @@ interface VizState {
   ) => void;
   openDetails: () => void;
   closeDetails: () => void;
+  setDetailsPanelPosition: (position: DetailsPanelPosition) => void;
   moveDetailsPanel: (delta: DetailsPanelPosition) => void;
   resetDetailsPanelPosition: () => void;
 }
@@ -63,6 +64,7 @@ export const useVizStore = create<VizState>((set) => ({
     })),
   openDetails: () => set({ detailsOpen: true }),
   closeDetails: () => set({ detailsOpen: false }),
+  setDetailsPanelPosition: (position) => set({ detailsPanelPosition: position }),
   moveDetailsPanel: (delta) =>
     set((state) => ({
       detailsPanelPosition: {

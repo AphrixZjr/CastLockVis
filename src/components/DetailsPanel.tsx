@@ -1,7 +1,8 @@
-import type { CSSProperties } from 'react';
-import { useEffect } from 'react';
+import type { CSSProperties, PointerEvent as ReactPointerEvent } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDataRuntime } from '../data/dataRuntimeContext';
 import { useVizStore } from '../store/useVizStore';
+import type { DetailsPanelPosition } from '../store/useVizStore';
 import type { Actor, AlignmentTrack, DataIndexes, Film } from '../data/types';
 import './DetailsPanel.css';
 
@@ -13,6 +14,13 @@ interface DetailContext {
   alignment: AlignmentTrack | null;
 }
 
+interface DragState {
+  pointerId: number;
+  startClientX: number;
+  startClientY: number;
+  origin: DetailsPanelPosition;
+}
+
 // 视觉/内容沿用 main（main 版 DetailsPanel），但外壳改为订阅 Zustand store，
 // 与 feat/s4-linking 的「视图自取 store」架构一致：不再由 App 透传 props。
 export function DetailsPanel() {
@@ -22,8 +30,10 @@ export function DetailsPanel() {
   const selectedFilmIndex = useVizStore((state) => state.selectedFilmIndex);
   const closeDetails = useVizStore((state) => state.closeDetails);
   const detailsPanelPosition = useVizStore((state) => state.detailsPanelPosition);
+  const setDetailsPanelPosition = useVizStore((state) => state.setDetailsPanelPosition);
   const moveDetailsPanel = useVizStore((state) => state.moveDetailsPanel);
-  const resetDetailsPanelPosition = useVizStore((state) => state.resetDetailsPanelPosition);
+  const dragStateRef = useRef<DragState | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
     if (!detailsOpen) {
@@ -57,6 +67,54 @@ export function DetailsPanel() {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [detailsOpen, moveDetailsPanel]);
 
+  const stopDrag = useCallback((event: ReactPointerEvent<HTMLElement>) => {
+    const dragState = dragStateRef.current;
+    if (!dragState || dragState.pointerId !== event.pointerId) {
+      return;
+    }
+
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    dragStateRef.current = null;
+    setIsDragging(false);
+  }, []);
+
+  const handleHeaderPointerDown = useCallback(
+    (event: ReactPointerEvent<HTMLElement>) => {
+      if (event.button !== 0 || isDragControl(event.target)) {
+        return;
+      }
+
+      event.preventDefault();
+      event.currentTarget.setPointerCapture(event.pointerId);
+      dragStateRef.current = {
+        pointerId: event.pointerId,
+        startClientX: event.clientX,
+        startClientY: event.clientY,
+        origin: detailsPanelPosition,
+      };
+      setIsDragging(true);
+    },
+    [detailsPanelPosition],
+  );
+
+  const handleHeaderPointerMove = useCallback(
+    (event: ReactPointerEvent<HTMLElement>) => {
+      const dragState = dragStateRef.current;
+      if (!dragState || dragState.pointerId !== event.pointerId) {
+        return;
+      }
+
+      event.preventDefault();
+      setDetailsPanelPosition({
+        x: dragState.origin.x + event.clientX - dragState.startClientX,
+        y: dragState.origin.y + event.clientY - dragState.startClientY,
+      });
+    },
+    [setDetailsPanelPosition],
+  );
+
   if (!detailsOpen || runtime.status !== 'ready') {
     return null;
   }
@@ -69,7 +127,7 @@ export function DetailsPanel() {
 
   return (
     <aside
-      className="details-panel"
+      className={`details-panel ${isDragging ? 'details-panel--dragging' : ''}`}
       style={
         {
           '--details-panel-x': `${detailsPanelPosition.x}px`,
@@ -78,7 +136,15 @@ export function DetailsPanel() {
       }
       aria-label="Selected transformation details"
     >
-      <header className="details-panel__header">
+      <header
+        className="details-panel__header"
+        onPointerDown={handleHeaderPointerDown}
+        onPointerMove={handleHeaderPointerMove}
+        onPointerUp={stopDrag}
+        onPointerCancel={stopDrag}
+        onLostPointerCapture={stopDrag}
+        title="Drag to move details panel"
+      >
         <div>
           <h2 className="details-panel__title">Transformation Detail</h2>
           <p className="details-panel__subtitle">
@@ -94,39 +160,6 @@ export function DetailsPanel() {
           Close
         </button>
       </header>
-      <div className="details-panel__move" aria-label="Move details panel with arrow controls">
-        <button
-          type="button"
-          onClick={() => moveDetailsPanel({ x: 0, y: -24 })}
-          aria-label="Move up"
-        >
-          ↑
-        </button>
-        <button
-          type="button"
-          onClick={() => moveDetailsPanel({ x: -24, y: 0 })}
-          aria-label="Move left"
-        >
-          ←
-        </button>
-        <button type="button" onClick={resetDetailsPanelPosition} aria-label="Reset panel position">
-          ·
-        </button>
-        <button
-          type="button"
-          onClick={() => moveDetailsPanel({ x: 24, y: 0 })}
-          aria-label="Move right"
-        >
-          →
-        </button>
-        <button
-          type="button"
-          onClick={() => moveDetailsPanel({ x: 0, y: 24 })}
-          aria-label="Move down"
-        >
-          ↓
-        </button>
-      </div>
 
       {!details.film ? (
         <div className="details-panel__empty">No film found for the selected spike.</div>
@@ -240,6 +273,13 @@ function isEditableTarget(target: EventTarget | null): boolean {
     target.tagName === 'TEXTAREA' ||
     target.tagName === 'SELECT'
   );
+}
+
+function isDragControl(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) {
+    return false;
+  }
+  return target.closest('button, a, input, textarea, select') !== null;
 }
 
 function getDetailContext(

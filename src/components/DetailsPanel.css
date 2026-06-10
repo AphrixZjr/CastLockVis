@@ -23,6 +23,14 @@
     transform 120ms ease;
 }
 
+.details-panel--dragging {
+  cursor: grabbing;
+  user-select: none;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
 .details-panel:focus-within,
 .details-panel:hover {
   border-color: color-mix(in srgb, var(--color-accent) 54%, var(--color-border));
@@ -38,6 +46,17 @@
   gap: var(--space-3);
   border-bottom: var(--border);
   padding-bottom: var(--space-3);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.details-panel--dragging .details-panel__header {
+  cursor: grabbing;
+}
+
+.details-panel__header > div {
+  min-width: 0;
 }
 
 .details-panel__title,
@@ -67,41 +86,12 @@
   font-size: var(--fs-sm);
   padding: var(--space-1) var(--space-2);
   cursor: pointer;
+  flex: 0 0 auto;
 }
 
 .details-panel__close:hover {
   border-color: var(--color-accent);
   color: var(--color-text);
-}
-
-.details-panel__move {
-  display: grid;
-  grid-template-columns: repeat(5, 28px);
-  gap: var(--space-1);
-  justify-content: end;
-  border-bottom: var(--border);
-  padding-bottom: var(--space-3);
-}
-
-.details-panel__move button {
-  display: grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
-  border: var(--border);
-  border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--color-chart-bg) 82%, var(--color-surface));
-  color: var(--color-text-dim);
-  font: inherit;
-  line-height: 1;
-  cursor: pointer;
-}
-
-.details-panel__move button:hover,
-.details-panel__move button:focus-visible {
-  border-color: var(--color-accent);
-  color: var(--color-text);
-  outline: none;
 }
 
 .details-panel__section {
@@ -187,10 +177,6 @@
     width: auto;
     max-height: min(68vh, 560px);
     padding: var(--space-3);
-  }
-
-  .details-panel__move {
-    justify-content: start;
   }
 
   .signal-grid {
