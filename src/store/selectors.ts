@@ -6,6 +6,36 @@ import {
 import type { DataBundle, DataIndexes, EntropyCurve, MarkovMatrix } from '../data/types';
 import type { AlignmentFilters } from './useVizStore';
 
+export type ActiveSelectionMode = 'brush' | 'single' | 'fallback';
+
+export function getActiveSelectionMode(
+  brushedActorIds: Set<string>,
+  selectedActorId: string | null,
+): ActiveSelectionMode {
+  if (brushedActorIds.size > 0) {
+    return 'brush';
+  }
+  if (selectedActorId !== null) {
+    return 'single';
+  }
+  return 'fallback';
+}
+
+export function getActiveActorIds(
+  allActorIds: string[],
+  brushedActorIds: Set<string>,
+  selectedActorId: string | null,
+): string[] {
+  const mode = getActiveSelectionMode(brushedActorIds, selectedActorId);
+  if (mode === 'brush') {
+    return allActorIds.filter((actorId) => brushedActorIds.has(actorId));
+  }
+  if (mode === 'single' && selectedActorId !== null) {
+    return allActorIds.includes(selectedActorId) ? [selectedActorId] : [];
+  }
+  return allActorIds;
+}
+
 export function getCohortActorIds(
   allActorIds: string[],
   brushedActorIds: Set<string>,
@@ -59,6 +89,33 @@ export function getDominantClusterId(
   return bestCluster;
 }
 
+export function getResolvedMarkovClusterId(
+  indexes: DataIndexes,
+  allActorIds: string[],
+  brushedActorIds: Set<string>,
+  selectedActorId: string | null,
+): number | null {
+  if (brushedActorIds.size > 0) {
+    const clusterIds = new Set<number>();
+    for (const actorId of allActorIds) {
+      if (!brushedActorIds.has(actorId)) {
+        continue;
+      }
+      const actor = indexes.actorsById.get(actorId);
+      if (actor) {
+        clusterIds.add(actor.clusterId);
+      }
+    }
+    return clusterIds.size === 1 ? [...clusterIds][0] : null;
+  }
+
+  if (selectedActorId !== null) {
+    return indexes.actorsById.get(selectedActorId)?.clusterId ?? null;
+  }
+
+  return getDominantClusterId(indexes, allActorIds);
+}
+
 export function getMarkovMatrixForCohort(
   indexes: DataIndexes,
   stage: MarkovMatrix['stage'],
@@ -84,4 +141,3 @@ export function getFilteredAlignmentTracks(
 ) {
   return filterAlignmentTracks(bundle.alignment, filters);
 }
-

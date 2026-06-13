@@ -19,6 +19,8 @@ export interface BrushLayerProps {
   onSelectPoint: (actorId: string) => void;
   /** 单击空白：父视图据此回到全局态。 */
   onClearBrush: () => void;
+  /** 指针悬停命中的点，使用与单击相同的最近点命中规则。 */
+  onHoverPoint?: (actorId: string | null) => void;
   /** 拖动小于该 SVG 单位视作单击。 */
   clickThreshold?: number;
   /** 单击命中点的半径（SVG 单位）。 */
@@ -40,7 +42,7 @@ function nearestPoint(points: BrushPoint[], x: number, y: number, radius: number
     const dx = point.x - x;
     const dy = point.y - y;
     const distSq = dx * dx + dy * dy;
-    if (distSq <= bestDistSq) {
+    if (distSq < bestDistSq) {
       bestDistSq = distSq;
       best = point;
     }
@@ -72,6 +74,7 @@ export function BrushLayer({
   onBrush,
   onSelectPoint,
   onClearBrush,
+  onHoverPoint,
   clickThreshold = 3,
   hitRadius = 8,
 }: BrushLayerProps) {
@@ -80,12 +83,34 @@ export function BrushLayer({
   const rectRef = useRef<BrushRect | null>(null);
 
   // 把最新 props 收进 ref，使原生监听器保持稳定（只在 svgRef 变化时重绑）。
-  const latest = useRef({ points, onBrush, onSelectPoint, onClearBrush, clickThreshold, hitRadius });
-  latest.current = { points, onBrush, onSelectPoint, onClearBrush, clickThreshold, hitRadius };
+  const latest = useRef({
+    points,
+    onBrush,
+    onSelectPoint,
+    onClearBrush,
+    onHoverPoint,
+    clickThreshold,
+    hitRadius,
+  });
+  latest.current = {
+    points,
+    onBrush,
+    onSelectPoint,
+    onClearBrush,
+    onHoverPoint,
+    clickThreshold,
+    hitRadius,
+  };
 
   const applyRect = (rect: BrushRect | null) => {
     rectRef.current = rect;
     setBrushRect(rect);
+  };
+
+  const emitHover = (local: { x: number; y: number }) => {
+    const config = latest.current;
+    const hit = nearestPoint(config.points, local.x, local.y, config.hitRadius);
+    config.onHoverPoint?.(hit?.actor.id ?? null);
   };
 
   useEffect(() => {
@@ -99,6 +124,7 @@ export function BrushLayer({
       if (!local) {
         return;
       }
+      emitHover(local);
       dragStart.current = local;
       applyRect({ x: local.x, y: local.y, w: 0, h: 0 });
       svg.setPointerCapture?.(event.pointerId);
@@ -111,6 +137,10 @@ export function BrushLayer({
       }
       const local = clientToSvg(svg, event.clientX, event.clientY);
       if (!local) {
+        return;
+      }
+      if (!start) {
+        emitHover(local);
         return;
       }
       applyRect({
@@ -132,7 +162,7 @@ export function BrushLayer({
 
       const config = latest.current;
 
-      // 极小拖动 = 单击。命中点 → 单选；点空白 → 清除回到全局态。
+      // 极小拖动 = 单击。命中点 → 单选；点空白 → 由父视图按当前 active 状态处理。
       if (rect.w < config.clickThreshold && rect.h < config.clickThreshold) {
         const hit = nearestPoint(config.points, start.x, start.y, config.hitRadius);
         if (hit) {
@@ -156,13 +186,19 @@ export function BrushLayer({
       config.onBrush(ids);
     };
 
+    const handleLeave = () => {
+      latest.current.onHoverPoint?.(null);
+    };
+
     svg.addEventListener('pointerdown', handleDown);
     svg.addEventListener('pointermove', handleMove);
     svg.addEventListener('pointerup', handleUp);
+    svg.addEventListener('pointerleave', handleLeave);
     return () => {
       svg.removeEventListener('pointerdown', handleDown);
       svg.removeEventListener('pointermove', handleMove);
       svg.removeEventListener('pointerup', handleUp);
+      svg.removeEventListener('pointerleave', handleLeave);
     };
   }, [svgRef]);
 

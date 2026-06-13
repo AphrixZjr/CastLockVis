@@ -139,16 +139,20 @@
   - 放置建议：
     - 在 `ClusterView` 内改成“主散点区 + 侧边摘要栏”两栏布局；窄屏再降级为上下布局。
     - 摘要图使用 `--cluster-*` 色，避免新增硬编码色值；每一行至少展示 `clusterId`、count、percent。
+    - 当前实现已调整为底部竖向柱状图；后续如继续采用底部布局，应保持主散点区优先，不让摘要图挤压 A 的核心空间。
   - 数据与实现约束：
     - 这只是对 `actors[].clusterId` 的轻量汇总，不涉及任何运行时重算统计，可直接在 `ClusterView` 的 `useMemo` 中做；若后续复用需要明显增长，再抽到 `lib/aggregate.ts`。
     - 第一版不要求 hover 柱子反向高亮散点，避免引入多余联动复杂度。
     - 点击某个柱子，自动选择该 `clusterId` 下的全部演员，效果等价于“程序化 brush 该 cluster 的所有点”。
     - 实现上不要求真的驱动 `BrushLayer` 画出矩形，只需写入 `brushedActorIds` 并使 B/D 响应即可。
     - 若当前已有单演员选择，不清掉 cached `selectedActorId`；只让非空 `brushedActorIds` 成为当前 active cohort，并关闭 `detailsOpen`，避免 cohort 联动时仍展示单点详情。
+    - 点击某个 cluster 后，摘要面板从“各 cluster 人数构成”切换为“该 cluster 内各类型演员占比”详情视图；类型建议第一版按 `dominantEarlyGenre` 汇总，仍使用 genre token 色。
+    - cluster 详情视图必须提供明确的“返回”按钮，返回到全局 cluster composition 柱状图；返回只切换 A 内摘要面板视图，不应自动清空当前 brush / active cohort，除非后续交互评审另行决定。
+    - 后续点击联动实现需复用当前柱状图汇总中保留的 `actorIds` / `clusterId` 数据结构，避免重新扫描 DOM 或通过文本解析反推选区。
     - 这一增强完成后，A 将同时支持“自由拖框定义 cohort”和“点击摘要栏按整簇选择 cohort”两种入口。
   - 预期落点：`src/views/ClusterView.tsx`、`src/views/Views.css`，必要时少量触及 `src/store/selectors.ts` 或 `src/lib/aggregate.ts`。
 
-- [ ] **视图 A 单选 / 圈选交互状态修复**
+- [x] **视图 A 单选 / 圈选交互状态修复**
   - 目标：明确 A 的 active selection 规则，消除单选、圈选、空白点击之间的状态震荡与跨视图不一致。
   - 期望交互：
     - 单选与圈选之间，新操作覆盖旧操作的 active 状态：单选后圈选时高亮圈选并联动；圈选后单选时取消圈选高亮并联动单点。
@@ -179,7 +183,20 @@
     - 单选置顶可通过把 selected / hovered / brushed 点拆成上层渲染 pass 解决，不需要改 store。
   - 预期落点：`src/views/ClusterView.tsx`、`src/views/RiverView.tsx`、`src/views/AlignmentView.tsx`、`src/components/controls/BrushLayer.tsx`、`src/store/useVizStore.ts`，必要时触及 `src/store/selectors.ts` 与 `src/App.tsx`。
 
-- [ ] **Markov 矩阵仅在单 cluster 语义下显示**
+- [x] **视图 B cohort 模式语义修正 + B→C 联动保留**
+  - 现状：A 圈选多个演员后，B 会显示 cohort 平均河流 / 平均熵曲线，并仍尝试从平均熵曲线上挑 3 个峰值点映射到代表演员；这会让“峰值点代表谁、点击后进入哪个演员 / 哪个 T=0”变得不稳定。
+  - 改造目标：
+    - 当 A 的 active selection 是非空 `brushedActorIds` / cluster cohort 时，B 不再显示可点击的熵峰值点，也不应打开 `DetailsPanel`。
+    - B 当前的“平均香农熵曲线”语义需要重新评估：它现在是各演员个人 entropy 曲线按 `n` 算术平均，未必等价于 cohort 在第 `n` 部电影位置上的类型分布熵。
+    - 在正式决定前，可先保留平均线但必须在代码 / tooltip 文案中明确其含义；若后续分析目标要求群体分布熵，则改为按 cohort 在每个 `seqIndex` 的 `dominantGenre` 分布重新计算 Shannon entropy。
+    - 单演员模式下 B→C 的联动必须保留：点击 B 的单演员熵峰 / 作品点后，仍写入 `selectedActorId` + `selectedFilmIndex`，使 C 高亮同一演员轨迹并显示对应 τ 辅助线。
+  - 实施约束：
+    - 不要让 cohort 模式的平均峰值点复用单演员峰值点交互；cohort 模式第一版只做群体概览，不产生 B→C 单点联动。
+    - 若保留 cohort 平均熵线，应把峰值提取逻辑限制在单演员 chart 内；`buildCohortChart()` 返回的 `spikes` 应为空，或由显式开关控制。
+    - B 的 tooltip / caption 需要区分“single actor entropy”与“mean individual entropy”，避免把平均个人熵误读为群体分布熵。
+  - 预期落点：`src/views/RiverView.tsx`、`src/App.tsx`，必要时触及 `src/lib/aggregate.ts` 与 `src/store/selectors.ts`。
+
+- [x] **Markov 矩阵仅在单 cluster 语义下显示**
   - 现状：当 A 里选中来自多个 `clusterId` 的点时，D 似乎会按点数最多的 cluster 显示 Markov 矩阵，导致“当前矩阵代表谁”不明确。
   - 改造目标：
     - D 仅在两类状态下显示矩阵：单点模式；或非空圈选 / 柱子选择的点全部来自同一个 `clusterId`。
@@ -207,8 +224,10 @@
 1. `DetailsPanel` 可通过鼠标拖动标题栏平滑移动，关闭按钮正常，方向按钮不再作为主交互暴露。
 2. 四视图 panel 使用命名 grid area，A/B/C/D 的空间比例可通过少量集中参数调整；默认布局下 D 不再显著空置、C 获得更充足空间。
 3. 视图 A 出现 cluster composition 摘要图，点击某柱子可直接进入该 cluster 的 cohort 联动态。
-4. 视图 A 单选 / 圈选遵循 active selection 覆盖与 cached 单选回退规则；空白点击和圈选空白不再触发 fallback 震荡；单选高亮层级与实际联动 actor 一致。
-5. Markov 矩阵仅在单点或单 cluster cohort 下显示；多 cluster cohort 时不显示矩阵，也不再隐式选择多数 cluster。
+4. 视图 A 点击 cluster 柱后，摘要面板切换到该 cluster 的类型构成详情，并可通过“返回”回到全局 cluster composition。
+5. 视图 A 单选 / 圈选遵循 active selection 覆盖与 cached 单选回退规则；空白点击和圈选空白不再触发 fallback 震荡；单选高亮层级与实际联动 actor 一致。
+6. 视图 B 在 cohort 模式下不显示可点击峰值点；单演员模式下 B→C 峰值 / 作品联动保持可用。
+7. Markov 矩阵仅在单点或单 cluster cohort 下显示；多 cluster cohort 时不显示矩阵，也不再隐式选择多数 cluster。
 
 ## S6 · 第二阶段完备视觉（视觉，P2 · 第二阶段）
 

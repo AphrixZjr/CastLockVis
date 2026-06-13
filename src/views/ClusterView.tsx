@@ -46,12 +46,6 @@ export function ClusterView({ actors, genres }: ClusterViewProps) {
   const selectSpike = useVizStore((state) => state.selectSpike);
   const closeDetails = useVizStore((state) => state.closeDetails);
 
-  const clearSelection = () => {
-    selectActor(null);
-    selectSpike(null);
-    closeDetails();
-  };
-
   const svgRef = useRef<SVGSVGElement>(null);
 
   const genreTokenLookup = useMemo(() => buildGenreTokenLookup(genres), [genres]);
@@ -141,24 +135,69 @@ export function ClusterView({ actors, genres }: ClusterViewProps) {
 
   const points = chart.points;
 
-  // 拖框结束：空列表回到全局态，否则进入群落平均态；任一情况都清掉单演员选择。
+  const hasBrush = brushedActorIds.size > 0;
+  const activeSelectedActorId = hasBrush ? null : selectedActorId;
+
+  const renderPoint = ({
+    actor,
+    x,
+    y,
+    tokenIndex,
+    clusterId,
+  }: (typeof chart.points)[number]) => {
+    const isHovered = hoveredActorId === actor.id;
+    const isActorSelected = activeSelectedActorId === actor.id;
+    const isBrushed = hasBrush && brushedActorIds.has(actor.id);
+    const isActive = isHovered || isActorSelected;
+    const isDimmed = hasBrush && !isBrushed;
+    return (
+      <path
+        key={actor.id}
+        d={clusterSymbolPath(clusterId, x, y, isActive || isBrushed ? POINT_R_ACTIVE : POINT_R)}
+        className={[
+          'view-point',
+          isActive ? 'view-point--active' : '',
+          isBrushed ? 'view-point--selected' : '',
+          isDimmed ? 'view-point--dimmed' : '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
+        style={{ fill: `var(--genre-${tokenIndex})` }}
+      />
+    );
+  };
+
+  const basePoints = chart.points.filter(({ actor }) => {
+    const isHovered = hoveredActorId === actor.id;
+    const isActorSelected = activeSelectedActorId === actor.id;
+    const isBrushed = hasBrush && brushedActorIds.has(actor.id);
+    return !isHovered && !isActorSelected && !isBrushed;
+  });
+  const activePoints = chart.points.filter(({ actor }) => {
+    const isHovered = hoveredActorId === actor.id;
+    const isActorSelected = activeSelectedActorId === actor.id;
+    const isBrushed = hasBrush && brushedActorIds.has(actor.id);
+    return isHovered || isActorSelected || isBrushed;
+  });
+
+  // 拖框结束：非空 brush 覆盖当前 active 状态，但保留 cached 单选以便清空 brush 后回退。
   const handleBrush = (ids: string[]) => {
     if (ids.length === 0) {
       clearBrush();
     } else {
       setBrush(ids);
+      closeDetails();
     }
-    clearSelection();
   };
 
-  // 单击命中演员点（链路 2 起点）：单选该演员，不携带具体作品序号。
+  // 单击命中演员点（链路 2 起点）：清掉 brush，让单选明确成为 active 状态。
   const handleSelectPoint = (actorId: string) => {
+    clearBrush();
     selectActor(actorId);
     selectSpike(null);
     closeDetails();
   };
 
-  const hasBrush = brushedActorIds.size > 0;
   const tooltipLabel = hoveredActor
     ? hoveredActor.name
     : hasBrush
@@ -169,9 +208,9 @@ export function ClusterView({ actors, genres }: ClusterViewProps) {
   const tooltipDetail = hoveredActor
     ? `cluster ${hoveredActor.clusterId} · early=${hoveredActor.dominantEarlyGenre}`
     : hasBrush
-      ? '点击空白清除选区'
+      ? '点击空白清除圈选并回退 cached 单选'
       : selectedActor
-        ? `cluster ${selectedActor.clusterId} · 单击演员切换 / 点空白清除`
+        ? `cluster ${selectedActor.clusterId} · 单击演员切换`
         : `clusters: ${chart.hulls.length} · 单击选演员 · 拖框选群落`;
 
   return (
@@ -235,38 +274,9 @@ export function ClusterView({ actors, genres }: ClusterViewProps) {
               );
             })}
 
-            {/* 演员点：形状=群落(cluster)，填色=早期主导类型(genre) */}
-            {chart.points.map(({ actor, x, y, tokenIndex, clusterId }) => {
-              const isHovered = hoveredActorId === actor.id;
-              // 单击选中的演员（链路 2 起点）：保持高亮，且 brush 激活时不被调暗。
-              const isActorSelected = selectedActorId === actor.id;
-              // 群落框选命中的演员：沿用 main 的 brush 视觉（--selected 描边 + 放大）。
-              const isBrushed = brushedActorIds.has(actor.id);
-              const isActive = isHovered || isActorSelected;
-              const isDimmed = hasBrush && !isBrushed && !isActorSelected;
-              return (
-                <path
-                  key={actor.id}
-                  d={clusterSymbolPath(
-                    clusterId,
-                    x,
-                    y,
-                    isActive || isBrushed ? POINT_R_ACTIVE : POINT_R,
-                  )}
-                  className={[
-                    'view-point',
-                    isActive ? 'view-point--active' : '',
-                    isBrushed ? 'view-point--selected' : '',
-                    isDimmed ? 'view-point--dimmed' : '',
-                  ]
-                    .filter(Boolean)
-                    .join(' ')}
-                  style={{ fill: `var(--genre-${tokenIndex})` }}
-                  onMouseEnter={() => setHoveredActorId(actor.id)}
-                  onMouseLeave={() => setHoveredActorId(null)}
-                />
-              );
-            })}
+            {/* 演员点：普通点先画，active/hover/brush 点后画，避免选中态被遮住。 */}
+            {basePoints.map(renderPoint)}
+            {activePoints.map(renderPoint)}
 
             {/* 通用框选层：绑定拖框/单击逻辑并绘制框选矩形 */}
             <BrushLayer
@@ -275,6 +285,7 @@ export function ClusterView({ actors, genres }: ClusterViewProps) {
               onBrush={handleBrush}
               onSelectPoint={handleSelectPoint}
               onClearBrush={clearBrush}
+              onHoverPoint={setHoveredActorId}
             />
           </svg>
         </div>

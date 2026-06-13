@@ -271,10 +271,13 @@
   cursor: pointer;
 }
 
-.view-film-dot--clickable:hover {
+.view-film-dot--clickable:hover,
+.view-film-dot--clickable:focus-visible,
+.view-film-dot--active {
   fill-opacity: 0.7;
   stroke: var(--color-accent);
   stroke-width: 1.4;
+  outline: none;
 }
 
 .view-peak-ring {
@@ -413,6 +416,31 @@
 
 .view-markov-cell--diag {
   fill: var(--color-snapback);
+}
+
+.view-chart--markov-empty .view-markov-cell,
+.view-chart--markov-empty .view-markov-cell--diag {
+  fill: var(--color-text-dim);
+  stroke: var(--color-chart-bg);
+}
+
+.view-chart--markov-empty .view-markov-cell:hover {
+  opacity: 0.28 !important;
+}
+
+.view-markov-empty-grid {
+  filter: blur(1.4px);
+  opacity: 0.74;
+}
+
+.view-markov-empty-overlay {
+  pointer-events: none;
+}
+
+.view-markov-empty-overlay__text {
+  fill: var(--color-text);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
 }
 
 .view-matrix-label {

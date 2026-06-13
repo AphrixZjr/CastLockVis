@@ -5,6 +5,7 @@ import { linearScale } from './chartUtils';
 
 interface MarkovViewProps {
   matrix: MarkovMatrix | null;
+  emptyMessage?: string;
 }
 
 const WIDTH = 360;
@@ -17,15 +18,16 @@ interface HoverCell {
   value: number;
 }
 
-export function MarkovView({ matrix }: MarkovViewProps) {
+export function MarkovView({ matrix, emptyMessage = '当前 stage 无可用矩阵。' }: MarkovViewProps) {
   const [hoverCell, setHoverCell] = useState<HoverCell | null>(null);
 
   const chart = useMemo(() => {
-    if (!matrix || matrix.genres.length === 0) {
+    if (matrix && matrix.genres.length === 0) {
       return null;
     }
 
-    const n = matrix.genres.length;
+    const genres = matrix?.genres ?? DEFAULT_MARKOV_GENRES;
+    const n = genres.length;
     const gridSize = Math.min(
       WIDTH - MARGIN.left - MARGIN.right,
       HEIGHT - MARGIN.top - MARGIN.bottom,
@@ -34,8 +36,9 @@ export function MarkovView({ matrix }: MarkovViewProps) {
     const matrixX = MARGIN.left + (WIDTH - MARGIN.left - MARGIN.right - gridSize) / 2;
     const matrixY = MARGIN.top;
 
-    const cells = matrix.matrix.flatMap((row, rowIndex) =>
-      row.map((value, colIndex) => {
+    const cells = Array.from({ length: n }, (_, rowIndex) =>
+      Array.from({ length: n }, (_, colIndex) => {
+        const value = matrix?.matrix[rowIndex]?.[colIndex] ?? 0.35;
         const x = matrixX + colIndex * cellSize;
         const y = matrixY + rowIndex * cellSize;
         return {
@@ -48,35 +51,43 @@ export function MarkovView({ matrix }: MarkovViewProps) {
           intensity: Math.round(linearScale(value, 0, 1, 8, 90)),
         };
       }),
-    );
+    ).flat();
 
-    return { n, cellSize, matrixX, matrixY, cells };
+    return { genres, n, cellSize, matrixX, matrixY, cells };
   }, [matrix]);
 
-  if (!chart || !matrix) {
-    return <div className="view-chart__empty">当前 stage 无可用矩阵。</div>;
+  if (!chart) {
+    return <div className="view-chart__empty">{emptyMessage}</div>;
   }
 
+  const isEmpty = matrix === null;
+
   return (
-    <figure className="view-chart view-chart--markov">
+    <figure className={`view-chart view-chart--markov${isEmpty ? ' view-chart--markov-empty' : ''}`}>
       <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} aria-label="Markov Transition view">
         <rect x={0} y={0} width={WIDTH} height={HEIGHT} className="view-bg" rx={8} />
 
-        {chart.cells.map((cell) => (
-          <rect
-            key={`${cell.row}-${cell.col}`}
-            x={cell.x}
-            y={cell.y}
-            width={chart.cellSize - 0.75}
-            height={chart.cellSize - 0.75}
-            className={`view-markov-cell ${cell.isDiagonal ? 'view-markov-cell--diag' : ''}`}
-            style={{ opacity: cell.intensity / 100 }}
-            onMouseEnter={() => setHoverCell({ row: cell.row, col: cell.col, value: cell.value })}
-            onMouseLeave={() => setHoverCell(null)}
-          />
-        ))}
+        <g className={isEmpty ? 'view-markov-empty-grid' : undefined}>
+          {chart.cells.map((cell) => (
+            <rect
+              key={`${cell.row}-${cell.col}`}
+              x={cell.x}
+              y={cell.y}
+              width={chart.cellSize - 0.75}
+              height={chart.cellSize - 0.75}
+              className={`view-markov-cell ${cell.isDiagonal ? 'view-markov-cell--diag' : ''}`}
+              style={{ opacity: isEmpty ? 0.28 : cell.intensity / 100 }}
+              onMouseEnter={
+                isEmpty
+                  ? undefined
+                  : () => setHoverCell({ row: cell.row, col: cell.col, value: cell.value })
+              }
+              onMouseLeave={isEmpty ? undefined : () => setHoverCell(null)}
+            />
+          ))}
+        </g>
 
-        {matrix.genres.map((genre, index) => {
+        {chart.genres.map((genre, index) => {
           const y = chart.matrixY + index * chart.cellSize + chart.cellSize * 0.65;
           return (
             <text
@@ -91,7 +102,7 @@ export function MarkovView({ matrix }: MarkovViewProps) {
           );
         })}
 
-        {matrix.genres.map((genre, index) => {
+        {chart.genres.map((genre, index) => {
           const x = chart.matrixX + index * chart.cellSize + chart.cellSize * 0.55;
           const y = chart.matrixY + chart.n * chart.cellSize + 14;
           return (
@@ -107,20 +118,49 @@ export function MarkovView({ matrix }: MarkovViewProps) {
             </text>
           );
         })}
+
+        {isEmpty && (
+          <g className="view-markov-empty-overlay" aria-hidden="true">
+            <text
+              x={chart.matrixX + (chart.n * chart.cellSize) / 2}
+              y={chart.matrixY + chart.cellSize * 2.9}
+              className="view-markov-empty-overlay__text"
+              textAnchor="middle"
+            >
+              <tspan x={chart.matrixX + (chart.n * chart.cellSize) / 2}>
+                Markov Transition Gate
+              </tspan>
+              <tspan x={chart.matrixX + (chart.n * chart.cellSize) / 2} dy="1.35em">
+                仅在单演员模式 / 单聚类模式下可用
+              </tspan>
+            </text>
+          </g>
+        )}
       </svg>
 
       <ChartTooltip
-        label={`cohort ${matrix.cohortId} · stage ${matrix.stage}`}
+        label={matrix ? `cohort ${matrix.cohortId} · stage ${matrix.stage}` : 'Markov unavailable'}
         detail={
-          hoverCell
+          isEmpty
+            ? emptyMessage
+            : hoverCell && matrix
             ? `${matrix.genres[hoverCell.col]} → ${matrix.genres[hoverCell.row]} = ${hoverCell.value.toFixed(3)}`
             : 'hover cell 查看转移概率'
         }
-        tone={hoverCell ? 'active' : 'default'}
+        tone={hoverCell && !isEmpty ? 'active' : 'default'}
       />
     </figure>
   );
 }
+
+const DEFAULT_MARKOV_GENRES = [
+  'Action',
+  'Comedy',
+  'Drama',
+  'Romance',
+  'Thriller',
+  'Crime',
+] as const;
 
 function shortGenre(genre: string): string {
   if (genre.length <= 7) {

@@ -6,9 +6,12 @@ import { Toggle } from './components/controls/Toggle';
 import { useDataRuntime } from './data/dataRuntimeContext';
 import type { MarkovStage } from './data/types';
 import {
+  getActiveActorIds,
+  getActiveSelectionMode,
   getCohortActorIds,
   getDominantClusterId,
   getMarkovMatrixForCohort,
+  getResolvedMarkovClusterId,
 } from './store/selectors';
 import { type AlignmentFilters, useVizStore } from './store/useVizStore';
 import { AlignmentView } from './views/AlignmentView';
@@ -102,19 +105,29 @@ export function App() {
     }
 
     const allActorIds = loadState.bundle.actors.map((actor) => actor.id);
-    const cohortActorIds = getCohortActorIds(allActorIds, brushedActorIds);
-    const dominantClusterId = getDominantClusterId(loadState.indexes, cohortActorIds);
+    const activeMode = getActiveSelectionMode(brushedActorIds, selectedActorId);
+    const activeActorIds = getActiveActorIds(allActorIds, brushedActorIds, selectedActorId);
+    const dominantClusterId =
+      brushedActorIds.size > 0
+        ? getResolvedMarkovClusterId(
+            loadState.indexes,
+            allActorIds,
+            brushedActorIds,
+            selectedActorId,
+          )
+        : getDominantClusterId(loadState.indexes, activeActorIds);
+    const activeSelectedActorId = activeMode === 'single' ? selectedActorId : null;
     const selectedActorName =
-      selectedActorId !== null
-        ? (loadState.indexes.actorsById.get(selectedActorId)?.name ?? null)
+      activeSelectedActorId !== null
+        ? (loadState.indexes.actorsById.get(activeSelectedActorId)?.name ?? null)
         : null;
 
     return {
       totalActors: allActorIds.length,
-      cohortActorCount: cohortActorIds.length,
+      cohortActorCount: activeActorIds.length,
       dominantClusterId,
       selectedActorName,
-      selectedFilmIndex,
+      selectedFilmIndex: activeSelectedActorId !== null ? selectedFilmIndex : null,
       stage,
       filtersActive: hasConstrainedFilters(alignmentFilters),
       detailsOpen,
@@ -136,8 +149,23 @@ export function App() {
 
     const allActorIds = loadState.bundle.actors.map((actor) => actor.id);
     const cohortActorIds = getCohortActorIds(allActorIds, brushedActorIds);
-    const dominantClusterId = getDominantClusterId(loadState.indexes, cohortActorIds);
-    const markovMatrix = getMarkovMatrixForCohort(loadState.indexes, stage, dominantClusterId);
+    const activeMode = getActiveSelectionMode(brushedActorIds, selectedActorId);
+    const activeSelectedActorId = activeMode === 'single' ? selectedActorId : null;
+    const resolvedMarkovClusterId = getResolvedMarkovClusterId(
+      loadState.indexes,
+      allActorIds,
+      brushedActorIds,
+      selectedActorId,
+    );
+    const markovMatrix = getMarkovMatrixForCohort(
+      loadState.indexes,
+      stage,
+      resolvedMarkovClusterId,
+    );
+    const markovEmptyMessage =
+      brushedActorIds.size > 0 && resolvedMarkovClusterId === null
+        ? 'Markov Transition Gate 仅在单演员模式 / 单聚类模式下可用'
+        : '当前 stage 无可用矩阵。';
 
     const panels: ReadyPanel[] = [
       {
@@ -156,8 +184,8 @@ export function App() {
             indexes={loadState.indexes}
             cohortActorIds={cohortActorIds}
             isCohortMode={brushedActorIds.size > 0}
-            selectedActorId={selectedActorId}
-            selectedFilmIndex={selectedFilmIndex}
+            selectedActorId={activeSelectedActorId}
+            selectedFilmIndex={activeSelectedActorId !== null ? selectedFilmIndex : null}
             onSpikeSelect={(actorId, filmIndex) => {
               selectActor(actorId);
               selectSpike(filmIndex);
@@ -175,7 +203,7 @@ export function App() {
         ...PANEL_CONFIGS[3],
         legend: <MarkovLegend />,
         toolbar: <StageToggle />,
-        content: <MarkovView matrix={markovMatrix} />,
+        content: <MarkovView matrix={markovMatrix} emptyMessage={markovEmptyMessage} />,
       },
     ];
 

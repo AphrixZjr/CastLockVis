@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { ChartTooltip } from '../components/common/ChartTooltip';
 import { averageEntropyCurves } from '../lib/aggregate';
-import type { DataBundle, DataIndexes, EntropyCurve, EntropyPoint } from '../data/types';
+import type { DataBundle, DataIndexes, EntropyPoint } from '../data/types';
 import { buildGenreTokenLookup, linearScale, pathFromBands, polylinePath } from './chartUtils';
 
 interface RiverViewProps {
@@ -37,12 +37,12 @@ export function RiverView({
   onSpikeSelect,
 }: RiverViewProps) {
   const chart = useMemo(() => {
-    // 单击 A 中演员（链路 2）优先在 B 显示该演员；其次才是框选群落平均态。
-    if (selectedActorId !== null) {
-      return buildSingleActorChart(bundle, indexes, selectedActorId);
-    }
+    // active selection 规则：brush/cohort 覆盖 cached 单选；brush 清空后再回退单演员。
     if (isCohortMode) {
       return buildCohortChart(bundle, indexes, cohortActorIds);
+    }
+    if (selectedActorId !== null) {
+      return buildSingleActorChart(bundle, indexes, selectedActorId);
     }
     return buildSingleActorChart(bundle, indexes, null);
   }, [bundle, cohortActorIds, indexes, isCohortMode, selectedActorId]);
@@ -92,9 +92,36 @@ export function RiverView({
 
         <path d={chart.entropyPath} className="view-entropy-line" />
 
-        {chart.dots.map(({ id, x, y, r }) => (
+        {chart.dots
+          .filter((dot) => dot.actorId === null)
+          .map(({ id, x, y, r }) => (
           <circle key={id} cx={x} cy={y} r={r} className="view-film-dot" />
-        ))}
+          ))}
+
+        {chart.clickableDots.map(({ id, actorId, seqIndex, x, y, r }) => {
+          const isActive = selectedActorId === actorId && selectedFilmIndex === seqIndex;
+          return (
+            <circle
+              key={`film-hit-${id}`}
+              cx={x}
+              cy={y}
+              r={r}
+              className={`view-film-dot view-film-dot--clickable ${
+                isActive ? 'view-film-dot--active' : ''
+              }`}
+              role="button"
+              aria-label={`Select film N${seqIndex}`}
+              tabIndex={0}
+              onClick={() => onSpikeSelect(actorId, seqIndex)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  onSpikeSelect(actorId, seqIndex);
+                }
+              }}
+            />
+          );
+        })}
 
         {chart.spikes.map(({ id, actorId, seqIndex, x, y }) => {
           const isActive = selectedActorId === actorId && selectedFilmIndex === seqIndex;
@@ -136,10 +163,15 @@ export function RiverView({
 interface RiverDot {
   id: string;
   seqIndex: number;
+  actorId: string | null;
   x: number;
   y: number;
   r: number;
   rating: number;
+}
+
+interface ClickableRiverDot extends RiverDot {
+  actorId: string;
 }
 
 interface RiverHighlight {
@@ -159,6 +191,7 @@ interface RiverChart {
   series: SeriesBand[];
   entropyPath: string;
   dots: RiverDot[];
+  clickableDots: ClickableRiverDot[];
   spikes: RiverHighlight[];
   caption: string;
 }
@@ -281,12 +314,14 @@ function buildSingleActorChart(
     return {
       id: `${film.actorId}-${film.seqIndex}`,
       seqIndex: film.seqIndex,
+      actorId: film.actorId,
       x: linearScale(film.seqIndex, 1, maxN, innerLeft, innerRight),
       y: linearScale(film.rating, 0, 10, ratingBottom, ratingTop),
       r: 2 + Math.sqrt(voteRatio) * 5,
       rating: film.rating,
     };
   });
+  const clickableDots = dots.filter((dot): dot is ClickableRiverDot => dot.actorId !== null);
 
   return {
     maxN,
@@ -297,11 +332,12 @@ function buildSingleActorChart(
     series: [...series.values()],
     entropyPath,
     dots,
+    clickableDots,
     spikes,
     caption:
       spikes.length > 0
-        ? `${sampleActor.name} · films=${films.length} · entropy local peaks clickable`
-        : `${sampleActor.name} · films=${films.length} · no local entropy peak`,
+        ? `${sampleActor.name} · single actor entropy · films=${films.length} · peaks/films clickable`
+        : `${sampleActor.name} · single actor entropy · films=${films.length} · films clickable`,
   };
 }
 
@@ -410,6 +446,7 @@ function buildCohortChart(
     averageDots.push({
       id: `cohort-${n}`,
       seqIndex: n,
+      actorId: null,
       x,
       y: linearScale(meanRating, 0, 10, ratingBottom, ratingTop),
       r: Math.max(2.2, Math.min(6.5, 2 + Math.sqrt(meanVotes / 100000))),
@@ -426,15 +463,9 @@ function buildCohortChart(
         y: linearScale(point.entropy, 0, maxEntropy, streamBottom, streamTop),
       })),
   );
-  const spikes = pickEntropySpikes(
-    averageEntropy.filter((point) => point.n <= maxN),
-    null,
-    (point) => ({
-      x: linearScale(point.n, 1, maxN, innerLeft, innerRight),
-      y: linearScale(point.entropy, 0, maxEntropy, streamBottom, streamTop),
-    }),
-    (point) => pickRepresentativeSpikeActor(bundle, indexes, cohortActorIds, point.n),
-  );
+  // TODO: Revisit whether this should become cohort distribution entropy; it is currently
+  // the arithmetic mean of individual actor entropy curves at each career index.
+  const spikes: RiverHighlight[] = [];
 
   return {
     maxN,
@@ -445,11 +476,9 @@ function buildCohortChart(
     series: [...series.values()],
     entropyPath,
     dots: averageDots,
+    clickableDots: [],
     spikes,
-    caption:
-      spikes.length > 0
-        ? `cohort average mode · actors=${actorSet.size} · local peaks choose representative actor`
-        : `cohort average mode · actors=${actorSet.size} · no local entropy peak`,
+    caption: `cohort mode · actors=${actorSet.size} · mean individual entropy · overview only`,
   };
 }
 
@@ -504,47 +533,4 @@ function pickEntropySpikes(
       };
     })
     .filter((entry): entry is RiverHighlight => entry !== null);
-}
-
-function pickRepresentativeSpikeActor(
-  bundle: DataBundle,
-  indexes: DataIndexes,
-  cohortActorIds: string[],
-  seqIndex: number,
-): string | null {
-  let bestActorId: string | null = null;
-  let bestProminence = Number.NEGATIVE_INFINITY;
-
-  for (const actorId of cohortActorIds) {
-    const films = indexes.filmsByActor.get(actorId) ?? [];
-    if (films.length < seqIndex) {
-      continue;
-    }
-
-    const curve = bundle.entropy.find((entry) => entry.actorId === actorId);
-    if (!curve) {
-      continue;
-    }
-
-    const prominence = entropyPeakProminenceAt(curve, seqIndex);
-    if (prominence > bestProminence) {
-      bestProminence = prominence;
-      bestActorId = actorId;
-    }
-  }
-
-  return bestActorId;
-}
-
-function entropyPeakProminenceAt(curve: EntropyCurve, seqIndex: number): number {
-  const current = curve.curve.find((point) => point.n === seqIndex)?.entropy;
-  const previous = curve.curve.find((point) => point.n === seqIndex - 1)?.entropy;
-  const next = curve.curve.find((point) => point.n === seqIndex + 1)?.entropy;
-  if (current === undefined || previous === undefined || next === undefined) {
-    return Number.NEGATIVE_INFINITY;
-  }
-  if (current <= previous || current < next) {
-    return Number.NEGATIVE_INFINITY;
-  }
-  return current - Math.max(previous, next);
 }

@@ -57,8 +57,12 @@ export function AlignmentView({ tracks }: AlignmentViewProps) {
 
   const selectedActorId = useVizStore((state) => state.selectedActorId);
   const selectedFilmIndex = useVizStore((state) => state.selectedFilmIndex);
+  const brushedActorIds = useVizStore((state) => state.brushedActorIds);
   const alignmentFilters = useVizStore((state) => state.alignmentFilters);
   const setAlignmentFilter = useVizStore((state) => state.setAlignmentFilter);
+  const hasActiveBrush = brushedActorIds.size > 0;
+  const activeSelectedActorId = hasActiveBrush ? null : selectedActorId;
+  const activeSelectedFilmIndex = activeSelectedActorId === null ? null : selectedFilmIndex;
 
   // 控制变量过滤器的数据域（仅 pivot 轨迹有 T=0 协变量）。
   const domains = useMemo(() => {
@@ -146,14 +150,14 @@ export function AlignmentView({ tracks }: AlignmentViewProps) {
     const { trackGeoms } = geometry;
 
     const selectedGeom =
-      selectedActorId !== null
-        ? (trackGeoms.find((geom) => geom.actorId === selectedActorId) ?? null)
+      activeSelectedActorId !== null
+        ? (trackGeoms.find((geom) => geom.actorId === activeSelectedActorId) ?? null)
         : null;
     const selectedClusterId = selectedGeom ? selectedGeom.clusterId : null;
     // 选中作品序号 → 对齐辅助线位置（仅信息提示，不参与同侪判定）。
     const selectedTau =
-      selectedGeom !== null && selectedFilmIndex !== null
-        ? selectedFilmIndex - selectedGeom.t0Index
+      selectedGeom !== null && activeSelectedFilmIndex !== null
+        ? activeSelectedFilmIndex - selectedGeom.t0Index
         : null;
 
     const contextOut: string[] = []; // 灰 faint：过滤外（含过滤外同侪）
@@ -211,7 +215,7 @@ export function AlignmentView({ tracks }: AlignmentViewProps) {
       selectedTau,
       selectedGuideX,
     };
-  }, [geometry, selectedActorId, selectedFilmIndex, alignmentFilters]);
+  }, [geometry, activeSelectedActorId, activeSelectedFilmIndex, alignmentFilters]);
 
   if (!geometry || !view) {
     return <div className="view-chart__empty">alignment.json 无可用分叉轨迹。</div>;
@@ -220,7 +224,7 @@ export function AlignmentView({ tracks }: AlignmentViewProps) {
   const tooltipDetail = [
     `success=${view.summary.success}`,
     `snapback=${view.summary.snapback}`,
-    selectedActorId !== null ? `同群落同侪 ${view.peerCount}` : null,
+    activeSelectedActorId !== null ? `同群落同侪 ${view.peerCount}` : null,
     view.selectedTau !== null ? `选中 τ=${view.selectedTau}` : null,
   ]
     .filter(Boolean)
@@ -416,7 +420,7 @@ export function AlignmentView({ tracks }: AlignmentViewProps) {
       <ChartTooltip
         label={`τ 范围 [${geometry.tauMin}, ${geometry.tauMax}]`}
         detail={tooltipDetail}
-        tone={selectedActorId !== null ? 'active' : 'default'}
+        tone={activeSelectedActorId !== null ? 'active' : 'default'}
       />
     </figure>
   );
