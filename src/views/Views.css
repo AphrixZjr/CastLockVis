@@ -38,6 +38,52 @@
   background: color-mix(in srgb, var(--color-chart-bg) 88%, var(--color-surface));
 }
 
+.cluster-composition__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.cluster-composition__header > div {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  min-width: 0;
+  color: var(--color-text-dim);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+}
+
+.cluster-composition__header strong {
+  color: var(--color-text);
+  font-size: var(--fs-md);
+}
+
+.cluster-composition__eyebrow {
+  color: var(--color-accent);
+}
+
+.cluster-composition__back {
+  min-height: 28px;
+  padding: var(--space-1) var(--space-2);
+  border: var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  cursor: pointer;
+}
+
+.cluster-composition__back:hover,
+.cluster-composition__back:focus-visible {
+  border-color: var(--color-accent);
+  outline: none;
+}
+
 .cluster-composition__list {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(48px, 1fr));
@@ -55,6 +101,30 @@
   gap: var(--space-1);
   min-width: 0;
   min-height: 132px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.cluster-composition__row:hover,
+.cluster-composition__row:focus-visible,
+.cluster-composition__row.is-active {
+  outline: none;
+}
+
+.cluster-composition__row:hover .cluster-composition__bar-fill,
+.cluster-composition__row:focus-visible .cluster-composition__bar-fill,
+.cluster-composition__row.is-active .cluster-composition__bar-fill {
+  box-shadow:
+    0 0 0 1px var(--color-chart-bg),
+    0 0 0 2px var(--color-accent);
+}
+
+.cluster-composition__row.is-active .cluster-composition__label {
+  color: var(--color-accent);
 }
 
 .cluster-composition__label {
@@ -97,6 +167,81 @@
 }
 
 .cluster-composition__metric strong {
+  color: var(--color-text);
+  font-size: var(--fs-md);
+}
+
+.cluster-composition__detail {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: var(--space-2);
+  min-width: 0;
+  min-height: 132px;
+}
+
+.cluster-composition__genre-list {
+  display: grid;
+  grid-template-columns: repeat(var(--genre-count), minmax(44px, 1fr));
+  align-items: end;
+  gap: var(--space-2);
+  min-width: 0;
+  min-height: 100px;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.cluster-composition__genre-row {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto auto;
+  justify-items: center;
+  align-items: end;
+  gap: var(--space-1);
+  min-width: 0;
+  min-height: 100px;
+  color: var(--color-text-dim);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+}
+
+.cluster-composition__genre-label {
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--color-text);
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cluster-composition__genre-bar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: min(100%, 22px);
+  height: 100%;
+}
+
+.cluster-composition__genre-bar-fill {
+  display: block;
+  width: 100%;
+  height: var(--genre-bar-percent);
+  border-radius: 999px 999px 3px 3px;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--genre-color) 50%, transparent) 0%,
+    var(--genre-color) 100%
+  );
+}
+
+.cluster-composition__genre-metric {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  color: var(--color-text-dim);
+  text-align: center;
+  white-space: normal;
+}
+
+.cluster-composition__genre-metric strong {
   color: var(--color-text);
   font-size: var(--fs-md);
 }
@@ -493,6 +638,27 @@
   }
 
   .cluster-composition__metric strong {
+    font-size: var(--fs-sm);
+  }
+
+  .cluster-composition__genre-list {
+    gap: var(--space-1);
+    min-height: 92px;
+  }
+
+  .cluster-composition__genre-row {
+    min-height: 92px;
+  }
+
+  .cluster-composition__genre-bar {
+    width: min(100%, 18px);
+  }
+
+  .cluster-composition__genre-metric {
+    font-size: 11px;
+  }
+
+  .cluster-composition__genre-metric strong {
     font-size: var(--fs-sm);
   }
 

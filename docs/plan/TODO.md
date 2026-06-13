@@ -131,7 +131,7 @@
     - 第一阶段先通过外层 grid 改善整体比例；若仍显局促，再决定是否为 D 做“矩阵 + 辅助摘要”式内部布局，而不是一开始就硬拉伸矩阵。
   - 预期落点：`src/App.tsx`、`src/App.css`、`src/components/ViewPanel.tsx`、`src/components/ViewPanel.css`，必要时少量触及 `src/views/Views.css`。
 
-- [ ] **视图 A 增加 cluster composition 摘要图 + 点击柱子选择 cluster**
+- [x] **视图 A 增加 cluster composition 摘要图 + 点击柱子选择 cluster**
   - 目标：在 A 中直接呈现各 `clusterId` 的构成比例，帮助用户在 brush 前就理解“哪个 cluster 大、哪个小”。
   - 推荐第一版：**柱状图优先于饼图**。
     - 理由：当前 A 已经有散点、hull、点形状，若再塞一个饼图，中心角与颜色块的可读性不如横向条形图稳定；7 个簇做条形图更利于比较，也更适合在窄侧栏中放置。

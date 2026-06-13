@@ -25,6 +25,14 @@ interface ClusterSummaryItem {
   token: number;
 }
 
+interface ClusterGenreSummaryItem {
+  genre: string;
+  count: number;
+  percent: number;
+  barPercent: number;
+  tokenIndex: number;
+}
+
 const WIDTH = 620;
 const HEIGHT = 320;
 const MARGIN = { top: 20, right: 18, bottom: 34, left: 34 };
@@ -37,6 +45,9 @@ const HULL_MIN_RADIUS = 18; // 凸包最小半径（让坍缩成点的 Western/M
 
 export function ClusterView({ actors, genres }: ClusterViewProps) {
   const [hoveredActorId, setHoveredActorId] = useState<string | null>(null);
+  const [selectedCompositionClusterId, setSelectedCompositionClusterId] = useState<number | null>(
+    null,
+  );
 
   const brushedActorIds = useVizStore((state) => state.brushedActorIds);
   const setBrush = useVizStore((state) => state.setBrush);
@@ -84,6 +95,47 @@ export function ClusterView({ actors, genres }: ClusterViewProps) {
         token: ((clusterId % CLUSTER_TOKENS) + CLUSTER_TOKENS) % CLUSTER_TOKENS,
       }));
   }, [actors]);
+
+  const selectedClusterSummary = useMemo(
+    () =>
+      selectedCompositionClusterId === null
+        ? null
+        : (clusterSummary.find((summary) => summary.clusterId === selectedCompositionClusterId) ??
+          null),
+    [clusterSummary, selectedCompositionClusterId],
+  );
+
+  const selectedClusterGenreSummary = useMemo<ClusterGenreSummaryItem[]>(() => {
+    if (!selectedClusterSummary) {
+      return [];
+    }
+
+    const byGenre = new Map<string, number>();
+    const selectedActorIds = new Set(selectedClusterSummary.actorIds);
+    for (const actor of actors) {
+      if (!selectedActorIds.has(actor.id)) {
+        continue;
+      }
+      byGenre.set(actor.dominantEarlyGenre, (byGenre.get(actor.dominantEarlyGenre) ?? 0) + 1);
+    }
+
+    const total = selectedClusterSummary.count || 1;
+    const maxCount = Math.max(...byGenre.values(), 1);
+    return [...byGenre.entries()]
+      .sort(([leftGenre, leftCount], [rightGenre, rightCount]) => {
+        if (rightCount !== leftCount) {
+          return rightCount - leftCount;
+        }
+        return leftGenre.localeCompare(rightGenre);
+      })
+      .map(([genre, count]) => ({
+        genre,
+        count,
+        percent: (count / total) * 100,
+        barPercent: (count / maxCount) * 100,
+        tokenIndex: genreTokenLookup.get(genre) ?? 1,
+      }));
+  }, [actors, genreTokenLookup, selectedClusterSummary]);
 
   const chart = useMemo(() => {
     if (actors.length === 0) {
@@ -138,13 +190,7 @@ export function ClusterView({ actors, genres }: ClusterViewProps) {
   const hasBrush = brushedActorIds.size > 0;
   const activeSelectedActorId = hasBrush ? null : selectedActorId;
 
-  const renderPoint = ({
-    actor,
-    x,
-    y,
-    tokenIndex,
-    clusterId,
-  }: (typeof chart.points)[number]) => {
+  const renderPoint = ({ actor, x, y, tokenIndex, clusterId }: (typeof chart.points)[number]) => {
     const isHovered = hoveredActorId === actor.id;
     const isActorSelected = activeSelectedActorId === actor.id;
     const isBrushed = hasBrush && brushedActorIds.has(actor.id);
@@ -182,6 +228,7 @@ export function ClusterView({ actors, genres }: ClusterViewProps) {
 
   // 拖框结束：非空 brush 覆盖当前 active 状态，但保留 cached 单选以便清空 brush 后回退。
   const handleBrush = (ids: string[]) => {
+    setSelectedCompositionClusterId(null);
     if (ids.length === 0) {
       clearBrush();
     } else {
@@ -192,10 +239,26 @@ export function ClusterView({ actors, genres }: ClusterViewProps) {
 
   // 单击命中演员点（链路 2 起点）：清掉 brush，让单选明确成为 active 状态。
   const handleSelectPoint = (actorId: string) => {
+    setSelectedCompositionClusterId(null);
     clearBrush();
     selectActor(actorId);
     selectSpike(null);
     closeDetails();
+  };
+
+  const handleSelectCluster = (summary: ClusterSummaryItem) => {
+    setBrush(summary.actorIds);
+    setSelectedCompositionClusterId(summary.clusterId);
+    closeDetails();
+  };
+
+  const handleReturnToClusterSummary = () => {
+    setSelectedCompositionClusterId(null);
+  };
+
+  const handleClearBrush = () => {
+    setSelectedCompositionClusterId(null);
+    clearBrush();
   };
 
   const tooltipLabel = hoveredActor
@@ -284,37 +347,103 @@ export function ClusterView({ actors, genres }: ClusterViewProps) {
               points={points}
               onBrush={handleBrush}
               onSelectPoint={handleSelectPoint}
-              onClearBrush={clearBrush}
+              onClearBrush={handleClearBrush}
               onHoverPoint={setHoveredActorId}
             />
           </svg>
         </div>
 
         <aside className="cluster-composition" aria-label="Cluster composition">
-          <div className="cluster-composition__list">
-            {clusterSummary.map(({ clusterId, count, percent, barPercent, token }) => (
+          {selectedClusterSummary ? (
+            <div className="cluster-composition__detail">
+              <header className="cluster-composition__header">
+                <div>
+                  <span className="cluster-composition__eyebrow">
+                    C{selectedClusterSummary.clusterId}
+                  </span>
+                  <strong>{selectedClusterSummary.count}</strong>
+                  <span>{selectedClusterSummary.percent.toFixed(1)}%</span>
+                </div>
+                <button
+                  type="button"
+                  className="cluster-composition__back"
+                  onClick={handleReturnToClusterSummary}
+                >
+                  Back
+                </button>
+              </header>
+
               <div
-                key={clusterId}
-                className="cluster-composition__row"
-                data-cluster-id={clusterId}
+                className="cluster-composition__genre-list"
                 style={
                   {
-                    '--cluster-color': `var(--cluster-${token})`,
-                    '--cluster-bar-percent': `${barPercent}%`,
+                    '--genre-count': selectedClusterGenreSummary.length,
                   } as CSSProperties
                 }
               >
-                <span className="cluster-composition__bar" aria-hidden>
-                  <span className="cluster-composition__bar-fill" />
-                </span>
-                <span className="cluster-composition__label">C{clusterId}</span>
-                <span className="cluster-composition__metric">
-                  <strong>{count}</strong>
-                  <span>{percent.toFixed(1)}%</span>
-                </span>
+                {selectedClusterGenreSummary.map(
+                  ({ genre, count, percent, barPercent, tokenIndex }) => (
+                    <div
+                      key={genre}
+                      className="cluster-composition__genre-row"
+                      title={`${genre}: ${count} actors (${percent.toFixed(1)}%)`}
+                      style={
+                        {
+                          '--genre-color': `var(--genre-${tokenIndex})`,
+                          '--genre-bar-percent': `${barPercent}%`,
+                        } as CSSProperties
+                      }
+                    >
+                      <span className="cluster-composition__genre-bar" aria-hidden>
+                        <span className="cluster-composition__genre-bar-fill" />
+                      </span>
+                      <span className="cluster-composition__genre-label">{genre}</span>
+                      <span className="cluster-composition__genre-metric">
+                        <strong>{count}</strong>
+                        <span>{percent.toFixed(1)}%</span>
+                      </span>
+                    </div>
+                  ),
+                )}
               </div>
-            ))}
-          </div>
+            </div>
+          ) : (
+            <div className="cluster-composition__list">
+              {clusterSummary.map((summary) => (
+                <button
+                  key={summary.clusterId}
+                  type="button"
+                  className={[
+                    'cluster-composition__row',
+                    brushedActorIds.size > 0 &&
+                    summary.actorIds.every((actorId) => brushedActorIds.has(actorId)) &&
+                    brushedActorIds.size === summary.actorIds.length
+                      ? 'is-active'
+                      : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
+                  data-cluster-id={summary.clusterId}
+                  onClick={() => handleSelectCluster(summary)}
+                  style={
+                    {
+                      '--cluster-color': `var(--cluster-${summary.token})`,
+                      '--cluster-bar-percent': `${summary.barPercent}%`,
+                    } as CSSProperties
+                  }
+                >
+                  <span className="cluster-composition__bar" aria-hidden>
+                    <span className="cluster-composition__bar-fill" />
+                  </span>
+                  <span className="cluster-composition__label">C{summary.clusterId}</span>
+                  <span className="cluster-composition__metric">
+                    <strong>{summary.count}</strong>
+                    <span>{summary.percent.toFixed(1)}%</span>
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
         </aside>
       </div>
 
