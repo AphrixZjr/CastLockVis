@@ -51,6 +51,7 @@ const Y_AXIS_META: Record<
 const WIDTH = 620;
 const HEIGHT = 320;
 const MARGIN = { top: 18, right: 20, bottom: 30, left: 34 };
+const SINGLE_PEER_LIMIT = 36;
 
 export function AlignmentView({ tracks }: AlignmentViewProps) {
   const [yAxis, setYAxis] = useState<YAxisMode>('dist');
@@ -148,12 +149,30 @@ export function AlignmentView({ tracks }: AlignmentViewProps) {
       return null;
     }
     const { trackGeoms } = geometry;
+    const mode = hasActiveBrush ? 'brush' : activeSelectedActorId !== null ? 'single' : 'global';
 
     const selectedGeom =
       activeSelectedActorId !== null
         ? (trackGeoms.find((geom) => geom.actorId === activeSelectedActorId) ?? null)
         : null;
     const selectedClusterId = selectedGeom ? selectedGeom.clusterId : null;
+    const visibleTrackGeoms =
+      mode === 'brush'
+        ? trackGeoms.filter((geom) => brushedActorIds.has(geom.actorId))
+        : mode === 'single' && selectedGeom !== null
+          ? [
+              selectedGeom,
+              ...sampleTrackGeoms(
+                trackGeoms.filter(
+                  (geom) =>
+                    geom.actorId !== selectedGeom.actorId &&
+                    geom.clusterId === selectedGeom.clusterId,
+                ),
+                SINGLE_PEER_LIMIT,
+                `alignment-peer:${selectedGeom.actorId}`,
+              ),
+            ]
+          : trackGeoms;
     // 选中作品序号 → 对齐辅助线位置（仅信息提示，不参与同侪判定）。
     const selectedTau =
       selectedGeom !== null && activeSelectedFilmIndex !== null
@@ -170,7 +189,7 @@ export function AlignmentView({ tracks }: AlignmentViewProps) {
     let success = 0;
     let snapback = 0;
 
-    for (const geom of trackGeoms) {
+    for (const geom of visibleTrackGeoms) {
       const inFilter = alignmentTrackInFilter(geom.track, alignmentFilters);
       if (inFilter) {
         if (geom.outcome === 'success') success += 1;
@@ -212,16 +231,27 @@ export function AlignmentView({ tracks }: AlignmentViewProps) {
       selectedItem,
       summary: { success, snapback },
       peerCount: peerSuccess.length + peerSnapback.length,
+      visibleCount: visibleTrackGeoms.length,
+      mode,
       selectedTau,
       selectedGuideX,
     };
-  }, [geometry, activeSelectedActorId, activeSelectedFilmIndex, alignmentFilters]);
+  }, [
+    geometry,
+    hasActiveBrush,
+    activeSelectedActorId,
+    activeSelectedFilmIndex,
+    brushedActorIds,
+    alignmentFilters,
+  ]);
 
   if (!geometry || !view) {
     return <div className="view-chart__empty">alignment.json 无可用分叉轨迹。</div>;
   }
 
   const tooltipDetail = [
+    `mode=${view.mode}`,
+    `visible=${view.visibleCount}`,
     `success=${view.summary.success}`,
     `snapback=${view.summary.snapback}`,
     activeSelectedActorId !== null ? `同群落同侪 ${view.peerCount}` : null,
@@ -436,4 +466,25 @@ function buildLinearTicks(min: number, max: number, count: number): number[] {
     ticks.push(Number((min + step * i).toFixed(2)));
   }
   return ticks;
+}
+
+function sampleTrackGeoms(trackGeoms: TrackGeom[], limit: number, salt: string): TrackGeom[] {
+  if (trackGeoms.length <= limit) {
+    return trackGeoms;
+  }
+  return [...trackGeoms]
+    .sort(
+      (left, right) =>
+        stableHash(`${salt}:${left.actorId}`) - stableHash(`${salt}:${right.actorId}`),
+    )
+    .slice(0, limit);
+}
+
+function stableHash(value: string): number {
+  let hash = 2166136261;
+  for (let i = 0; i < value.length; i += 1) {
+    hash ^= value.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
 }

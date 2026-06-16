@@ -514,7 +514,6 @@
 /* 同 tau 同侪：保留 outcome 颜色，提亮加粗（链路 2）。 */
 .view-track--peer {
   opacity: 0.85;
-  stroke-width: 2.2;
 }
 
 /* 选中演员本人：accent 描边、满透明、最粗，始终置顶（不被过滤压暗）。 */
@@ -538,8 +537,6 @@
 
 .view-track--peer {
   opacity: 0.78;
-  stroke-width: 2.1;
-  stroke-dasharray: 5 3;
 }
 
 .view-track--selected {

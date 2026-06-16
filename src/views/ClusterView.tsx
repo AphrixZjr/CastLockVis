@@ -231,6 +231,8 @@ export function ClusterView({ actors, genres }: ClusterViewProps) {
     setSelectedCompositionClusterId(null);
     if (ids.length === 0) {
       clearBrush();
+      selectActor(null);
+      selectSpike(null);
     } else {
       setBrush(ids);
       closeDetails();
@@ -259,6 +261,8 @@ export function ClusterView({ actors, genres }: ClusterViewProps) {
   const handleClearBrush = () => {
     setSelectedCompositionClusterId(null);
     clearBrush();
+    selectActor(null);
+    selectSpike(null);
   };
 
   const tooltipLabel = hoveredActor
@@ -271,7 +275,7 @@ export function ClusterView({ actors, genres }: ClusterViewProps) {
   const tooltipDetail = hoveredActor
     ? `cluster ${hoveredActor.clusterId} · early=${hoveredActor.dominantEarlyGenre}`
     : hasBrush
-      ? '点击空白清除圈选并回退 cached 单选'
+      ? '点击空白清除圈选并回到全局'
       : selectedActor
         ? `cluster ${selectedActor.clusterId} · 单击演员切换`
         : `clusters: ${chart.hulls.length} · 单击选演员 · 拖框选群落`;
