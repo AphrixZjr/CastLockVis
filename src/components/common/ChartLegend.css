@@ -5,8 +5,12 @@
   padding: var(--space-3) var(--space-4);
 }
 
+.genre-legend-header {
+  margin-bottom: var(--space-2);
+}
+
 .genre-legend-title {
-  margin: 0 0 var(--space-2) 0;
+  margin: 0;
   color: var(--color-text-dim);
   font-size: var(--fs-sm);
   font-weight: 600;
@@ -16,6 +20,10 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(126px, 1fr));
   gap: var(--space-1) var(--space-3);
+}
+
+.genre-legend-linked-queue {
+  margin-top: var(--space-3);
 }
 
 .genre-legend-item {

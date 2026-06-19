@@ -1,20 +1,70 @@
 .interaction-guide {
   display: grid;
-  grid-template-columns: max-content 1fr;
-  align-items: center;
-  gap: var(--space-3);
-  border: var(--border);
-  border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--color-surface) 96%, var(--color-bg));
-  padding: var(--space-2) var(--space-4);
+  gap: var(--space-2);
+  width: 100%;
+  min-width: 0;
 }
 
-.interaction-guide__label {
-  color: var(--color-text);
-  font-family: var(--font-mono);
+.interaction-guide__header {
+  display: grid;
+  grid-template-columns: max-content minmax(0, max-content);
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.interaction-guide__title-text {
+  margin: 0;
+  color: var(--color-text-dim);
   font-size: var(--fs-sm);
   font-weight: 600;
   white-space: nowrap;
+}
+
+.interaction-guide__summary-text {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--color-text-dim);
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.interaction-guide__toggle {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  align-items: center;
+  gap: var(--space-2);
+  justify-self: start;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 24px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  cursor: pointer;
+}
+
+.interaction-guide__toggle:hover,
+.interaction-guide__toggle:focus-visible {
+  color: var(--color-text);
+  outline: none;
+}
+
+.interaction-guide__toggle:hover .interaction-guide__toggle-label,
+.interaction-guide__toggle:focus-visible .interaction-guide__toggle-label {
+  border-color: var(--color-accent);
+}
+
+.interaction-guide__toggle-label {
+  padding: 2px var(--space-2);
+  border: var(--border);
+  border-radius: var(--radius-sm);
+  color: color-mix(in srgb, var(--color-accent) 72%, var(--color-text-dim));
 }
 
 .interaction-guide__items {
@@ -62,18 +112,18 @@
 }
 
 @media (max-width: 1100px) {
-  .interaction-guide {
-    grid-template-columns: 1fr;
-  }
-
   .interaction-guide__items {
     grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 760px) {
-  .interaction-guide {
-    padding: var(--space-2) var(--space-3);
+  .interaction-guide__header {
+    grid-template-columns: 1fr;
+  }
+
+  .interaction-guide__toggle {
+    justify-self: stretch;
   }
 
   .interaction-guide__item {

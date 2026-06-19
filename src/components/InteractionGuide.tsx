@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { MarkovStage } from '../data/types';
 import './InteractionGuide.css';
 
@@ -22,6 +23,7 @@ export function InteractionGuide({
   filtersActive,
   detailsOpen,
 }: InteractionGuideProps) {
+  const [expanded, setExpanded] = useState(false);
   const hasCohort = cohortActorCount !== totalActors;
   const hasSelection = selectedActorName !== null;
   const cohortStatus = hasCohort
@@ -31,6 +33,13 @@ export function InteractionGuide({
     ? `${selectedActorName}${selectedFilmIndex !== null ? ` · N${selectedFilmIndex}` : ''}`
     : 'none selected';
   const detailStatus = detailsOpen ? 'details open' : 'details closed';
+  const summary = [
+    hasCohort ? `${cohortActorCount} actors · C${dominantClusterId ?? 'n/a'}` : 'global cohort',
+    hasSelection
+      ? `${selectedActorName}${selectedFilmIndex !== null ? ` · N${selectedFilmIndex}` : ''}`
+      : 'no actor',
+    filtersActive ? 'filters on' : 'filters off',
+  ].join(' · ');
 
   return (
     <section
@@ -38,27 +47,42 @@ export function InteractionGuide({
       aria-label="Current linked analysis queue"
       aria-live="polite"
     >
-      <div className="interaction-guide__label">Linked Queue</div>
-      <div className="interaction-guide__items">
-        <GuideItem
-          title="A→B/D"
-          status={`${cohortStatus} · ${stage}`}
-          hint="Brush A"
-          active={hasCohort}
-        />
-        <GuideItem
-          title="A/B→C"
-          status={`${selectionStatus} · ${detailStatus}`}
-          hint="Select actor or peak"
-          active={hasSelection}
-        />
-        <GuideItem
-          title="C Filter"
-          status={filtersActive ? 'controls constrained' : 'all controls'}
-          hint="Adjust sliders"
-          active={filtersActive}
-        />
+      <div className="interaction-guide__header">
+        <h3 className="interaction-guide__title-text">Linked Queue</h3>
+        <button
+          type="button"
+          className="interaction-guide__toggle"
+          aria-expanded={expanded}
+          aria-controls="interaction-guide-details"
+          onClick={() => setExpanded((current) => !current)}
+        >
+          <span className="interaction-guide__summary-text">{summary}</span>
+          <span className="interaction-guide__toggle-label">{expanded ? 'Hide' : 'Details'}</span>
+        </button>
       </div>
+
+      {expanded && (
+        <div id="interaction-guide-details" className="interaction-guide__items">
+          <GuideItem
+            title="A→B/D"
+            status={`${cohortStatus} · ${stage}`}
+            hint="Brush A"
+            active={hasCohort}
+          />
+          <GuideItem
+            title="A/B→C"
+            status={`${selectionStatus} · ${detailStatus}`}
+            hint="Select actor or peak"
+            active={hasSelection}
+          />
+          <GuideItem
+            title="C Filter"
+            status={filtersActive ? 'controls constrained' : 'all controls'}
+            hint="Adjust sliders"
+            active={filtersActive}
+          />
+        </div>
+      )}
     </section>
   );
 }

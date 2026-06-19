@@ -276,9 +276,12 @@ export function App() {
         </div>
       </header>
 
-      {loadState.status === 'ready' && <GenreColorLegend genres={loadState.bundle.genres} />}
-
-      {readyInteraction && <InteractionGuide {...readyInteraction} />}
+      {loadState.status === 'ready' && (
+        <GenreColorLegend
+          genres={loadState.bundle.genres}
+          linkedQueueSlot={readyInteraction && <InteractionGuide {...readyInteraction} />}
+        />
+      )}
 
       <section className="app-grid">
         <div className="app-grid__row app-grid__row--top">
