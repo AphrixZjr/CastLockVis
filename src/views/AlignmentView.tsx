@@ -50,7 +50,7 @@ const Y_AXIS_META: Record<
 
 const WIDTH = 620;
 const HEIGHT = 320;
-const MARGIN = { top: 18, right: 20, bottom: 30, left: 34 };
+const MARGIN = { top: 24, right: 30, bottom: 52, left: 62 };
 const SINGLE_PEER_LIMIT = 36;
 
 export function AlignmentView({ tracks }: AlignmentViewProps) {
@@ -318,6 +318,29 @@ export function AlignmentView({ tracks }: AlignmentViewProps) {
       </div>
       <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} aria-label="Transformation Alignment view">
         <rect x={0} y={0} width={WIDTH} height={HEIGHT} className="view-bg" rx={8} />
+
+        <g className="view-grid-layer view-grid-layer--alignment" aria-hidden="true">
+          {geometry.xTicks.map((tick) => (
+            <line
+              key={`grid-x-${tick.value}`}
+              x1={tick.x}
+              y1={MARGIN.top}
+              x2={tick.x}
+              y2={HEIGHT - MARGIN.bottom}
+              className="view-grid"
+            />
+          ))}
+          {geometry.yTicks.map((tick) => (
+            <line
+              key={`grid-y-${tick.value}`}
+              x1={MARGIN.left}
+              y1={tick.y}
+              x2={WIDTH - MARGIN.right}
+              y2={tick.y}
+              className="view-grid"
+            />
+          ))}
+        </g>
 
         <rect
           x={MARGIN.left}

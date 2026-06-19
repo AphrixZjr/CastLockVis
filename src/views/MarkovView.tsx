@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ChartTooltip } from '../components/common/ChartTooltip';
 import type { MarkovMatrix } from '../data/types';
 import { linearScale } from './chartUtils';
@@ -11,15 +11,22 @@ interface MarkovViewProps {
 const WIDTH = 360;
 const HEIGHT = 340;
 const MARGIN = { top: 10, right: 14, bottom: 78, left: 88 };
+const TOOLTIP_DELAY_MS = 180;
+const TOOLTIP_WIDTH = 58;
+const TOOLTIP_HEIGHT = 22;
+const TOOLTIP_GAP = 6;
 
 interface HoverCell {
   row: number;
   col: number;
   value: number;
+  x: number;
+  y: number;
 }
 
 export function MarkovView({ matrix, emptyMessage = '当前 stage 无可用矩阵。' }: MarkovViewProps) {
   const [hoverCell, setHoverCell] = useState<HoverCell | null>(null);
+  const [tooltipCell, setTooltipCell] = useState<HoverCell | null>(null);
 
   const chart = useMemo(() => {
     if (matrix && matrix.genres.length === 0) {
@@ -56,11 +63,29 @@ export function MarkovView({ matrix, emptyMessage = '当前 stage 无可用矩�
     return { genres, n, cellSize, matrixX, matrixY, cells };
   }, [matrix]);
 
+  useEffect(() => {
+    if (!hoverCell || matrix === null) {
+      setTooltipCell(null);
+      return undefined;
+    }
+
+    setTooltipCell(null);
+    const timer = window.setTimeout(() => {
+      setTooltipCell(hoverCell);
+    }, TOOLTIP_DELAY_MS);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [hoverCell, matrix]);
+
   if (!chart) {
     return <div className="view-chart__empty">{emptyMessage}</div>;
   }
 
   const isEmpty = matrix === null;
+  const tooltipPosition =
+    tooltipCell === null ? null : getCellTooltipPosition(tooltipCell, chart.cellSize);
 
   return (
     <figure className={`view-chart view-chart--markov${isEmpty ? ' view-chart--markov-empty' : ''}`}>
@@ -80,7 +105,14 @@ export function MarkovView({ matrix, emptyMessage = '当前 stage 无可用矩�
               onMouseEnter={
                 isEmpty
                   ? undefined
-                  : () => setHoverCell({ row: cell.row, col: cell.col, value: cell.value })
+                  : () =>
+                      setHoverCell({
+                        row: cell.row,
+                        col: cell.col,
+                        value: cell.value,
+                        x: cell.x,
+                        y: cell.y,
+                      })
               }
               onMouseLeave={isEmpty ? undefined : () => setHoverCell(null)}
             />
@@ -119,6 +151,19 @@ export function MarkovView({ matrix, emptyMessage = '当前 stage 无可用矩�
           );
         })}
 
+        {tooltipCell && tooltipPosition && (
+          <g
+            className="view-markov-cell-tooltip"
+            transform={`translate(${tooltipPosition.x} ${tooltipPosition.y})`}
+            aria-hidden="true"
+          >
+            <rect width={TOOLTIP_WIDTH} height={TOOLTIP_HEIGHT} rx={4} />
+            <text x={TOOLTIP_WIDTH / 2} y={14} textAnchor="middle">
+              p={tooltipCell.value.toFixed(3)}
+            </text>
+          </g>
+        )}
+
         {isEmpty && (
           <g className="view-markov-empty-overlay" aria-hidden="true">
             <text
@@ -144,8 +189,8 @@ export function MarkovView({ matrix, emptyMessage = '当前 stage 无可用矩�
           isEmpty
             ? emptyMessage
             : hoverCell && matrix
-            ? `${matrix.genres[hoverCell.col]} → ${matrix.genres[hoverCell.row]} = ${hoverCell.value.toFixed(3)}`
-            : 'hover cell 查看转移概率'
+              ? `${matrix.genres[hoverCell.col]} → ${matrix.genres[hoverCell.row]}`
+              : 'hover cell 查看转移概率'
         }
         tone={hoverCell && !isEmpty ? 'active' : 'default'}
       />
@@ -167,4 +212,16 @@ function shortGenre(genre: string): string {
     return genre;
   }
   return `${genre.slice(0, 6)}.`;
+}
+
+function getCellTooltipPosition(cell: HoverCell, cellSize: number): { x: number; y: number } {
+  const rightX = cell.x + cellSize + TOOLTIP_GAP;
+  const leftX = cell.x - TOOLTIP_WIDTH - TOOLTIP_GAP;
+  const x = rightX + TOOLTIP_WIDTH <= WIDTH - 4 ? rightX : Math.max(4, leftX);
+
+  const topY = cell.y - TOOLTIP_HEIGHT - TOOLTIP_GAP;
+  const bottomY = cell.y + cellSize + TOOLTIP_GAP;
+  const y = topY >= 4 ? topY : Math.min(HEIGHT - TOOLTIP_HEIGHT - 4, bottomY);
+
+  return { x, y };
 }

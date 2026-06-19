@@ -147,12 +147,8 @@
   display: block;
   width: 100%;
   height: var(--cluster-bar-percent);
-  border-radius: 999px 999px 3px 3px;
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--cluster-color) 50%, transparent) 0%,
-    var(--cluster-color) 100%
-  );
+  border-radius: 0;
+  background: var(--cluster-color);
 }
 
 .cluster-composition__metric {
@@ -224,12 +220,8 @@
   display: block;
   width: 100%;
   height: var(--genre-bar-percent);
-  border-radius: 999px 999px 3px 3px;
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--genre-color) 50%, transparent) 0%,
-    var(--genre-color) 100%
-  );
+  border-radius: 0;
+  background: var(--genre-color);
 }
 
 .cluster-composition__genre-metric {
@@ -324,6 +316,15 @@
 .view-grid {
   stroke: var(--color-chart-grid);
   stroke-width: 1;
+}
+
+.view-grid-layer {
+  pointer-events: none;
+}
+
+.view-grid-layer--alignment .view-grid {
+  stroke-width: 0.65;
+  opacity: 0.38;
 }
 
 .view-axis {
@@ -554,6 +555,23 @@
 
 .view-markov-cell:hover {
   opacity: 1 !important;
+}
+
+.view-markov-cell-tooltip {
+  pointer-events: none;
+}
+
+.view-markov-cell-tooltip rect {
+  fill: color-mix(in srgb, var(--color-surface) 94%, var(--color-bg));
+  stroke: color-mix(in srgb, var(--color-accent) 54%, var(--color-border));
+  stroke-width: 0.85;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.42));
+}
+
+.view-markov-cell-tooltip text {
+  fill: var(--color-text);
+  font-family: var(--font-mono);
+  font-size: 10px;
 }
 
 .view-markov-cell--diag {
