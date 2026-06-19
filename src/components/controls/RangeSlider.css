@@ -16,13 +16,13 @@
 .range-slider__label {
   color: var(--color-text-dim);
   font-family: var(--font-mono);
-  font-size: var(--fs-sm);
+  font-size: var(--fs-lg);
 }
 
 .range-slider__value {
   color: var(--color-text);
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: calc(var(--fs-sm) * 1.25);
   font-variant-numeric: tabular-nums;
 }
 
@@ -33,7 +33,7 @@
 
 .range-slider__inputs input[type='range'] {
   width: 100%;
-  height: 14px;
+  height: 21px;
   margin: 0;
   accent-color: var(--color-accent);
   cursor: pointer;

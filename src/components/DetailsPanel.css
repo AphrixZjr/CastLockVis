@@ -7,15 +7,15 @@
   bottom: var(--space-4);
   z-index: 20;
   display: grid;
-  gap: var(--space-3);
-  width: min(420px, calc(100vw - var(--space-8)));
-  max-height: min(720px, calc(100vh - var(--space-8)));
+  gap: var(--space-4);
+  width: min(630px, calc(100vw - var(--space-8)));
+  max-height: min(90vh, calc(720px * 1.5));
   overflow: auto;
   border: var(--border);
   border-radius: var(--radius-md);
   background: color-mix(in srgb, var(--color-surface) 96%, var(--color-bg));
   box-shadow: 0 18px 48px color-mix(in srgb, var(--color-bg) 70%, transparent);
-  padding: var(--space-4);
+  padding: var(--space-6);
   transform: translate(var(--details-panel-x), var(--details-panel-y));
   transition:
     border-color 160ms ease,
@@ -67,14 +67,14 @@
 }
 
 .details-panel__title {
-  font-size: var(--fs-md);
+  font-size: calc(var(--fs-md) * 1.5);
 }
 
 .details-panel__subtitle,
 .details-panel__empty,
 .details-panel__neighbor {
   color: var(--color-text-dim);
-  font-size: var(--fs-sm);
+  font-size: var(--fs-lg);
 }
 
 .details-panel__close {
@@ -83,8 +83,8 @@
   background: transparent;
   color: var(--color-text-dim);
   font: inherit;
-  font-size: var(--fs-sm);
-  padding: var(--space-1) var(--space-2);
+  font-size: var(--fs-lg);
+  padding: var(--space-2) var(--space-3);
   cursor: pointer;
   flex: 0 0 auto;
 }
@@ -106,7 +106,7 @@
 
 .details-panel__section-title {
   color: var(--color-text);
-  font-size: var(--fs-sm);
+  font-size: var(--fs-lg);
 }
 
 .details-grid {
@@ -118,7 +118,7 @@
 
 .details-grid dt {
   color: var(--color-text-dim);
-  font-size: var(--fs-sm);
+  font-size: var(--fs-lg);
 }
 
 .details-grid dd {
@@ -126,7 +126,7 @@
   margin: 0;
   overflow-wrap: anywhere;
   color: var(--color-text);
-  font-size: var(--fs-sm);
+  font-size: var(--fs-lg);
 }
 
 .details-grid__value--code {
@@ -151,14 +151,14 @@
 .signal-card__label,
 .signal-card__delta {
   color: var(--color-text-dim);
-  font-size: var(--fs-sm);
+  font-size: var(--fs-lg);
 }
 
 .signal-card__value {
   overflow-wrap: anywhere;
   color: var(--color-text);
   font-family: var(--font-mono);
-  font-size: var(--fs-md);
+  font-size: calc(var(--fs-md) * 1.5);
 }
 
 .signal-card__delta--up {
@@ -175,8 +175,8 @@
     bottom: var(--space-2);
     left: var(--space-2);
     width: auto;
-    max-height: min(68vh, 560px);
-    padding: var(--space-3);
+    max-height: min(80vh, 840px);
+    padding: calc(var(--space-3) * 1.5);
   }
 
   .signal-grid {

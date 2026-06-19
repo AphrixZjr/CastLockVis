@@ -51,6 +51,10 @@ const Y_AXIS_META: Record<
 const WIDTH = 620;
 const HEIGHT = 320;
 const MARGIN = { top: 24, right: 30, bottom: 52, left: 62 };
+const AXIS_LABEL_INSET = {
+  x: 14,
+  y: 20,
+};
 const SINGLE_PEER_LIMIT = 36;
 
 export function AlignmentView({ tracks }: AlignmentViewProps) {
@@ -453,17 +457,19 @@ export function AlignmentView({ tracks }: AlignmentViewProps) {
         />
         <text
           x={(MARGIN.left + WIDTH - MARGIN.right) / 2}
-          y={HEIGHT - 4}
+          y={HEIGHT - AXIS_LABEL_INSET.x}
           className="view-axis-label"
           textAnchor="middle"
         >
           tau = seqIndex - t0Index
         </text>
         <text
-          x={12}
+          x={AXIS_LABEL_INSET.y}
           y={(MARGIN.top + HEIGHT - MARGIN.bottom) / 2}
           className="view-axis-label"
-          transform={`rotate(-90 12 ${(MARGIN.top + HEIGHT - MARGIN.bottom) / 2})`}
+          transform={`rotate(-90 ${AXIS_LABEL_INSET.y} ${
+            (MARGIN.top + HEIGHT - MARGIN.bottom) / 2
+          })`}
           textAnchor="middle"
         >
           {geometry.yLabel}

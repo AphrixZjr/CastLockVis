@@ -16,7 +16,7 @@
 .interaction-guide__title-text {
   margin: 0;
   color: var(--color-text-dim);
-  font-size: var(--fs-sm);
+  font-size: calc(var(--fs-sm) * 1.4);
   font-weight: 600;
   white-space: nowrap;
 }
@@ -26,7 +26,7 @@
   overflow: hidden;
   color: var(--color-text-dim);
   font-family: var(--font-mono);
-  font-size: var(--fs-sm);
+  font-size: calc(var(--fs-sm) * 1.25);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -39,13 +39,13 @@
   justify-self: start;
   min-width: 0;
   max-width: 100%;
-  min-height: 24px;
+  min-height: 31px;
   padding: 0;
   border: 0;
   background: transparent;
   color: inherit;
   font-family: var(--font-mono);
-  font-size: var(--fs-sm);
+  font-size: calc(var(--fs-sm) * 1.25);
   cursor: pointer;
 }
 
@@ -82,7 +82,7 @@
   border: var(--border);
   border-radius: var(--radius-sm);
   background: color-mix(in srgb, var(--color-bg) 22%, transparent);
-  padding: var(--space-1) var(--space-2);
+  padding: var(--space-2) var(--space-3);
 }
 
 .interaction-guide__item.is-active {
@@ -93,7 +93,7 @@
 .interaction-guide__title {
   color: var(--color-text);
   font-family: var(--font-mono);
-  font-size: var(--fs-sm);
+  font-size: calc(var(--fs-sm) * 1.25);
 }
 
 .interaction-guide__status,
@@ -102,7 +102,7 @@
   overflow: hidden;
   color: var(--color-text-dim);
   font-family: var(--font-mono);
-  font-size: var(--fs-sm);
+  font-size: calc(var(--fs-sm) * 1.25);
   text-overflow: ellipsis;
   white-space: nowrap;
 }

@@ -20,9 +20,9 @@
 }
 
 .view-panel__title {
-  min-width: 220px;
+  min-width: 280px;
   margin: 0;
-  font-size: var(--fs-md);
+  font-size: calc(var(--fs-md) * 2);
   font-weight: 600;
 }
 
@@ -40,7 +40,7 @@
   padding: var(--space-2) var(--space-4);
   border-bottom: var(--border);
   color: var(--color-text-dim);
-  font-size: var(--fs-sm);
+  font-size: calc(var(--fs-sm) * 1.25);
 }
 
 .view-panel__content {

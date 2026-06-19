@@ -33,7 +33,7 @@
 
 .app-title {
   margin: 0;
-  font-size: 30px;
+  font-size: 45px;
   line-height: 1.05;
   letter-spacing: 0;
 }
@@ -41,7 +41,7 @@
 .app-subtitle {
   margin: 0;
   color: var(--color-text-dim);
-  font-size: 16px;
+  font-size: 19.2px;
   line-height: 1.45;
 }
 
@@ -203,10 +203,10 @@
   }
 
   .app-title {
-    font-size: 24px;
+    font-size: 36px;
   }
 
   .app-subtitle {
-    font-size: var(--fs-md);
+    font-size: calc(var(--fs-md) * 1.2);
   }
 }

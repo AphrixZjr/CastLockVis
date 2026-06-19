@@ -12,13 +12,13 @@
 .genre-legend-title {
   margin: 0;
   color: var(--color-text-dim);
-  font-size: var(--fs-sm);
+  font-size: calc(var(--fs-sm) * 1.4);
   font-weight: 600;
 }
 
 .genre-legend-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(126px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(144px, 1fr));
   gap: var(--space-1) var(--space-3);
 }
 
@@ -34,8 +34,8 @@
 }
 
 .genre-legend-chip {
-  width: 11px;
-  height: 11px;
+  width: 14px;
+  height: 14px;
   border-radius: 2px;
   border: 1px solid color-mix(in srgb, var(--color-text) 22%, transparent);
   flex-shrink: 0;
@@ -43,7 +43,7 @@
 
 .genre-legend-name {
   color: var(--color-text-dim);
-  font-size: var(--fs-sm);
+  font-size: calc(var(--fs-sm) * 1.25);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -54,6 +54,7 @@
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2) var(--space-3);
+  font-size: calc(var(--fs-sm) * 1.25);
 }
 
 .chart-legend__item {
@@ -65,8 +66,8 @@
 }
 
 .legend-chip {
-  width: 10px;
-  height: 10px;
+  width: 13px;
+  height: 13px;
   border-radius: 2px;
   border: 1px solid color-mix(in srgb, var(--color-text) 25%, var(--color-bg));
   background: var(--color-border);
@@ -74,8 +75,8 @@
 }
 
 .legend-glyphs {
-  width: 64px;
-  height: 12px;
+  width: 82px;
+  height: 15px;
   flex-shrink: 0;
   fill: color-mix(in srgb, var(--color-text) 70%, transparent);
 }
@@ -89,8 +90,8 @@
 }
 
 .legend-line {
-  width: 18px;
-  border-top: 2px solid var(--color-text);
+  width: 23px;
+  border-top: 2.5px solid var(--color-text);
   flex-shrink: 0;
 }
 
@@ -108,8 +109,8 @@
 }
 
 .legend-river-band {
-  width: 18px;
-  height: 10px;
+  width: 23px;
+  height: 13px;
   border-radius: 2px;
   background: linear-gradient(
     180deg,
@@ -122,7 +123,7 @@
 .legend-dot-row {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 7px;
 }
 
 .legend-dot {
@@ -133,14 +134,14 @@
 }
 
 .legend-dot--sm {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 
 .legend-dot--lg,
 .legend-dot--active {
-  width: 11px;
-  height: 11px;
+  width: 14px;
+  height: 14px;
 }
 
 .legend-dot--active {
@@ -149,8 +150,8 @@
 }
 
 .legend-ramp {
-  width: 24px;
-  height: 10px;
+  width: 31px;
+  height: 13px;
   border-radius: 2px;
   background: linear-gradient(
     90deg,
@@ -161,9 +162,9 @@
 }
 
 .legend-vline {
-  width: 8px;
-  height: 12px;
-  border-left: 2px dashed var(--color-accent);
+  width: 10px;
+  height: 15px;
+  border-left: 2.5px dashed var(--color-accent);
   flex-shrink: 0;
 }
 
@@ -173,7 +174,7 @@
   }
 
   .genre-legend-grid {
-    grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(124px, 1fr));
   }
 
   .chart-legend {
