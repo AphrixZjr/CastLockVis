@@ -120,6 +120,14 @@
   flex-shrink: 0;
 }
 
+.legend-river-other {
+  width: 13px;
+  height: 13px;
+  border-radius: 2px;
+  background: var(--color-river-other);
+  flex-shrink: 0;
+}
+
 .legend-dot-row {
   display: inline-flex;
   align-items: center;

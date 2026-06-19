@@ -412,6 +412,12 @@
   shape-rendering: geometricPrecision;
 }
 
+.view-river-band--other {
+  fill: var(--color-river-other);
+  stroke: var(--color-river-other);
+  stroke-width: 0.6;
+}
+
 .view-entropy-line {
   fill: none;
   stroke: var(--color-text);

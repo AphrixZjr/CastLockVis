@@ -36,6 +36,7 @@
   --color-text: #e6e8ea;
   --color-text-dim: #9aa0a6;
   --color-accent: #4c8bf5; /* 选中/交互高亮（占位） */
+  --color-control-fill: #356fc8; /* 控件填充态：比交互高亮更克制 */
   --color-chart-bg: #202326;
   --color-chart-grid: #2c3035;
   --color-chart-axis: #5f6872;
@@ -43,36 +44,37 @@
   /* Markov 矩阵顺序色阶：与交互高亮解耦，当前值保持阶段一视觉不变 */
   --color-markov-cell: #4c8bf5;
   --color-markov-diag: #e0564f;
+  --color-river-other: #6f91a0;
 
   /* 分叉语义色（视图 C，proposal 明确要求绿/红） */
   --color-success: #3fb27f; /* 成功转型「多维演化区」 */
   --color-snapback: #e0564f; /* 被弹回「重新固化区」 */
 
   /* 类型分类色：阶段一先用占位序列，第二阶段定稿 */
-  --genre-1: #4e79a7;
-  --genre-2: #f28e2b;
-  --genre-3: #e15759;
-  --genre-4: #76b7b2;
-  --genre-5: #59a14f;
-  --genre-6: #edc949;
-  --genre-7: #af7aa1;
-  --genre-8: #ff9da7;
-  --genre-9: #9c755f;
-  --genre-10: #bab0ab;
-  --genre-11: #1f77b4;
-  --genre-12: #ff7f0e;
-  --genre-13: #2ca02c;
-  --genre-14: #d62728;
-  --genre-15: #9467bd;
+  --genre-1: #6e8fb6;
+  --genre-2: #9b7fa8;
+  --genre-3: #7b88c2;
+  --genre-4: #b27a8f;
+  --genre-5: #a58a5a;
+  --genre-6: #9a6a94;
+  --genre-7: #5fa0b8;
+  --genre-8: #86a86f;
+  --genre-9: #8d7dcd;
+  --genre-10: #c07d62;
+  --genre-11: #8fa86a;
+  --genre-12: #55aaa3;
+  --genre-13: #b08bb0;
+  --genre-14: #6eaa91;
+  --genre-15: #9aa09a;
 
   /* 群落分类色（视图 A 簇图标 + 凸包；阶段一占位，第二阶段 S6 定稿） */
-  --cluster-0: #4e79a7;
-  --cluster-1: #f28e2b;
-  --cluster-2: #59a14f;
-  --cluster-3: #e15759;
-  --cluster-4: #b07aa1;
-  --cluster-5: #76b7b2;
-  --cluster-6: #edc949;
+  --cluster-0: #5f91b5;
+  --cluster-1: #58a79b;
+  --cluster-2: #788cc0;
+  --cluster-3: #9a80b6;
+  --cluster-4: #b07a8d;
+  --cluster-5: #a18d61;
+  --cluster-6: #74a06e;
 
   /* 字体（阶段一用系统栈，第二阶段定稿） */
   --font-sans: system-ui, -apple-system, 'Segoe UI', sans-serif;

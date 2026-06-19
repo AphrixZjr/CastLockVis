@@ -17,6 +17,7 @@ interface RiverViewProps {
 interface SeriesBand {
   key: string;
   tokenIndex: number;
+  isOther: boolean;
   points: Array<{ x: number; y0: number; y1: number }>;
 }
 
@@ -81,12 +82,16 @@ export function RiverView({
           <path
             key={band.key}
             d={pathFromBands(band.points)}
-            className="view-river-band"
-            style={{
-              fill: `var(--genre-${band.tokenIndex})`,
-              stroke: `var(--genre-${band.tokenIndex})`,
-              strokeWidth: 0.6,
-            }}
+            className={`view-river-band${band.isOther ? ' view-river-band--other' : ''}`}
+            style={
+              band.isOther
+                ? undefined
+                : {
+                    fill: `var(--genre-${band.tokenIndex})`,
+                    stroke: `var(--genre-${band.tokenIndex})`,
+                    strokeWidth: 0.6,
+                  }
+            }
           />
         ))}
 
@@ -256,7 +261,8 @@ function buildSingleActorChart(
       key,
       {
         key,
-        tokenIndex: key === 'Other' ? 10 : (genreTokenLookup.get(key) ?? 1),
+        tokenIndex: key === 'Other' ? 0 : (genreTokenLookup.get(key) ?? 1),
+        isOther: key === 'Other',
         points: [],
       },
     ]),
@@ -390,7 +396,8 @@ function buildCohortChart(
       key,
       {
         key,
-        tokenIndex: key === 'Other' ? 10 : (genreTokenLookup.get(key) ?? 1),
+        tokenIndex: key === 'Other' ? 0 : (genreTokenLookup.get(key) ?? 1),
+        isOther: key === 'Other',
         points: [],
       },
     ]),

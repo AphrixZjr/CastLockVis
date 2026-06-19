@@ -40,7 +40,12 @@ export function RiverLegend() {
         {
           id: 'river-band',
           marker: <span className="legend-river-band" aria-hidden />,
-          label: '流层厚度 = 类型占比（滑窗，颜色见共享图例）',
+          label: '流层厚度 = 类型占比（滑窗）',
+        },
+        {
+          id: 'river-other',
+          marker: <span className="legend-river-other" aria-hidden />,
+          label: 'Other = top 6 外类型合并',
         },
         {
           id: 'river-entropy',

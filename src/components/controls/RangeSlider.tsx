@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import './RangeSlider.css';
 
 interface RangeSliderProps {
@@ -47,6 +48,10 @@ export function RangeSlider({
   const inputMin = isLog ? 0 : min;
   const inputMax = isLog ? LOG_STEPS : max;
   const inputStep = isLog ? 1 : step;
+  const loPos = toPos(lo);
+  const hiPos = toPos(hi);
+  const toProgress = (pos: number) =>
+    inputMax === inputMin ? 50 : ((pos - inputMin) / (inputMax - inputMin)) * 100;
 
   return (
     <div className="range-slider" role="group" aria-label={label}>
@@ -63,7 +68,8 @@ export function RangeSlider({
           min={inputMin}
           max={inputMax}
           step={inputStep}
-          value={toPos(lo)}
+          value={loPos}
+          style={{ '--range-progress': `${toProgress(loPos)}%` } as CSSProperties}
           onChange={(event) => onChange([Math.min(fromPos(Number(event.target.value)), hi), hi])}
         />
         <input
@@ -72,7 +78,8 @@ export function RangeSlider({
           min={inputMin}
           max={inputMax}
           step={inputStep}
-          value={toPos(hi)}
+          value={hiPos}
+          style={{ '--range-progress': `${toProgress(hiPos)}%` } as CSSProperties}
           onChange={(event) => onChange([lo, Math.max(fromPos(Number(event.target.value)), lo)])}
         />
       </div>

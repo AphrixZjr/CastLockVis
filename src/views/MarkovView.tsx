@@ -11,6 +11,7 @@ interface MarkovViewProps {
 const WIDTH = 360;
 const HEIGHT = 340;
 const MARGIN = { top: 10, right: 14, bottom: 78, left: 88 };
+const CONTENT_OFFSET_X = -12;
 const TOOLTIP_DELAY_MS = 180;
 const TOOLTIP_WIDTH = 58;
 const TOOLTIP_HEIGHT = 22;
@@ -40,7 +41,8 @@ export function MarkovView({ matrix, emptyMessage = '当前 stage 无可用矩�
       HEIGHT - MARGIN.top - MARGIN.bottom,
     );
     const cellSize = gridSize / n;
-    const matrixX = MARGIN.left + (WIDTH - MARGIN.left - MARGIN.right - gridSize) / 2;
+    const matrixX =
+      MARGIN.left + (WIDTH - MARGIN.left - MARGIN.right - gridSize) / 2 + CONTENT_OFFSET_X;
     const matrixY = MARGIN.top;
 
     const cells = Array.from({ length: n }, (_, rowIndex) =>

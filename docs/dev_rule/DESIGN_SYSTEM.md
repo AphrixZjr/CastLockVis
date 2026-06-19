@@ -100,16 +100,68 @@
 基调：暗色专业、低饱和中性面、用色彩只标注**结论**（锁定 / 转型成功 / 被弹回），
 呼应 proposal 的“白色熵线、红黑对角线、绿色多维区、红色固化区”意象。
 
-### 2.2 配色方案（定稿位）
+### 2.2 配色方案（已回填）
 
-- **基础中性阶**：背景/面板/边框/分隔线/正文/次要文字 的暗色梯度（在阶段一占位值基础上调校对比度，确保 ≥ WCAG AA）。
-- **类型分类色 (categorical)**：为 taxonomy 中每个类型定一组**色相区分度高、明度均衡**的离散色（建议参考 Tableau 10 / d3.schemeTableau10 再按品牌调），key 与 `genres.json` 对齐。
-- **熵线**：白/高亮中性色，叠加在 streamgraph 之上保证可读（视图 B）。
-- **马尔可夫矩阵 (sequential)**：单色顺序色阶表示转移概率，深端表达“重力场”对角线（视图 D，对应“红黑锁死”观感）。
-- **转型分叉 (diverging/语义)**：绿(`success`)↔红(`snapback`)双向，确立成功/弹回的视觉对立（视图 C）。
-- **交互态**：选中、悬停、聚焦、禁用 的统一高亮/降明度规则。
+色彩基调为 `Analyst Console / Cinematic Dark`：低饱和、偏冷、专业暗色界面，避免过亮或奶油色。分类色只承担数据编码，功能色承担交互与分析结论；Markov、River Other、控件填充均已与通用交互高亮解耦。
 
-> 定稿时同时给出色值表（hex）、暗/亮模式（若做）、以及色盲安全校验结论。
+#### 2.2.1 基础与功能 token
+
+| Token | Hex | 用途 |
+| --- | --- | --- |
+| `--color-bg` | `#1a1c1f` | 应用背景 |
+| `--color-surface` | `#232629` | 面板表面 |
+| `--color-border` | `#34383d` | 边框 / 分隔线 |
+| `--color-text` | `#e6e8ea` | 正文与主标签 |
+| `--color-text-dim` | `#9aa0a6` | 次要文字 |
+| `--color-chart-bg` | `#202326` | 图表背景 |
+| `--color-chart-grid` | `#2c3035` | 图表网格线 |
+| `--color-chart-axis` | `#5f6872` | 坐标轴 |
+| `--color-accent` | `#4c8bf5` | hover / focus / selected 高亮 |
+| `--color-control-fill` | `#356fc8` | slider thumb / stage tab 等控件填充态 |
+| `--color-success` | `#3fb27f` | C 视图 success / 多维演化 |
+| `--color-snapback` | `#e0564f` | C 视图 snapback / 重新固化 |
+| `--color-markov-cell` | `#4c8bf5` | D 视图 Markov 非对角线顺序色阶基色 |
+| `--color-markov-diag` | `#e0564f` | D 视图 Markov 对角线锁定色 |
+| `--color-river-other` | `#6f91a0` | B 视图 top 6 外类型聚合流带 |
+
+#### 2.2.2 Genre 分类色（key 对齐 `public/data/genres.json`）
+
+| Genre | Token | Hex |
+| --- | --- | --- |
+| Crime | `--genre-1` | `#6e8fb6` |
+| Drama | `--genre-2` | `#9b7fa8` |
+| Mystery | `--genre-3` | `#7b88c2` |
+| Romance | `--genre-4` | `#b27a8f` |
+| Western | `--genre-5` | `#a58a5a` |
+| Horror | `--genre-6` | `#9a6a94` |
+| Thriller | `--genre-7` | `#5fa0b8` |
+| Comedy | `--genre-8` | `#86a86f` |
+| Fantasy | `--genre-9` | `#8d7dcd` |
+| Action | `--genre-10` | `#c07d62` |
+| Adventure | `--genre-11` | `#8fa86a` |
+| Sci-Fi | `--genre-12` | `#55aaa3` |
+| Musical | `--genre-13` | `#b08bb0` |
+| Music | `--genre-14` | `#6eaa91` |
+| Documentary | `--genre-15` | `#9aa09a` |
+
+#### 2.2.3 Cluster 分类色（key 对齐 `actors[].clusterId`）
+
+| Cluster | Token | Hex |
+| --- | --- | --- |
+| 0 | `--cluster-0` | `#5f91b5` |
+| 1 | `--cluster-1` | `#58a79b` |
+| 2 | `--cluster-2` | `#788cc0` |
+| 3 | `--cluster-3` | `#9a80b6` |
+| 4 | `--cluster-4` | `#b07a8d` |
+| 5 | `--cluster-5` | `#a18d61` |
+| 6 | `--cluster-6` | `#74a06e` |
+
+#### 2.2.4 色彩使用规则
+
+- `--genre-*` 只用于类型 taxonomy 数据编码；B 视图的 `Other` 使用 `--color-river-other`，不复用任一 genre token。
+- `--cluster-*` 只用于 A 视图 cluster hull / 图标 / composition 摘要；不要求与 genre 色板互相区分。
+- `--color-accent` 保持较亮，用于 hover、focus、selected 边框与联动高亮；大面积控件填充使用更暗的 `--color-control-fill`。
+- Markov 矩阵使用 `--color-markov-cell` / `--color-markov-diag`，不得直接耦合 `--color-accent` 或 `--color-snapback`。
 
 ### 2.3 版式风格
 
