@@ -155,8 +155,8 @@
   border-radius: 2px;
   background: linear-gradient(
     90deg,
-    color-mix(in srgb, var(--color-accent) 14%, var(--color-chart-bg)) 0%,
-    color-mix(in srgb, var(--color-accent) 88%, var(--color-chart-bg)) 100%
+    color-mix(in srgb, var(--color-markov-cell) 14%, var(--color-chart-bg)) 0%,
+    color-mix(in srgb, var(--color-markov-cell) 88%, var(--color-chart-bg)) 100%
   );
   flex-shrink: 0;
 }

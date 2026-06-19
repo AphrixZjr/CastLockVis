@@ -563,7 +563,7 @@
 }
 
 .view-markov-cell {
-  fill: var(--color-accent);
+  fill: var(--color-markov-cell);
   stroke: var(--color-bg);
   stroke-width: 0.55;
   transition: opacity 140ms ease;
@@ -579,7 +579,7 @@
 
 .view-markov-cell-tooltip rect {
   fill: color-mix(in srgb, var(--color-surface) 94%, var(--color-bg));
-  stroke: color-mix(in srgb, var(--color-accent) 54%, var(--color-border));
+  stroke: color-mix(in srgb, var(--color-markov-cell) 54%, var(--color-border));
   stroke-width: 0.85;
   filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.42));
 }
@@ -591,7 +591,7 @@
 }
 
 .view-markov-cell--diag {
-  fill: var(--color-snapback);
+  fill: var(--color-markov-diag);
 }
 
 .view-chart--markov-empty .view-markov-cell,

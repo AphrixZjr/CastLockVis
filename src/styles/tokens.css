@@ -40,6 +40,10 @@
   --color-chart-grid: #2c3035;
   --color-chart-axis: #5f6872;
 
+  /* Markov 矩阵顺序色阶：与交互高亮解耦，当前值保持阶段一视觉不变 */
+  --color-markov-cell: #4c8bf5;
+  --color-markov-diag: #e0564f;
+
   /* 分叉语义色（视图 C，proposal 明确要求绿/红） */
   --color-success: #3fb27f; /* 成功转型「多维演化区」 */
   --color-snapback: #e0564f; /* 被弹回「重新固化区」 */
@@ -60,12 +64,6 @@
   --genre-13: #2ca02c;
   --genre-14: #d62728;
   --genre-15: #9467bd;
-  --genre-16: #8c564b;
-  --genre-17: #e377c2;
-  --genre-18: #7f7f7f;
-  --genre-19: #bcbd22;
-  --genre-20: #17becf;
-  --genre-21: #6b6f76;
 
   /* 群落分类色（视图 A 簇图标 + 凸包；阶段一占位，第二阶段 S6 定稿） */
   --cluster-0: #4e79a7;
@@ -75,7 +73,6 @@
   --cluster-4: #b07aa1;
   --cluster-5: #76b7b2;
   --cluster-6: #edc949;
-  --cluster-7: #9c755f;
 
   /* 字体（阶段一用系统栈，第二阶段定稿） */
   --font-sans: system-ui, -apple-system, 'Segoe UI', sans-serif;
