@@ -104,7 +104,6 @@ export function App() {
       { label: 'films', value: loadState.bundle.films.length },
       { label: 'entropy', value: loadState.bundle.entropy.length },
       { label: 'markov', value: loadState.bundle.markov.length },
-      { label: 'alignment', value: loadState.bundle.alignment.length },
     ];
   }, [loadState]);
 
@@ -264,14 +263,9 @@ export function App() {
       <header className="app-header">
         <div className="app-header__identity">
           <h1 className="app-title">CastLock-Vis</h1>
-          <p className="app-subtitle">
-            演员类型锁定与转型窗口期可视分析系统（S5 联动基线 · S6 视觉定稿）
-          </p>
+          <p className="app-subtitle">演员类型锁定与转型窗口期可视分析系统</p>
         </div>
         <div className="app-meta">
-          <span className="app-meta__label">
-            {loadState.status === 'ready' ? '数据已加载' : '加载状态'}
-          </span>
           <div className="app-meta__items" aria-label="数据加载摘要">
             {metaItems.map((item) => (
               <span key={item.label} className="app-meta__item">

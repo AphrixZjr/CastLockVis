@@ -253,11 +253,14 @@ export function AlignmentView({ tracks }: AlignmentViewProps) {
     return <div className="view-chart__empty">alignment.json 无可用分叉轨迹。</div>;
   }
 
-  const tooltipDetail = [
+  // 左侧：统计概览（保持左对齐）；右侧：联动提示（右对齐）。
+  const tooltipStats = [
     `mode=${view.mode}`,
     `visible=${view.visibleCount}`,
     `success=${view.summary.success}`,
     `snapback=${view.summary.snapback}`,
+  ].join(' · ');
+  const tooltipDetail = [
     activeSelectedActorId !== null ? `同群落同侪 ${view.peerCount}` : null,
     view.selectedTau !== null ? `选中 τ=${view.selectedTau}` : null,
   ]
@@ -477,8 +480,8 @@ export function AlignmentView({ tracks }: AlignmentViewProps) {
       </svg>
 
       <ChartTooltip
-        label={`τ 范围 [${geometry.tauMin}, ${geometry.tauMax}]`}
-        detail={tooltipDetail}
+        label={tooltipStats}
+        detail={tooltipDetail || undefined}
         tone={activeSelectedActorId !== null ? 'active' : 'default'}
       />
     </figure>

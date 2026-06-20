@@ -18,6 +18,10 @@ const TOOLTIP_WIDTH = 58;
 const TOOLTIP_HEIGHT = 22;
 const TOOLTIP_GAP = 6;
 
+const COLOR_GAMMA = 0.7;
+const OPACITY_FLOOR = 20;
+const OPACITY_CEIL = 100;
+
 interface HoverCell {
   row: number;
   col: number;
@@ -62,7 +66,9 @@ export function MarkovView({
           x,
           y,
           isDiagonal: rowIndex === colIndex,
-          intensity: Math.round(linearScale(value, 0, 1, 8, 90)),
+          intensity: Math.round(
+            linearScale(Math.pow(Math.max(0, value), COLOR_GAMMA), 0, 1, OPACITY_FLOOR, OPACITY_CEIL),
+          ),
         };
       }),
     ).flat();
@@ -197,7 +203,7 @@ export function MarkovView({
             ? emptyMessage
             : hoverCell && matrix
               ? `${matrix.genres[hoverCell.row]} → ${matrix.genres[hoverCell.col]}`
-              : 'hover cell 查看转移概率'
+              : '选中单格查看转移概率'
         }
         tone={hoverCell && !isEmpty ? 'active' : 'default'}
       />

@@ -451,10 +451,7 @@ function buildSingleActorChart(
     xTicks,
     ratingTicks,
     captionLabel: `单演员 · ${sampleActor.name} · films=${films.length}`,
-    captionDetail:
-      spikes.length > 0
-        ? '横轴=N(作品序列) · 白线=Shannon entropy · 圆点 y=IMDb rating r=votes · 尖峰/影片可点击'
-        : '横轴=N(作品序列) · 白线=Shannon entropy · 圆点 y=IMDb rating r=votes · 影片可点击',
+    captionDetail: spikes.length > 0 ? '尖峰 / 影片可点击' : '影片可点击',
   };
 }
 
@@ -604,7 +601,7 @@ function buildCohortChart(
     xTicks,
     ratingTicks,
     captionLabel: `cohort · actors=${actorSet.size} · N≤${maxN}`,
-    captionDetail: '白线=总体 entropy 均值 · 圆点=平均 IMDb rating/votes · 概览模式',
+    captionDetail: '概览模式 · 无可点击影片',
   };
 }
 

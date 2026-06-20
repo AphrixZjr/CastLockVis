@@ -83,6 +83,7 @@
 .app-meta {
   position: relative;
   display: grid;
+  align-self: end;
   justify-items: end;
   gap: var(--space-2);
   min-width: 0;

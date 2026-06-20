@@ -21,13 +21,9 @@
 
 .chart-tooltip__detail {
   min-width: 0;
+  margin-left: auto;
   overflow-wrap: anywhere;
-}
-
-.chart-tooltip__detail::before {
-  content: '·';
-  margin-right: var(--space-2);
-  color: var(--color-text-dim);
+  text-align: right;
 }
 
 .chart-tooltip--active .chart-tooltip__label {

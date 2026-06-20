@@ -17,16 +17,11 @@ export function ClusterLegend() {
               <polygon points="58,1.6 60.2,5 63.6,5.6 61,8 61.6,11.4 58,9.8 54.4,11.4 55,8 52.4,5.6 55.8,5" />
             </svg>
           ),
-          label: '形状 + 凸包 = 群落 (cluster)',
+          label: '形状 + 凸包 = 群落',
         },
         {
           id: 'cluster-fill',
-          label: '填色 = 早期主导类型（见上方共享色图例）',
-        },
-        {
-          id: 'cluster-active',
-          marker: <span className="legend-dot legend-dot--active" aria-hidden />,
-          label: 'hover: 放大 + 描边高亮',
+          label: '填色 = 早期主导类型',
         },
       ]}
     />
@@ -40,17 +35,12 @@ export function RiverLegend() {
         {
           id: 'river-band',
           marker: <span className="legend-river-band" aria-hidden />,
-          label: '流层厚度 = 类型占比（滑窗）',
-        },
-        {
-          id: 'river-other',
-          marker: <span className="legend-river-other" aria-hidden />,
-          label: 'Other = top 6 外类型合并',
+          label: '流层厚度 = 类型占比',
         },
         {
           id: 'river-entropy',
           marker: <span className="legend-line" aria-hidden />,
-          label: '白线 = Shannon entropy',
+          label: '白线 = 香农熵',
         },
         {
           id: 'river-dot',
@@ -60,7 +50,7 @@ export function RiverLegend() {
               <span className="legend-dot legend-dot--lg" />
             </span>
           ),
-          label: '圆点: y=rating, 半径=numVotes',
+          label: '圆点: 纵坐标=rating, 半径=numVotes',
         },
       ]}
     />
@@ -74,12 +64,12 @@ export function MarkovLegend() {
         {
           id: 'markov-ramp',
           marker: <span className="legend-ramp" aria-hidden />,
-          label: '色深 = 转移概率（低→高）',
+          label: '色深 = 转移概率',
         },
         {
           id: 'markov-diag',
           marker: <span className="legend-chip legend-chip--snap" aria-hidden />,
-          label: '对角线红格 = 类型锁定（stay）',
+          label: '对角线红格 = 类型锁定',
         },
       ]}
     />
@@ -93,26 +83,26 @@ export function AlignmentLegend() {
         {
           id: 'alignment-t0',
           marker: <span className="legend-vline" aria-hidden />,
-          label: '虚线竖轴 = T=0（转型起点）',
+          label: '虚线竖轴 =（转型起点）',
         },
         {
           id: 'alignment-y',
-          label: '纵轴 = 类型偏离度（高=脱离舒适圈 / 低=重新固化）',
+          label: '纵轴 = 类型偏离度',
         },
         {
           id: 'alignment-success',
           marker: <span className="legend-line legend-line--success" aria-hidden />,
-          label: '绿线 = success',
+          label: '绿线 = 成功转型',
         },
         {
           id: 'alignment-snapback',
           marker: <span className="legend-line legend-line--snap" aria-hidden />,
-          label: '红线 = snapback',
+          label: '红线 = 回弹',
         },
         {
           id: 'alignment-none',
           marker: <span className="legend-line legend-line--none" aria-hidden />,
-          label: '灰线 = none（未检出转型）',
+          label: '灰线 = 未检出',
         },
       ]}
     />
