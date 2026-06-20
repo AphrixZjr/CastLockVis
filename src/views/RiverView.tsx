@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import { ChartTooltip } from '../components/common/ChartTooltip';
-import { averageEntropyCurves } from '../lib/aggregate';
-import type { DataBundle, DataIndexes, EntropyPoint } from '../data/types';
+import type { DataBundle, DataIndexes, EntropyCurve, EntropyPoint } from '../data/types';
 import { buildGenreTokenLookup, linearScale, pathFromBands, polylinePath } from './chartUtils';
 
 interface RiverViewProps {
@@ -29,6 +28,11 @@ interface XAxisTick {
 interface YAxisTick {
   value: number;
   y: number;
+}
+
+interface CohortEntropyStats {
+  n: number;
+  mean: number;
 }
 
 const WIDTH = 620;
@@ -469,13 +473,13 @@ function buildCohortChart(
   }
 
   const entropyCurves = bundle.entropy.filter((curve) => actorSet.has(curve.actorId));
-  const averageEntropy = averageEntropyCurves(entropyCurves).slice(0, MAX_COHORT_N);
-  if (averageEntropy.length === 0) {
+  const entropyStats = buildCohortEntropyStats(entropyCurves, MAX_COHORT_N);
+  if (entropyStats.length === 0) {
     return null;
   }
 
   const maxFilmN = Math.max(...cohortFilmsByActor.map((films) => films[films.length - 1].seqIndex));
-  const maxN = Math.min(MAX_COHORT_N, maxFilmN, averageEntropy[averageEntropy.length - 1].n);
+  const maxN = Math.min(MAX_COHORT_N, maxFilmN, entropyStats[entropyStats.length - 1].n);
   if (maxN < 1) {
     return null;
   }
@@ -573,14 +577,13 @@ function buildCohortChart(
     });
   }
 
-  const maxEntropy = Math.max(...averageEntropy.map((point) => point.entropy), 0.01);
+  const visibleEntropyStats = entropyStats.filter((point) => point.n <= maxN);
+  const maxEntropy = Math.max(...visibleEntropyStats.map((point) => point.mean), 0.01);
   const entropyPath = polylinePath(
-    averageEntropy
-      .filter((point) => point.n <= maxN)
-      .map((point) => ({
-        x: linearScale(point.n, 1, maxN, innerLeft, innerRight),
-        y: linearScale(point.entropy, 0, maxEntropy, streamBottom, streamTop),
-      })),
+    visibleEntropyStats.map((point) => ({
+      x: linearScale(point.n, 1, maxN, innerLeft, innerRight),
+      y: linearScale(point.mean, 0, maxEntropy, streamBottom, streamTop),
+    })),
   );
   // TODO: Revisit whether this should become cohort distribution entropy; it is currently
   // the arithmetic mean of individual actor entropy curves at each career index.
@@ -601,8 +604,7 @@ function buildCohortChart(
     xTicks,
     ratingTicks,
     captionLabel: `cohort · actors=${actorSet.size} · N≤${maxN}`,
-    captionDetail:
-      '横轴=N(作品序列) · 白线=个体 entropy 均值 · 圆点=平均 IMDb rating/votes · 概览模式',
+    captionDetail: '白线=总体 entropy 均值 · 圆点=平均 IMDb rating/votes · 概览模式',
   };
 }
 
@@ -629,6 +631,35 @@ function buildRatingTicks(ratingTop: number, ratingBottom: number): YAxisTick[] 
     value,
     y: linearScale(value, 0, 10, ratingBottom, ratingTop),
   }));
+}
+
+function buildCohortEntropyStats(
+  curves: EntropyCurve[],
+  maxN: number,
+): CohortEntropyStats[] {
+  const valuesByN = new Map<number, number[]>();
+
+  for (const curve of curves) {
+    for (const point of curve.curve) {
+      if (point.n < 1 || point.n > maxN) {
+        continue;
+      }
+      const values = valuesByN.get(point.n) ?? [];
+      values.push(point.entropy);
+      valuesByN.set(point.n, values);
+    }
+  }
+
+  return [...valuesByN.entries()]
+    .sort(([leftN], [rightN]) => leftN - rightN)
+    .map(([n, values]) => {
+      const sorted = [...values].sort((left, right) => left - right);
+      const sum = sorted.reduce((total, value) => total + value, 0);
+      return {
+        n,
+        mean: sum / sorted.length,
+      };
+    });
 }
 
 function pickEntropySpikes(
