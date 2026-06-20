@@ -212,7 +212,13 @@ export function App() {
         ...PANEL_CONFIGS[3],
         legend: <MarkovLegend />,
         toolbar: <StageToggle />,
-        content: <MarkovView matrix={markovMatrix} emptyMessage={markovEmptyMessage} />,
+        content: (
+          <MarkovView
+            matrix={markovMatrix}
+            emptyMessage={markovEmptyMessage}
+            fallbackGenres={loadState.bundle.genres}
+          />
+        ),
       },
     ];
 

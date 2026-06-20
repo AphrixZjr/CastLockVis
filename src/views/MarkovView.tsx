@@ -6,6 +6,7 @@ import { linearScale } from './chartUtils';
 interface MarkovViewProps {
   matrix: MarkovMatrix | null;
   emptyMessage?: string;
+  fallbackGenres?: readonly string[];
 }
 
 const WIDTH = 360;
@@ -25,7 +26,11 @@ interface HoverCell {
   y: number;
 }
 
-export function MarkovView({ matrix, emptyMessage = '当前 stage 无可用矩阵。' }: MarkovViewProps) {
+export function MarkovView({
+  matrix,
+  emptyMessage = '当前 stage 无可用矩阵。',
+  fallbackGenres = DEFAULT_MARKOV_GENRES,
+}: MarkovViewProps) {
   const [hoverCell, setHoverCell] = useState<HoverCell | null>(null);
   const [tooltipCell, setTooltipCell] = useState<HoverCell | null>(null);
 
@@ -34,7 +39,7 @@ export function MarkovView({ matrix, emptyMessage = '当前 stage 无可用矩�
       return null;
     }
 
-    const genres = matrix?.genres ?? DEFAULT_MARKOV_GENRES;
+    const genres = matrix?.genres ?? fallbackGenres;
     const n = genres.length;
     const gridSize = Math.min(
       WIDTH - MARGIN.left - MARGIN.right,
@@ -63,7 +68,7 @@ export function MarkovView({ matrix, emptyMessage = '当前 stage 无可用矩�
     ).flat();
 
     return { genres, n, cellSize, matrixX, matrixY, cells };
-  }, [matrix]);
+  }, [fallbackGenres, matrix]);
 
   useEffect(() => {
     if (!hoverCell || matrix === null) {
@@ -170,7 +175,7 @@ export function MarkovView({ matrix, emptyMessage = '当前 stage 无可用矩�
           <g className="view-markov-empty-overlay" aria-hidden="true">
             <text
               x={chart.matrixX + (chart.n * chart.cellSize) / 2}
-              y={chart.matrixY + chart.cellSize * 2.9}
+              y={chart.matrixY + chart.cellSize * 7.2}
               className="view-markov-empty-overlay__text"
               textAnchor="middle"
             >
