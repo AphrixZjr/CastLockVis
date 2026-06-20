@@ -21,6 +21,16 @@ interface SeriesBand {
   points: Array<{ x: number; y0: number; y1: number }>;
 }
 
+interface XAxisTick {
+  value: number;
+  x: number;
+}
+
+interface YAxisTick {
+  value: number;
+  y: number;
+}
+
 const WIDTH = 620;
 const HEIGHT = 320;
 const MARGIN = { top: 16, right: 16, bottom: 22, left: 32 };
@@ -77,6 +87,47 @@ export function RiverView({
           y2={chart.ratingBottom}
           className="view-axis view-axis--subtle"
         />
+        <line
+          x1={chart.ratingAxisX}
+          y1={chart.ratingTop}
+          x2={chart.ratingAxisX}
+          y2={chart.ratingBottom}
+          className="view-axis"
+        />
+
+        {chart.ratingTicks.map((tick) => (
+          <g key={`rating-${tick.value}`}>
+            <line
+              x1={chart.ratingAxisX}
+              y1={tick.y}
+              x2={chart.ratingAxisX + 5}
+              y2={tick.y}
+              className="view-axis"
+            />
+            <text
+              x={chart.ratingAxisX - 5}
+              y={tick.y + 3}
+              className="view-axis-tick"
+              textAnchor="end"
+            >
+              {tick.value}
+            </text>
+          </g>
+        ))}
+        <text
+          x={chart.ratingAxisX}
+          y={chart.ratingTop - 8}
+          className="view-axis-label view-axis-label--river"
+        >
+          IMDb rating
+        </text>
+        <text
+          x={MARGIN.left}
+          y={chart.streamTop - 7}
+          className="view-axis-label view-axis-label--river"
+        >
+          genre share + entropy
+        </text>
 
         {chart.series.map((band) => (
           <path
@@ -158,9 +209,37 @@ export function RiverView({
             </g>
           );
         })}
+
+        {chart.xTicks.map((tick) => (
+          <g key={`river-x-${tick.value}`}>
+            <line
+              x1={tick.x}
+              y1={chart.ratingBottom}
+              x2={tick.x}
+              y2={chart.ratingBottom + 4}
+              className="view-axis"
+            />
+            <text
+              x={tick.x}
+              y={chart.ratingBottom + 16}
+              className="view-axis-tick"
+              textAnchor="middle"
+            >
+              N{tick.value}
+            </text>
+          </g>
+        ))}
       </svg>
 
-      <ChartTooltip label={chart.caption} />
+      <ChartTooltip
+        label={chart.captionLabel}
+        detail={
+          !isCohortMode && selectedActorId !== null && selectedFilmIndex !== null
+            ? `选中 N=${selectedFilmIndex} · 已同步 C 的 τ 辅助线`
+            : chart.captionDetail
+        }
+        tone={!isCohortMode && selectedActorId !== null ? 'active' : 'default'}
+      />
     </figure>
   );
 }
@@ -193,12 +272,16 @@ interface RiverChart {
   streamBottom: number;
   ratingTop: number;
   ratingBottom: number;
+  ratingAxisX: number;
   series: SeriesBand[];
   entropyPath: string;
   dots: RiverDot[];
   clickableDots: ClickableRiverDot[];
   spikes: RiverHighlight[];
-  caption: string;
+  xTicks: XAxisTick[];
+  ratingTicks: YAxisTick[];
+  captionLabel: string;
+  captionDetail: string;
 }
 
 function getChartLayout() {
@@ -209,6 +292,7 @@ function getChartLayout() {
     streamBottom: HEIGHT - 114,
     ratingTop: HEIGHT - 92,
     ratingBottom: HEIGHT - 30,
+    ratingAxisX: MARGIN.left - 12,
   };
 }
 
@@ -240,8 +324,13 @@ function buildSingleActorChart(
   }
 
   const maxN = films[films.length - 1].seqIndex;
-  const { innerLeft, innerRight, streamTop, streamBottom, ratingTop, ratingBottom } =
+  const { innerLeft, innerRight, streamTop, streamBottom, ratingTop, ratingBottom, ratingAxisX } =
     getChartLayout();
+  const xTicks = buildCareerTicks(maxN).map((value) => ({
+    value,
+    x: linearScale(value, 1, maxN, innerLeft, innerRight),
+  }));
+  const ratingTicks = buildRatingTicks(ratingTop, ratingBottom);
 
   const genreTokenLookup = buildGenreTokenLookup(bundle.genres);
 
@@ -335,15 +424,19 @@ function buildSingleActorChart(
     streamBottom,
     ratingTop,
     ratingBottom,
+    ratingAxisX,
     series: [...series.values()],
     entropyPath,
     dots,
     clickableDots,
     spikes,
-    caption:
+    xTicks,
+    ratingTicks,
+    captionLabel: `单演员 · ${sampleActor.name} · films=${films.length}`,
+    captionDetail:
       spikes.length > 0
-        ? `${sampleActor.name} · single actor entropy · films=${films.length} · peaks/films clickable`
-        : `${sampleActor.name} · single actor entropy · films=${films.length} · films clickable`,
+        ? '横轴=N(作品序列) · 白线=Shannon entropy · 圆点 y=IMDb rating r=votes · 尖峰/影片可点击'
+        : '横轴=N(作品序列) · 白线=Shannon entropy · 圆点 y=IMDb rating r=votes · 影片可点击',
   };
 }
 
@@ -373,8 +466,13 @@ function buildCohortChart(
     return null;
   }
 
-  const { innerLeft, innerRight, streamTop, streamBottom, ratingTop, ratingBottom } =
+  const { innerLeft, innerRight, streamTop, streamBottom, ratingTop, ratingBottom, ratingAxisX } =
     getChartLayout();
+  const xTicks = buildCareerTicks(maxN).map((value) => ({
+    value,
+    x: linearScale(value, 1, maxN, innerLeft, innerRight),
+  }));
+  const ratingTicks = buildRatingTicks(ratingTop, ratingBottom);
   const genreTokenLookup = buildGenreTokenLookup(bundle.genres);
   const dominantCounts = new Map<string, number>();
 
@@ -480,13 +578,43 @@ function buildCohortChart(
     streamBottom,
     ratingTop,
     ratingBottom,
+    ratingAxisX,
     series: [...series.values()],
     entropyPath,
     dots: averageDots,
     clickableDots: [],
     spikes,
-    caption: `cohort mode · actors=${actorSet.size} · mean individual entropy · overview only`,
+    xTicks,
+    ratingTicks,
+    captionLabel: `cohort · actors=${actorSet.size} · N≤${maxN}`,
+    captionDetail:
+      '横轴=N(作品序列) · 白线=个体 entropy 均值 · 圆点=平均 IMDb rating/votes · 概览模式',
   };
+}
+
+function buildCareerTicks(maxN: number): number[] {
+  if (maxN <= 1) {
+    return [1];
+  }
+
+  const ticks = [1];
+  for (let value = 5; value <= maxN; value += 5) {
+    ticks.push(value);
+  }
+
+  const last = ticks[ticks.length - 1];
+  if (maxN - last >= 3) {
+    ticks.push(maxN);
+  }
+
+  return ticks;
+}
+
+function buildRatingTicks(ratingTop: number, ratingBottom: number): YAxisTick[] {
+  return [0, 5, 10].map((value) => ({
+    value,
+    y: linearScale(value, 0, 10, ratingBottom, ratingTop),
+  }));
 }
 
 function pickEntropySpikes(
