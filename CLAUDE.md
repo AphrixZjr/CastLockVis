@@ -9,15 +9,17 @@ actor "type lockup" (类型锁定) and "transformation windows" (转型窗口期
 **macro → meso → micro** pipeline across **four linked views**. The project's value is the
 **linking between views**, not any single view — preserve that above local polish.
 
-## Status: S5 complete, S6 visual pass next
+## Status: S5.5 complete, S6 visual pass underway
 
-Design is frozen; the offline data pipeline is **done**; the frontend SPA has the phase-1
-four-view + three-linking baseline in place. The next planned milestone is S6 visual polish.
+Design is frozen; the offline data pipeline is **done**; the frontend SPA has the full
+four-view + three-linking baseline plus the S5.5 interaction/layout pass in place. S6 (the
+second visual phase) is underway — the Cinemetrics reskin has largely landed.
 
 - ✅ Offline pipeline (`pipeline/`) + 6 data-contract JSONs (`public/data/`) — generated & committed.
 - ✅ Frontend app (Vite + React 18 + TS + D3 + Zustand) — `npm run dev/build` work.
-- ✅ Four views, three link paths, common controls, details panel, and Pages build are implemented per [`docs/plan/TODO.md`](docs/plan/TODO.md).
-- 🚧 S6 is the second visual phase: reskin via tokens/styles while preserving data flow and interaction semantics.
+- ✅ Four views, three link paths, common controls, details panel, and Pages build implemented per [`docs/plan/TODO.md`](docs/plan/TODO.md).
+- ✅ S5.5 interaction/layout pass: draggable DetailsPanel, parameterized two-row grid, A cluster-composition summary, unified single/brush selection, B cohort-mode semantics, single-cluster-only Markov.
+- 🚧 S6 reskin (token-only, preserving data flow/interaction): Cinemetrics red/black/film-paper skin + 15 genre / 7 cluster data colors + local Alata/Playfair Display fonts are **landed** (F9.1/F9.6/F9.7); remaining: full type scale, `prefers-reduced-motion`, `films.json` lazy-load (F9.2–F9.5 partial, F10.4).
 
 ## Start here (read order)
 

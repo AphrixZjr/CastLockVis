@@ -12,9 +12,12 @@
 目标：在不锁死最终视觉的前提下，先搭出**可运行、可联动、可替换皮肤**的骨架。
 阶段一全程使用中性灰 + 少量功能色，把注意力放在结构与交互上。
 
-### 1.1 设计 token（占位，CSS 变量）
+### 1.1 设计 token（CSS 变量）
 
-所有视觉常量集中在 `:root`，组件只引用变量、不写死数值。第二阶段改这里即可整体换肤。
+所有视觉常量集中在 `src/styles/tokens.css` 的 `:root`，组件只引用变量、不写死数值。
+> **现状**：阶段二（S6）已把 Cinemetrics 皮肤定稿值回填到此处，下方代码块即 `tokens.css` 的实际内容；
+> 第一阶段的中性占位值已被替换。换肤仍只改这一份 token（+ `fonts.css` / `ViewPanel` 样式），不动视图逻辑。
+> 完整色值/字体说明见下方 §2.2 / §2.4。
 
 ```css
 :root {
@@ -22,63 +25,95 @@
   --space-1: 4px;  --space-2: 8px;  --space-3: 12px;
   --space-4: 16px; --space-6: 24px; --space-8: 32px;
 
-  /* 圆角 / 边框 */
-  --radius-sm: 4px; --radius-md: 8px;
-  --border: 1px solid var(--color-border);
+  /* 布局尺寸（最小可用宽度 / 面板与图表最小高度，供响应式与重排使用） */
+  --app-min-width: 720px;        --panel-min-width: 520px;
+  --chart-min-height: 220px;     --chart-mobile-min-height: 260px;
+  --panel-state-min-height: 120px;   --panel-toolbar-min-height: 20px;
+  --panel-legend-min-height: 26px;   --panel-mobile-row-min-height: 360px;
 
-  /* 颜色角色 (阶段一：中性占位值) */
-  --color-bg:      #1a1c1f;   /* 应用背景（暗色，呼应白色熵线/红黑对角线） */
-  --color-surface: #232629;   /* 面板表面 */
-  --color-border:  #34383d;
-  --color-text:    #e6e8ea;
-  --color-text-dim:#9aa0a6;
-  --color-accent:  #4c8bf5;   /* 选中/交互高亮（占位） */
+  /* 圆角 / 边框 / 浮层阴影 */
+  --radius-sm: 1px; --radius-md: 2px;
+  --border: 1.5px solid var(--color-border);
+  --shadow-panel: 0 18px 48px rgba(0, 0, 0, 0.5);
 
-  /* 分叉语义色（视图 C，proposal 明确要求绿/红） */
-  --color-success: #3fb27f;   /* 成功转型“多维演化区” */
-  --color-snapback:#e0564f;   /* 被弹回“重新固化区” */
+  /* 皮肤色（Cinemetrics：红 / 黑 / 胶片纸金，详见 §2.2） */
+  --color-bg: #10100e;          --color-surface: #171715;
+  --color-surface-raised: #1c1c1c;
+  --color-border: #f1dfba;      --color-border-subtle: #d7c08e;
+  --color-text: #f2ead9;        --color-text-dim: #d7c8a9;
+  --color-paper: #eed5af;       --color-paper-deep: #d6c29e;
+  --color-paper-text: #191815;  --color-paper-dim: #695941;
+  --color-ui-accent: #a43718;   --color-ui-accent-strong: #8d2a11;
+  --color-ui-accent-dark: #681c0d;
+  --color-ui-rail: #151515;     --color-ui-rail-soft: #222222;
 
-  /* 类型分类色：阶段一先用占位序列，第二阶段定稿 */
-  --genre-1:#888; --genre-2:#888; --genre-3:#888; /* ... */
+  /* 通用交互/选择高亮：统一用胶片米金色（与下方数据语义色解耦） */
+  --color-accent: #eed5af;
+  --color-control-fill: #d6c29e;  --color-control-hover: #f4deb8;
+  --color-chart-bg: #111210;      --color-chart-grid: #302e29;
+  --color-chart-axis: #7d735c;    --color-entropy-line: #e6e8ea;
 
-  /* 字体（阶段一用系统栈，第二阶段定稿） */
-  --font-sans: system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+  /* 数据语义色（与皮肤/交互高亮解耦） */
+  --color-markov-cell: #4c8bf5;   --color-markov-diag: #e0564f;
+  --color-river-other: #6f91a0;
+  --color-success: #3fb27f;       /* 成功转型「多维演化区」 */
+  --color-snapback:#e0564f;       /* 被弹回「重新固化区」 */
+
+  /* 类型分类色 ×15（低饱和胶片染料感，见 §2.2.2） */
+  --genre-1:#a94f3d; --genre-2:#c08a3c; --genre-3:#9b8f4a; /* ...至 --genre-15 */
+
+  /* Cluster 分类色 ×7（独立维度，复古宝石色，见 §2.2.3） */
+  --cluster-0:#b95f3e; /* ...至 --cluster-6 */
+
+  /* 字体（本地内嵌 Alata + Playfair Display，见 §2.4 与 fonts.css） */
+  --font-sans:    'Alata', 'Avenir Next', 'Trebuchet MS', 'Gill Sans', sans-serif;
+  --font-display: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-label:   'Alata', 'Avenir Next', 'Trebuchet MS', 'Gill Sans', sans-serif;
+  --font-mono:    'DIN Alternate', 'Roboto Mono', 'SF Mono', ui-monospace, monospace;
   --fs-sm: 12px; --fs-md: 14px; --fs-lg: 18px;
 }
 ```
 
 ### 1.2 布局框架
 
-四视图采用 **2×2 面板栅格**，顶部为全局 Header，承载标题与全局控制（如视图 D 阶段切换、
-视图 C 控制变量滑块入口）。详情面板 (details-on-demand) 以浮层/侧栏形式出现，不占用栅格。
+四视图采用 **2×2 面板栅格**，顶部为全局 Header。详情面板 (details-on-demand) 以浮层形式出现，不占用栅格。
+实现上拆成**上、下两行各自独立的 grid**（`App.css`），以便上下两行的列宽比例分别调参；列宽与行高全部走
+`--layout-*` 变量（见下），改这些 token 即可重排空间分配，不动视图。
 
 ```
 ┌──────────────────────────────────────────────┐
-│ Header  CastLock-Vis  · 全局控制                │
+│ Header  CastLock-Vis  · Genre Color Map / 状态  │
 ├───────────────────────┬──────────────────────┤
-│ A  Genre-Space Cluster │ B  Career River       │
+│ A  Genre-Space Cluster │ B  Career River       │   ← 上行 grid（cluster | river）
 ├───────────────────────┼──────────────────────┤
-│ D  Markov Gate         │ C  Transformation     │
+│ C  Transformation      │ D  Markov Gate        │   ← 下行 grid（alignment | markov）
 └───────────────────────┴──────────────────────┘
-        （DetailsPanel 作为浮层叠加）
+        （DetailsPanel 作为浮层叠加，可拖动）
 ```
 
-> 栅格用 CSS Grid，单元格可在阶段二按需调整比例（如 A 与 B 加宽）。布局尺寸全部走 token，便于响应式与重排。
+> 注意 C/D 位置：当前下行为 **C(alignment) 在左、D(markov) 在右**（C 较宽以容纳对齐分叉，D 较窄）。
+> 可调 token（`App.css`，默认值）：
+> 行高 `--layout-top-row: 0.92fr` / `--layout-bottom-row: 1.08fr`；
+> 列宽 `--layout-cluster-column / --layout-river-column: 1fr`、`--layout-alignment-column: 1.25fr`、
+> `--layout-markov-column: 0.75fr`，并各带 `*-column-min` 最小宽度。响应式在中宽降为单列、窄屏纵向堆叠。
 
 ### 1.3 组件清单（阶段一只做骨架，统一外观）
 
-| 组件 | 职责 | 阶段一形态 |
-| --- | --- | --- |
-| `ViewPanel` | 每个视图的统一外框：标题栏 + 工具条 + 图例位 + 内容区 + 空/加载态 | 灰底卡片，`--radius-md`，统一内边距 |
-| `DetailsPanel` | details-on-demand 微观数据展开 | 简单浮层，键值列表 |
-| `Legend` | 类型/语义色图例 | 色块 + 文字，占位色 |
-| `Tooltip` | 悬停信息 | 暗底小卡片 |
-| `controls/Slider` | 控制变量过滤（视图 C）、阈值 | 原生风格 + token 描边 |
-| `controls/Toggle` | 阶段切换（视图 D early/mid/late） | 分段按钮 |
-| `controls/BrushLayer` | 视图 A 框选（D3 brush 封装） | 半透明选框 |
+> 实现位置：通用展示件在 `src/components/common/`，控件在 `src/components/controls/`，
+> 面板级组件在 `src/components/`。下表为实际落地组件（名称已对齐代码）。
 
-组件风格基调：**扁平、低饱和、信息优先**——边框轻、留白足、不用阴影堆叠，让数据图形成为视觉主体。
+| 组件 | 职责 | 实际形态 |
+| --- | --- | --- |
+| `ViewPanel` | 每个视图的统一外框：标题栏 + 工具条 + 图例位 + 内容区 + 空/加载/错误态；支持命名 grid `area` | 胶片纸描边卡片，`--radius-md`，统一内边距 |
+| `DetailsPanel` | details-on-demand 微观数据展开（转型窗口 `[sel±2]` + 评分↑/票房↓方向标记） | 可拖动浮层（Pointer Events，标题栏拖动、关闭键不参与），方向键无障碍后备 |
+| `InteractionGuide` | 联动状态条 + Genre/Cluster 色图例（默认折叠），三条链路实时状态与触发提示，ARIA live | Header 下方状态栏 |
+| `common/ChartLegend` / `GenreColorLegend` | 类型/语义色图例，四视图复用 | 色块 + 文字 |
+| `common/ChartTooltip` | 悬停信息（数字 `tabular-nums` 对齐） | 暗底小卡片 |
+| `controls/RangeSlider` | 控制变量过滤（视图 C，支持线性/对数刻度）、阈值 | 双滑块 + token 描边，store 无关 |
+| `controls/Toggle` | 阶段切换（视图 D early/mid/late）、视图 C y 轴切换 | 分段按钮 |
+| `controls/BrushLayer` | 视图 A 框选（D3 brush 封装，store 无关） | 半透明选框 |
+
+组件风格基调：**扁平、信息优先**——胶片纸金描边、黑场底、不堆叠阴影，让数据图形成为视觉主体。
 
 ### 1.4 可扩展性约定
 
@@ -95,66 +130,74 @@
 
 ### 2.1 设计关键词
 
-`Analyst Console`（分析师控制台）· `Cinematic Dark`（影院暗场）·
-`Data-Ink First`（数据墨水优先）· `Quiet Precision`（克制精确）。
-基调：暗色专业、低饱和中性面、用色彩只标注**结论**（锁定 / 转型成功 / 被弹回），
-呼应 proposal 的“白色熵线、红黑对角线、绿色多维区、红色固化区”意象。
+`Cinemetrics`（电影计量资料库）· `Film-Paper on Black`（胶片纸 / 黑场）·
+`Cinema Red Accent`（影院红强调）· `Data-Ink First`（数据墨水优先）。
+皮肤参考 `docs/references/`（Cinemetrics 数据库 + `ref_style.jpg`）：近黑底（`#10100e`）配暖胶片纸金
+文字与描边（`#f2ead9` / `#f1dfba` / `#eed5af`），影院红（`#a43718`）作 UI 强调；标题用 Playfair Display 衬线，
+正文/标签/数字用 Alata / mono。**皮肤色与数据语义色解耦**：色彩在数据层只标注**结论**（锁定 / 转型成功 / 被弹回），
+呼应 proposal 的「白色熵线、红黑对角线、绿色多维区、红色固化区」意象。
 
-### 2.2 配色方案（已回填）
+### 2.2 配色方案（已回填，对齐 `tokens.css` 实际值）
 
-色彩基调为 `Analyst Console / Cinematic Dark`：低饱和、偏冷、专业暗色界面，避免过亮或奶油色。分类色只承担数据编码，功能色承担交互与分析结论；Markov、River Other、控件填充均已与通用交互高亮解耦。
+基调为 `Cinemetrics / Film-Paper on Black`：近黑暖底、胶片纸金为主、影院红强调。分类色只承担数据编码，功能色承担交互与分析结论；通用交互高亮统一为胶片米金色 `--color-accent`，Markov、River Other、success/snapback 等数据语义色均与皮肤/交互高亮**解耦**。
 
 #### 2.2.1 基础与功能 token
 
 | Token | Hex | 用途 |
 | --- | --- | --- |
-| `--color-bg` | `#1a1c1f` | 应用背景 |
-| `--color-surface` | `#232629` | 面板表面 |
-| `--color-border` | `#34383d` | 边框 / 分隔线 |
-| `--color-text` | `#e6e8ea` | 正文与主标签 |
-| `--color-text-dim` | `#9aa0a6` | 次要文字 |
-| `--color-chart-bg` | `#202326` | 图表背景 |
-| `--color-chart-grid` | `#2c3035` | 图表网格线 |
-| `--color-chart-axis` | `#5f6872` | 坐标轴 |
-| `--color-accent` | `#4c8bf5` | hover / focus / selected 高亮 |
-| `--color-control-fill` | `#356fc8` | slider thumb / stage tab 等控件填充态 |
+| `--color-bg` | `#10100e` | 应用背景（黑场） |
+| `--color-surface` / `--color-surface-raised` | `#171715` / `#1c1c1c` | 面板表面 / 抬升表面 |
+| `--color-border` / `--color-border-subtle` | `#f1dfba` / `#d7c08e` | 胶片纸金描边 / 弱描边 |
+| `--color-text` / `--color-text-dim` | `#f2ead9` / `#d7c8a9` | 正文主标签 / 次要文字 |
+| `--color-paper` / `--color-paper-deep` | `#eed5af` / `#d6c29e` | 胶片纸面 / 深纸面 |
+| `--color-paper-text` / `--color-paper-dim` | `#191815` / `#695941` | 纸面上的暗字 / 纸面弱字 |
+| `--color-ui-accent` / `-strong` / `-dark` | `#a43718` / `#8d2a11` / `#681c0d` | 影院红 UI 强调（Header / 工具条等皮肤态） |
+| `--color-ui-rail` / `-soft` | `#151515` / `#222222` | 轨道 / 分隔底 |
+| `--color-chart-bg` | `#111210` | 图表背景 |
+| `--color-chart-grid` | `#302e29` | 图表网格线 |
+| `--color-chart-axis` | `#7d735c` | 坐标轴 |
+| `--color-entropy-line` | `#e6e8ea` | B/C 白色香农熵线 |
+| `--color-accent` | `#eed5af` | hover / focus / selected 通用交互高亮（胶片米金） |
+| `--color-control-fill` / `--color-control-hover` | `#d6c29e` / `#f4deb8` | slider thumb / stage tab 等控件填充与悬停态 |
 | `--color-success` | `#3fb27f` | C 视图 success / 多维演化 |
 | `--color-snapback` | `#e0564f` | C 视图 snapback / 重新固化 |
 | `--color-markov-cell` | `#4c8bf5` | D 视图 Markov 非对角线顺序色阶基色 |
 | `--color-markov-diag` | `#e0564f` | D 视图 Markov 对角线锁定色 |
 | `--color-river-other` | `#6f91a0` | B 视图 top 6 外类型聚合流带 |
 
+> 说明：界面皮肤（红 / 黑 / 纸金 + `--color-ui-*`）与图表内的数据语义色（Markov、success/snapback、entropy、genre、cluster）刻意分离，换皮肤不会改动图表语义。
+
 #### 2.2.2 Genre 分类色（key 对齐 `public/data/genres.json`）
 
 | Genre | Token | Hex |
 | --- | --- | --- |
-| Crime | `--genre-1` | `#6e8fb6` |
-| Drama | `--genre-2` | `#9b7fa8` |
-| Mystery | `--genre-3` | `#7b88c2` |
-| Romance | `--genre-4` | `#b27a8f` |
-| Western | `--genre-5` | `#a58a5a` |
-| Horror | `--genre-6` | `#9a6a94` |
-| Thriller | `--genre-7` | `#5fa0b8` |
-| Comedy | `--genre-8` | `#86a86f` |
-| Fantasy | `--genre-9` | `#8d7dcd` |
-| Action | `--genre-10` | `#c07d62` |
-| Adventure | `--genre-11` | `#8fa86a` |
-| Sci-Fi | `--genre-12` | `#55aaa3` |
-| Musical | `--genre-13` | `#b08bb0` |
-| Music | `--genre-14` | `#6eaa91` |
-| Documentary | `--genre-15` | `#9aa09a` |
+| Crime | `--genre-1` | `#a94f3d` |
+| Drama | `--genre-2` | `#c08a3c` |
+| Mystery | `--genre-3` | `#9b8f4a` |
+| Romance | `--genre-4` | `#b46a7c` |
+| Western | `--genre-5` | `#a06f3a` |
+| Horror | `--genre-6` | `#8f4e78` |
+| Thriller | `--genre-7` | `#3f8a8e` |
+| Comedy | `--genre-8` | `#82a84c` |
+| Fantasy | `--genre-9` | `#7667a8` |
+| Action | `--genre-10` | `#c15f34` |
+| Adventure | `--genre-11` | `#669a5a` |
+| Sci-Fi | `--genre-12` | `#4f7fa4` |
+| Musical | `--genre-13` | `#b07aa0` |
+| Music | `--genre-14` | `#5fa08d` |
+| Documentary | `--genre-15` | `#8a8674` |
 
 #### 2.2.3 Cluster 分类色（key 对齐 `actors[].clusterId`）
 
 | Cluster | Token | Hex |
 | --- | --- | --- |
-| 0 | `--cluster-0` | `#5f91b5` |
-| 1 | `--cluster-1` | `#58a79b` |
-| 2 | `--cluster-2` | `#788cc0` |
-| 3 | `--cluster-3` | `#9a80b6` |
-| 4 | `--cluster-4` | `#b07a8d` |
-| 5 | `--cluster-5` | `#a18d61` |
-| 6 | `--cluster-6` | `#74a06e` |
+| 0 | `--cluster-0` | `#b95f3e` |
+| 1 | `--cluster-1` | `#b59a45` |
+| 2 | `--cluster-2` | `#6b9b58` |
+| 3 | `--cluster-3` | `#3e9188` |
+| 4 | `--cluster-4` | `#557fa5` |
+| 5 | `--cluster-5` | `#7b63a5` |
+| 6 | `--cluster-6` | `#a25f7d` |
 
 #### 2.2.4 色彩使用规则
 
@@ -170,11 +213,15 @@
 - **密度**：高密度但有呼吸感——坐标轴用细线/低对比，网格线尽量省略，强调数据图形。
 - **响应式**：以桌面大屏为主（可视分析场景），定义最小可用宽度与栅格降级策略。
 
-### 2.4 字体与字号
+### 2.4 字体与字号（已回填）
 
-- **字体族**：正文/UI 用一款现代无衬线（定稿位，如 Inter / Source Han Sans 兼顾中英）；数字与坐标轴可用 `--font-mono` 强化对齐与可读。
-- **字号阶（定稿位）**：在阶段一 `--fs-sm/md/lg` 基础上扩为完整 type scale（如 12 / 13 / 14 / 16 / 18 / 22 / 28），并定义对应行高与字重。
-- **数字排版**：启用等宽数字 (`font-variant-numeric: tabular-nums`)，保证矩阵单元格、评分、票房等对齐。
+- **字体族（本地内嵌，见 `src/styles/fonts.css` + `src/assets/fonts/`，附 OFL 许可）**：
+  - `--font-display`：`'Playfair Display'`（可变字重 400–900，衬线）——标题 / 主品牌字。
+  - `--font-sans` / `--font-label`：`'Alata'`（无衬线）——正文 / UI 标签 / 图例（含原先用 mono 的标签，commit `441e851` 改为 label）。
+  - `--font-mono`：`'DIN Alternate' → 'Roboto Mono' → 'SF Mono' → ui-monospace`——数字 / 坐标轴对齐（无本地内嵌，走系统回落）。
+  - 两款内嵌字体均 `font-display: swap`，并带本地相近字体回落链。
+- **字号阶（现状）**：仍为 `--fs-sm 12 / --fs-md 14 / --fs-lg 18`；尚未扩为完整 type scale，亦未定义行高/字重 token（S6 F9.2 待办）。
+- **数字排版**：已在 `ChartTooltip` / `RangeSlider` 启用 `font-variant-numeric: tabular-nums`；尚未全局铺到矩阵单元格 / 评分 / 票房等所有数字位（S6 F9.3 待办）。
 
 ### 2.5 图标与图示
 
@@ -184,13 +231,13 @@
 ### 2.6 动效
 
 - 克制、信息导向：联动切换（cohort 重聚合、矩阵阶段切换、对齐重分层）用 150–250ms 过渡，强调“数据在变”而非装饰。
-- 遵循 `prefers-reduced-motion`。
+- **现状**：已落地点/轨迹 hover、Markov 单元格等 140–180ms 过渡，B 熵线有 `entropy-glow` 入场动画；尚未集中过渡时长 token，且**未接入 `prefers-reduced-motion`**（S6 F9.5 待办）。
 
-### 2.7 各视图视觉规范（定稿位）
+### 2.7 各视图视觉规范（已落地）
 
-- **A Genre-Space Cluster**：点大小/描边/选中态、群落 hull 或密度底纹、brush 选框样式。
-- **B Career River Chronology**：流层堆叠顺序与配色、白色熵线粗细、每部电影圆点的尺寸/明度映射（评分 vs 票房）。
-- **C Transformation Alignment**：T=0 竖轴标记、左侧低熵窄束的收拢样式、右侧绿/红分叉区底纹、线条粗细与透明度（叠加可读性）。
-- **D Markov Transition Gate**：单元格色阶、对角线强调、阶段切换的过渡、行列标签排版。
+- **A Genre-Space Cluster**：点按 `dominantEarlyGenre` 着色、hover 放大 + `--color-accent` 描边、brush 选区外降明度；每簇凸包 hull（85 分位裁离群、最小半径保小簇可见）+ 簇符号图标；下方 cluster composition 摘要柱（点击柱进入该 cluster cohort，可下钻该簇 dominantEarlyGenre 构成）。**待补**：密度底纹（F3.5）。
+- **B Career River Chronology**：滑窗（3 片）类型占比堆叠流，top 6 genre + `--color-river-other` 聚合带；白色 `--color-entropy-line` 熵线 + 入场动画；每部电影圆点按评分（y）/票数（半径）编码、可点击触发 B→C；熵尖峰环（最多 5 个）。
+- **C Transformation Alignment**：τ 横轴 + T=0 竖虚线；y 轴 `dist`（默认）/`entropy` 可切；按 outcome 绿（success）/红（snapback）/灰（none 上下文 25% 透明）；选中演员 `--color-accent` 加粗描边、同 cluster 同侪加粗，滤镜外轨迹降至 12% 透明。
+- **D Markov Transition Gate**：单元格按概率映射不透明度、`--color-markov-cell` 基色 + `--color-markov-diag` 对角线锁定色；行列 genre 标签、hover tooltip、early/mid/late 阶段切换；仅在单演员或单 cluster cohort 显示矩阵，多 cluster 显示空态。
 
-> 视觉方案定稿后，将取值回填第一阶段的 CSS 变量并补全本节色值/字号表；后续视觉调整始终改 token，不改视图逻辑。
+> 视觉已按上表回填到 `tokens.css` / `fonts.css` / 各视图样式；后续视觉调整始终改 token，不改视图逻辑。剩余 S6 收尾项（完整 type scale、`prefers-reduced-motion`、`films.json` 懒加载）见 `docs/plan/TODO.md` S6。

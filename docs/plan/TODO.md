@@ -120,11 +120,11 @@
 > **唯一规则：只改 `tokens.css` 与 `ViewPanel`/视图样式表，不改视图逻辑与数据流。**
 > 进入本阶段的前提：S1–S5.5 全部组件已无硬编码颜色/间距，且前述交互/布局前置改造已收口。
 
-- [x] **F9.1** 配色定稿并回填 token：中性阶、15 个 genre 分类色、7 个 cluster 分类色、矩阵顺序色阶、绿/红分叉色、交互态与控件填充色均已集中到 `tokens.css`
-- [ ] **F9.2 / F9.3** 版式与字体字号定稿（4px 节奏、type scale、等宽数字）
-- [ ] **F9.4 / F9.5** 图标·坐标轴·T=0 标记规范 + 克制动效（150–250ms，`prefers-reduced-motion`）
-- [ ] **F9.6** 各视图视觉规范回填（A 点态/hull、B 流配色与熵线、C 分叉底纹、D 单元格色阶）
-- [ ] **F9.7** 把定稿色值/字号写回 DESIGN_SYSTEM §2 色值表，token 与文档同步
+- [x] **F9.1** 配色定稿并回填 token：定稿为 Cinemetrics 红/黑/胶片纸金皮肤；中性阶、15 个 genre 分类色、7 个 cluster 分类色、矩阵顺序色阶、绿/红分叉色、交互态与控件填充色均已集中到 `tokens.css`，皮肤色与数据语义色解耦
+- [~] **F9.2 / F9.3** 版式与字体字号：本地内嵌 Alata + Playfair Display（`fonts.css`/`src/assets/fonts`，附 OFL），`--font-display/sans/label/mono` 角色就位、原 mono 标签改 label；沿用 4px 节奏；`tabular-nums` 已用于 ChartTooltip/RangeSlider。**待补**：完整 type scale（现仅 sm/md/lg）+ 行高/字重 token、等宽数字全局铺开
+- [~] **F9.4 / F9.5** 图标·坐标轴·T=0 标记 + 克制动效：簇符号图标、坐标轴/网格、C 的 T=0 竖虚线均已规范；hover/单元格过渡 140–180ms、B 熵线入场动画已落地。**待补**：集中过渡时长 token + 接入 `prefers-reduced-motion`
+- [x] **F9.6** 各视图视觉规范回填：A 点态/hull/簇图标/composition 摘要、B 流配色与白熵线/尖峰环、C 绿/红/灰分叉与滤镜降明度、D 单元格色阶与对角线锁定均已换肤落地（A 密度底纹仍属 F3.5 P1 增强）
+- [x] **F9.7** 把定稿色值/字体写回 DESIGN_SYSTEM §1.1/§2 色值与字体表，token 与文档同步（本次对齐）
 - [ ] **F10.4 (P2)** `films.json`（~4MB）按需懒加载或精简字段
 
 **验收**：换肤后四视图视觉统一、达成「Analyst Console / Cinematic Dark」基调，且交互逻辑零回归。
