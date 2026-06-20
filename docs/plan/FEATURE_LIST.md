@@ -33,7 +33,7 @@
 - **F0.1** 原始 IMDb 数据清洗与实体提取 —— `clean_expert.py`（后 1967 年、剔 6 类噪声、票数门槛、主演番位、生涯厚度过滤）。✅
 - **F0.2** 特征工程与 6 份数据契约落盘 —— `pipeline_json_expert.py`：`genres / actors / films / entropy / markov / alignment`。✅
 - **F0.3** 早期画像：前 5 部作品类型概率向量 + `dominantEarlyGenre`（视图 A 坐标来源）。✅
-- **F0.4** EMA 香农熵曲线 `n=1..30`（视图 B 白线；亦用于 T=0 检测。视图 C 纵轴已改用类型偏离度 `dist`）。✅
+- **F0.4** EMA 香农熵曲线覆盖每位演员完整作品序列（视图 B 白线；亦用于 T=0 检测。视图 C 纵轴已改用类型偏离度 `dist`）。✅
 - **F0.5** PaCMAP 降维 + 15 维 KMeans 7 群落（cosine-silhouette 选种）→ `projection[x,y]` + `clusterId`（联动 cohort 单位）。✅
 - **F0.6** 分阶段（early/mid/late）群落转移矩阵（视图 D，按 `clusterId` 键控）。✅
 - **F0.7** T=0 对齐检测：t0 用**熵 onset 变点**（`T0_ONSET_JUMP`）；`outcome` 用**类型偏离度轨迹**（lowflat：末段回吐峰值增益 ≥ `SNAPBACK_RETRACE` **且** 末段斜率 ≤ `SNAPBACK_SLOPE_MAX` → snapback；否则 success；未检出 → none）。`points[{tau,entropy,dist}]`（`dist` = k=5 滚动类型偏离度，C 纵轴）、`covariatesAtT0`。当前分布 success/snapback/none ≈ 856/153/148。✅

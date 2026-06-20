@@ -199,7 +199,7 @@ for nconst, group in df.groupby('nconst'):
     # dominantEarlyGenre 降级为标签：早期画像里 idf 加权占比最高者
     dominant_early = max(valid_genres, key=lambda g: weighted_early[g]) if early_counts else "Unknown"
 
-    # --- B. 计算 EMA 熵曲线 (1..30)：ALPHA 按片内标签 idf 分摊 ---
+    # --- B. 计算完整 EMA 熵曲线：ALPHA 按片内标签 idf 分摊 ---
     genre_weights = {g: 0.0 for g in valid_genres}
     entropy_curve = []
 
@@ -214,7 +214,7 @@ for nconst, group in df.groupby('nconst'):
         ent = -sum((w / total_w) * math.log2(w / total_w) for w in genre_weights.values() if w > 0.001) if total_w > 0 else 0
         entropy_curve.append({"n": i + 1, "entropy": round(ent, 3)})
 
-    entropy_dict[nconst] = {"actorId": nconst, "curve": entropy_curve[:30]}
+    entropy_dict[nconst] = {"actorId": nconst, "curve": entropy_curve}
 
     # --- C. T=0 检测（熵 onset 变点）+ 类型偏离度轨迹 + 分叉判据 ---
     # t0：首个「短窗(n..n+2)均熵 − 早期累积基线(1..n-1)」≥ T0_ONSET_JUMP 的序号 n（1-based）。
