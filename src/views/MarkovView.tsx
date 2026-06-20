@@ -196,7 +196,7 @@ export function MarkovView({
           isEmpty
             ? emptyMessage
             : hoverCell && matrix
-              ? `${matrix.genres[hoverCell.col]} → ${matrix.genres[hoverCell.row]}`
+              ? `${matrix.genres[hoverCell.row]} → ${matrix.genres[hoverCell.col]}`
               : 'hover cell 查看转移概率'
         }
         tone={hoverCell && !isEmpty ? 'active' : 'default'}
