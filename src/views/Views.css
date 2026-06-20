@@ -33,9 +33,10 @@
   min-width: 0;
   min-height: 0;
   padding: var(--space-2) var(--space-3);
-  border: var(--border);
+  border: 1.5px solid color-mix(in srgb, var(--color-border) 66%, var(--color-bg));
   border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--color-chart-bg) 88%, var(--color-surface));
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--color-chart-bg) 82%, var(--color-surface)), var(--color-chart-bg));
 }
 
 .cluster-composition__header {
@@ -69,9 +70,9 @@
 .cluster-composition__back {
   min-height: 36px;
   padding: var(--space-2) var(--space-3);
-  border: var(--border);
+  border: 1.5px solid color-mix(in srgb, var(--color-border) 72%, var(--color-bg));
   border-radius: var(--radius-sm);
-  background: var(--color-surface);
+  background: color-mix(in srgb, var(--color-paper) 12%, var(--color-surface));
   color: var(--color-text);
   font-family: var(--font-mono);
   font-size: calc(var(--fs-sm) * 1.25);
@@ -269,9 +270,9 @@
 
 .view-axis-toggle {
   padding: var(--space-2) var(--space-3);
-  border: var(--border);
+  border: 1.5px solid color-mix(in srgb, var(--color-border) 68%, var(--color-bg));
   border-radius: var(--radius-sm);
-  background: var(--color-surface);
+  background: linear-gradient(180deg, var(--color-surface-raised), var(--color-surface));
   color: var(--color-text-dim);
   font-family: var(--font-mono);
   font-size: var(--fs-lg);
@@ -279,8 +280,9 @@
 }
 
 .view-axis-toggle.is-active {
-  border-color: var(--color-accent);
-  color: var(--color-text);
+  border-color: color-mix(in srgb, var(--color-control-fill) 78%, var(--color-border));
+  background: var(--color-control-fill);
+  color: var(--color-paper-text);
 }
 
 .view-chart svg {
@@ -288,9 +290,12 @@
   width: 100%;
   height: 100%;
   min-height: var(--chart-min-height);
-  border: var(--border);
+  border: 1.5px solid color-mix(in srgb, var(--color-border) 68%, var(--color-bg));
   border-radius: var(--radius-sm);
-  background: var(--color-chart-bg);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.025), transparent 22%),
+    var(--color-chart-bg);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.42);
   overflow: hidden;
 }
 
@@ -306,18 +311,20 @@
   width: 100%;
   height: 100%;
   min-height: var(--panel-state-min-height);
-  border: var(--border);
+  border: 1.5px dashed color-mix(in srgb, var(--color-border) 72%, var(--color-bg));
   border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--color-chart-bg) 78%, var(--color-surface));
   color: var(--color-text-dim);
+  font-family: var(--font-mono);
   font-size: var(--fs-sm);
 }
 
 .view-chart .chart-tooltip {
   order: -1;
   padding: var(--space-2) var(--space-3);
-  border: var(--border);
+  border: 1.5px solid color-mix(in srgb, var(--color-border) 66%, var(--color-bg));
   border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--color-chart-bg) 72%, var(--color-surface));
+  background: color-mix(in srgb, var(--color-paper) 10%, var(--color-chart-bg));
 }
 
 .view-chart::after {
@@ -420,7 +427,7 @@
 
 .view-entropy-line {
   fill: none;
-  stroke: var(--color-text);
+  stroke: var(--color-entropy-line);
   stroke-width: 2.1;
   stroke-linejoin: round;
   stroke-linecap: round;
@@ -430,7 +437,7 @@
 .view-film-dot {
   fill: var(--color-accent);
   fill-opacity: 0.32;
-  stroke: var(--color-text);
+  stroke: var(--color-entropy-line);
   stroke-opacity: 0.82;
   stroke-width: 0.8;
 }
@@ -570,7 +577,7 @@
 
 .view-markov-cell {
   fill: var(--color-markov-cell);
-  stroke: var(--color-bg);
+  stroke: var(--color-chart-bg);
   stroke-width: 0.55;
   transition: opacity 140ms ease;
 }
@@ -584,10 +591,10 @@
 }
 
 .view-markov-cell-tooltip rect {
-  fill: color-mix(in srgb, var(--color-surface) 94%, var(--color-bg));
-  stroke: color-mix(in srgb, var(--color-markov-cell) 54%, var(--color-border));
-  stroke-width: 0.85;
-  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.42));
+  fill: color-mix(in srgb, var(--color-ui-rail) 88%, var(--color-surface));
+  stroke: color-mix(in srgb, var(--color-border) 86%, var(--color-bg));
+  stroke-width: 1.35;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.48));
 }
 
 .view-markov-cell-tooltip text {

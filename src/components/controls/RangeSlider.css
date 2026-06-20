@@ -33,7 +33,7 @@
 
 .range-slider__inputs input[type='range'] {
   --range-active-color: var(--color-control-fill);
-  --range-groove-color: color-mix(in srgb, var(--color-chart-bg) 78%, var(--color-border));
+  --range-groove-color: color-mix(in srgb, var(--color-chart-bg) 74%, var(--color-border));
 
   appearance: none;
   width: 100%;
@@ -46,12 +46,12 @@
 
 .range-slider__inputs input[type='range']:hover,
 .range-slider__inputs input[type='range']:active {
-  --range-active-color: var(--color-accent);
+  --range-active-color: var(--color-control-hover);
 }
 
 .range-slider__inputs input[type='range']::-webkit-slider-runnable-track {
   height: 4px;
-  border-radius: 999px;
+  border-radius: 1px;
   background: linear-gradient(
     90deg,
     color-mix(in srgb, var(--range-active-color) 78%, var(--color-chart-bg)) 0%,
@@ -64,30 +64,30 @@
 
 .range-slider__inputs input[type='range']::-webkit-slider-thumb {
   appearance: none;
-  width: 13px;
+  width: 12px;
   height: 13px;
   margin-top: -4.5px;
-  border: 1px solid color-mix(in srgb, var(--range-active-color) 86%, var(--color-text));
-  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--range-active-color) 76%, var(--color-text));
+  border-radius: 2px;
   background: var(--range-active-color);
 }
 
 .range-slider__inputs input[type='range']::-moz-range-track {
   height: 4px;
-  border-radius: 999px;
+  border-radius: 1px;
   background: var(--range-groove-color);
 }
 
 .range-slider__inputs input[type='range']::-moz-range-progress {
   height: 4px;
-  border-radius: 999px;
+  border-radius: 1px;
   background: color-mix(in srgb, var(--range-active-color) 78%, var(--color-chart-bg));
 }
 
 .range-slider__inputs input[type='range']::-moz-range-thumb {
-  width: 13px;
+  width: 12px;
   height: 13px;
-  border: 1px solid color-mix(in srgb, var(--range-active-color) 86%, var(--color-text));
-  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--range-active-color) 76%, var(--color-text));
+  border-radius: 2px;
   background: var(--range-active-color);
 }

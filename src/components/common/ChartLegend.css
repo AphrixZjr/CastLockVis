@@ -1,8 +1,37 @@
 .genre-legend-block {
-  border: var(--border);
+  position: relative;
+  border: 2px solid color-mix(in srgb, var(--color-paper) 90%, #ffffff 10%);
   border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--color-surface) 94%, var(--color-bg));
-  padding: var(--space-3) var(--space-4);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--color-paper) 96%, #ffffff), var(--color-paper-deep));
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.3),
+    0 14px 36px rgba(0, 0, 0, 0.22);
+  padding: var(--space-3) calc(var(--space-4) + 22px);
+  overflow: hidden;
+}
+
+.genre-legend-block::before,
+.genre-legend-block::after {
+  content: '';
+  position: absolute;
+  top: var(--space-2);
+  bottom: var(--space-2);
+  width: 12px;
+  background:
+    repeating-linear-gradient(
+      180deg,
+      var(--color-bg) 0 9px,
+      transparent 9px 18px
+    );
+}
+
+.genre-legend-block::before {
+  left: var(--space-2);
+}
+
+.genre-legend-block::after {
+  right: var(--space-2);
 }
 
 .genre-legend-header {
@@ -11,9 +40,10 @@
 
 .genre-legend-title {
   margin: 0;
-  color: var(--color-text-dim);
+  color: var(--color-paper-text);
+  font-family: var(--font-display);
   font-size: calc(var(--fs-sm) * 1.4);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .genre-legend-grid {
@@ -36,13 +66,13 @@
 .genre-legend-chip {
   width: 14px;
   height: 14px;
-  border-radius: 2px;
-  border: 1px solid color-mix(in srgb, var(--color-text) 22%, transparent);
+  border-radius: 1px;
+  border: 1.5px solid color-mix(in srgb, var(--color-paper-text) 48%, transparent);
   flex-shrink: 0;
 }
 
 .genre-legend-name {
-  color: var(--color-text-dim);
+  color: var(--color-paper-dim);
   font-size: calc(var(--fs-sm) * 1.25);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -54,6 +84,7 @@
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2) var(--space-3);
+  font-family: var(--font-mono);
   font-size: calc(var(--fs-sm) * 1.25);
 }
 
@@ -68,8 +99,8 @@
 .legend-chip {
   width: 13px;
   height: 13px;
-  border-radius: 2px;
-  border: 1px solid color-mix(in srgb, var(--color-text) 25%, var(--color-bg));
+  border-radius: 1px;
+  border: 1.5px solid color-mix(in srgb, var(--color-text) 32%, var(--color-bg));
   background: var(--color-border);
   flex-shrink: 0;
 }

@@ -1,29 +1,67 @@
 .view-panel {
+  position: relative;
   display: grid;
   grid-template-rows: auto auto 1fr;
   min-width: 0;
   min-height: 0;
-  border: var(--border);
+  border: 2px solid color-mix(in srgb, var(--color-border) 88%, #ffffff 12%);
   border-radius: var(--radius-md);
   background: var(--color-surface);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05),
+    0 10px 28px rgba(0, 0, 0, 0.3);
   overflow: hidden;
 }
 
+.view-panel::before,
+.view-panel::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 1;
+  width: 14px;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(
+      180deg,
+      var(--color-bg) 0 12px,
+      transparent 12px 22px
+    );
+  opacity: 0.95;
+}
+
+.view-panel::before {
+  left: 0;
+  border-right: 1.5px solid color-mix(in srgb, var(--color-border) 58%, transparent);
+}
+
+.view-panel::after {
+  right: 0;
+  border-left: 1.5px solid color-mix(in srgb, var(--color-border) 58%, transparent);
+}
+
 .view-panel__header {
+  position: relative;
+  z-index: 2;
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: var(--space-2);
-  padding: var(--space-3) var(--space-4);
-  border-bottom: var(--border);
+  padding: var(--space-3) calc(var(--space-4) + 14px);
+  border-bottom: 2px solid color-mix(in srgb, var(--color-border) 72%, var(--color-bg));
+  background: var(--color-ui-rail);
 }
 
 .view-panel__title {
   min-width: 280px;
   margin: 0;
-  font-size: calc(var(--fs-md) * 2);
-  font-weight: 600;
+  color: var(--color-text);
+  font-family: var(--font-display);
+  font-size: calc(var(--fs-lg) * 1.25);
+  font-weight: 700;
+  line-height: 1.05;
 }
 
 .view-panel__toolbar {
@@ -36,16 +74,21 @@
 }
 
 .view-panel__legend {
+  position: relative;
+  z-index: 2;
   min-height: var(--panel-legend-min-height);
-  padding: var(--space-2) var(--space-4);
-  border-bottom: var(--border);
+  padding: var(--space-2) calc(var(--space-4) + 14px);
+  border-bottom: 1.5px solid color-mix(in srgb, var(--color-border) 58%, var(--color-bg));
+  background: color-mix(in srgb, var(--color-surface) 86%, var(--color-bg));
   color: var(--color-text-dim);
   font-size: calc(var(--fs-sm) * 1.25);
 }
 
 .view-panel__content {
+  position: relative;
+  z-index: 2;
   min-height: 0;
-  padding: var(--space-4);
+  padding: var(--space-4) calc(var(--space-4) + 14px);
   overflow: hidden;
 }
 
@@ -56,8 +99,11 @@
   width: 100%;
   height: 100%;
   min-height: var(--panel-state-min-height);
-  border: var(--border);
+  border: 1.5px dashed color-mix(in srgb, var(--color-border) 76%, var(--color-bg));
   border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--color-chart-bg) 80%, var(--color-surface));
+  color: var(--color-text-dim);
+  font-family: var(--font-mono);
   font-size: var(--fs-sm);
 }
 

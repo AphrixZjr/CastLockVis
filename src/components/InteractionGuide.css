@@ -15,16 +15,17 @@
 
 .interaction-guide__title-text {
   margin: 0;
-  color: var(--color-text-dim);
+  color: var(--color-paper-text);
+  font-family: var(--font-display);
   font-size: calc(var(--fs-sm) * 1.4);
-  font-weight: 600;
+  font-weight: 700;
   white-space: nowrap;
 }
 
 .interaction-guide__summary-text {
   min-width: 0;
   overflow: hidden;
-  color: var(--color-text-dim);
+  color: var(--color-paper-dim);
   font-family: var(--font-mono);
   font-size: calc(var(--fs-sm) * 1.25);
   text-overflow: ellipsis;
@@ -51,20 +52,21 @@
 
 .interaction-guide__toggle:hover,
 .interaction-guide__toggle:focus-visible {
-  color: var(--color-text);
+  color: var(--color-paper-text);
   outline: none;
 }
 
 .interaction-guide__toggle:hover .interaction-guide__toggle-label,
 .interaction-guide__toggle:focus-visible .interaction-guide__toggle-label {
-  border-color: var(--color-accent);
+  border-color: var(--color-control-hover);
 }
 
 .interaction-guide__toggle-label {
   padding: 2px var(--space-2);
-  border: var(--border);
+  border: 1.5px solid color-mix(in srgb, var(--color-control-fill) 55%, var(--color-paper-dim));
   border-radius: var(--radius-sm);
-  color: color-mix(in srgb, var(--color-accent) 72%, var(--color-text-dim));
+  background: color-mix(in srgb, var(--color-control-fill) 18%, transparent);
+  color: var(--color-paper-text);
 }
 
 .interaction-guide__items {
@@ -79,19 +81,19 @@
   align-items: center;
   gap: var(--space-2);
   min-width: 0;
-  border: var(--border);
+  border: 1.5px solid color-mix(in srgb, var(--color-paper-dim) 68%, var(--color-paper-text));
   border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--color-bg) 22%, transparent);
+  background: rgba(255, 255, 255, 0.12);
   padding: var(--space-2) var(--space-3);
 }
 
 .interaction-guide__item.is-active {
-  border-color: color-mix(in srgb, var(--color-accent) 76%, var(--color-border));
-  background: color-mix(in srgb, var(--color-accent) 10%, var(--color-surface));
+  border-color: color-mix(in srgb, var(--color-control-fill) 86%, var(--color-paper-dim));
+  background: color-mix(in srgb, var(--color-control-fill) 28%, rgba(255, 255, 255, 0.12));
 }
 
 .interaction-guide__title {
-  color: var(--color-text);
+  color: var(--color-paper-text);
   font-family: var(--font-mono);
   font-size: calc(var(--fs-sm) * 1.25);
 }
@@ -100,7 +102,7 @@
 .interaction-guide__hint {
   min-width: 0;
   overflow: hidden;
-  color: var(--color-text-dim);
+  color: var(--color-paper-dim);
   font-family: var(--font-mono);
   font-size: calc(var(--fs-sm) * 1.25);
   text-overflow: ellipsis;
@@ -108,7 +110,7 @@
 }
 
 .interaction-guide__hint {
-  color: color-mix(in srgb, var(--color-accent) 72%, var(--color-text-dim));
+  color: color-mix(in srgb, var(--color-ui-accent-dark) 68%, var(--color-paper-text));
 }
 
 @media (max-width: 1100px) {

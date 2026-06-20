@@ -1,6 +1,5 @@
 /*
- * 设计 token（第一阶段 · 占位值）——照搬 docs/dev_rule/DESIGN_SYSTEM.md §1.1。
- * 组件只引用变量、禁止硬编码颜色/间距。第二阶段（S6）只改本文件即可整体换肤。
+ * 设计 token。界面皮肤色与视图内部数据标识色分离，避免换肤时改动图表语义。
  */
 :root {
   /* 间距标尺 (4px 基准) */
@@ -22,24 +21,42 @@
   --panel-mobile-row-min-height: 360px;
 
   /* 圆角 / 边框 */
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --border: 1px solid var(--color-border);
+  --radius-sm: 1px;
+  --radius-md: 2px;
+  --border: 1.5px solid var(--color-border);
 
   /* 浮层阴影（details-on-demand 面板等） */
-  --shadow-panel: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --shadow-panel: 0 18px 48px rgba(0, 0, 0, 0.5);
 
-  /* 颜色角色 (阶段一：中性占位值) */
-  --color-bg: #1a1c1f; /* 应用背景（暗色，呼应白色熵线/红黑对角线） */
-  --color-surface: #232629; /* 面板表面 */
-  --color-border: #34383d;
-  --color-text: #e6e8ea;
-  --color-text-dim: #9aa0a6;
-  --color-accent: #4c8bf5; /* 选中/交互高亮（占位） */
-  --color-control-fill: #356fc8; /* 控件填充态：比交互高亮更克制 */
-  --color-chart-bg: #202326;
-  --color-chart-grid: #2c3035;
-  --color-chart-axis: #5f6872;
+  /* 电影资料库皮肤：从参考图提炼的红 / 黑 / 胶片纸色。 */
+  --color-bg: #10100e;
+  --color-surface: #171715;
+  --color-surface-raised: #1c1c1c;
+  --color-border: #f1dfba;
+  --color-border-subtle: #d7c08e;
+  --color-text: #f2ead9;
+  --color-text-dim: #d7c8a9;
+  --color-paper: #eed5af;
+  --color-paper-deep: #d6c29e;
+  --color-paper-text: #191815;
+  --color-paper-dim: #695941;
+  --color-ui-accent: #a43718;
+  --color-ui-accent-strong: #8d2a11;
+  --color-ui-accent-dark: #681c0d;
+  --color-ui-rail: #151515;
+  --color-ui-rail-soft: #222222;
+
+  /*
+   * 通用交互/选择高亮统一使用 Cinemetrics 的胶片米金色。
+   * 下方 Markov/genre/cluster/success/snapback 等数据语义色保持独立。
+   */
+  --color-accent: #eed5af;
+  --color-control-fill: #d6c29e;
+  --color-control-hover: #f4deb8;
+  --color-chart-bg: #111210;
+  --color-chart-grid: #302e29;
+  --color-chart-axis: #7d735c;
+  --color-entropy-line: #e6e8ea;
 
   /* Markov 矩阵顺序色阶：与交互高亮解耦，当前值保持阶段一视觉不变 */
   --color-markov-cell: #4c8bf5;
@@ -76,9 +93,10 @@
   --cluster-5: #a18d61;
   --cluster-6: #74a06e;
 
-  /* 字体（阶段一用系统栈，第二阶段定稿） */
-  --font-sans: system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
+  /* 字体：优先匹配 Cinemetrics；未安装时回落到本地相近字体。 */
+  --font-sans: 'Alata', 'Avenir Next', 'Trebuchet MS', 'Gill Sans', sans-serif;
+  --font-display: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-mono: 'DIN Alternate', 'Roboto Mono', 'SF Mono', ui-monospace, monospace;
   --fs-sm: 12px;
   --fs-md: 14px;
   --fs-lg: 18px;

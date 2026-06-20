@@ -159,7 +159,7 @@ export function MarkovView({ matrix, emptyMessage = '当前 stage 无可用矩�
             transform={`translate(${tooltipPosition.x} ${tooltipPosition.y})`}
             aria-hidden="true"
           >
-            <rect width={TOOLTIP_WIDTH} height={TOOLTIP_HEIGHT} rx={4} />
+            <rect width={TOOLTIP_WIDTH} height={TOOLTIP_HEIGHT} />
             <text x={TOOLTIP_WIDTH / 2} y={14} textAnchor="middle">
               p={tooltipCell.value.toFixed(3)}
             </text>
