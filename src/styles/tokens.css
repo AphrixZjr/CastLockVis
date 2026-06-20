@@ -67,31 +67,31 @@
   --color-success: #3fb27f; /* 成功转型「多维演化区」 */
   --color-snapback: #e0564f; /* 被弹回「重新固化区」 */
 
-  /* 类型分类色：阶段一先用占位序列，第二阶段定稿 */
-  --genre-1: #6e8fb6;
-  --genre-2: #9b7fa8;
-  --genre-3: #7b88c2;
-  --genre-4: #b27a8f;
-  --genre-5: #a58a5a;
-  --genre-6: #9a6a94;
-  --genre-7: #5fa0b8;
-  --genre-8: #86a86f;
-  --genre-9: #8d7dcd;
-  --genre-10: #c07d62;
-  --genre-11: #8fa86a;
-  --genre-12: #55aaa3;
-  --genre-13: #b08bb0;
-  --genre-14: #6eaa91;
-  --genre-15: #9aa09a;
+  /* Genre 分类色：低饱和胶片染料感，组内色相/明度尽量拉开。 */
+  --genre-1: #a94f3d;
+  --genre-2: #c08a3c;
+  --genre-3: #9b8f4a;
+  --genre-4: #b46a7c;
+  --genre-5: #a06f3a;
+  --genre-6: #8f4e78;
+  --genre-7: #3f8a8e;
+  --genre-8: #82a84c;
+  --genre-9: #7667a8;
+  --genre-10: #c15f34;
+  --genre-11: #669a5a;
+  --genre-12: #4f7fa4;
+  --genre-13: #b07aa0;
+  --genre-14: #5fa08d;
+  --genre-15: #8a8674;
 
-  /* 群落分类色（视图 A 簇图标 + 凸包；阶段一占位，第二阶段 S6 定稿） */
-  --cluster-0: #5f91b5;
-  --cluster-1: #58a79b;
-  --cluster-2: #788cc0;
-  --cluster-3: #9a80b6;
-  --cluster-4: #b07a8d;
-  --cluster-5: #a18d61;
-  --cluster-6: #74a06e;
+  /* Cluster 分类色：独立维度，组内用更少、更清晰的复古宝石色。 */
+  --cluster-0: #b95f3e;
+  --cluster-1: #b59a45;
+  --cluster-2: #6b9b58;
+  --cluster-3: #3e9188;
+  --cluster-4: #557fa5;
+  --cluster-5: #7b63a5;
+  --cluster-6: #a25f7d;
 
   /* 字体：优先匹配 Cinemetrics；未安装时回落到本地相近字体。 */
   --font-sans: 'Alata', 'Avenir Next', 'Trebuchet MS', 'Gill Sans', sans-serif;
