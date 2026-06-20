@@ -23,6 +23,11 @@ interface VizState {
   setBrush: (actorIds: Iterable<string>) => void;
   clearBrush: () => void;
   selectActor: (actorId: string | null) => void;
+  /**
+   * 「单击选演员」语义：清空框选、设为单选、复位作品高亮并收起详情面板。
+   * 视图 A 单击点位与图例搜索栏共用此动作，保证两处链路一致。
+   */
+  selectActorSingle: (actorId: string) => void;
   selectSpike: (filmIndex: number | null) => void;
   setMarkovStage: (stage: MarkovStage) => void;
   setAlignmentFilter: <K extends keyof AlignmentFilters>(
@@ -53,6 +58,13 @@ export const useVizStore = create<VizState>((set) => ({
   setBrush: (actorIds) => set({ brushedActorIds: new Set(actorIds) }),
   clearBrush: () => set({ brushedActorIds: new Set() }),
   selectActor: (actorId) => set({ selectedActorId: actorId }),
+  selectActorSingle: (actorId) =>
+    set({
+      brushedActorIds: new Set(),
+      selectedActorId: actorId,
+      selectedFilmIndex: null,
+      detailsOpen: false,
+    }),
   selectSpike: (filmIndex) => set({ selectedFilmIndex: filmIndex }),
   setMarkovStage: (stage) => set({ markovStage: stage }),
   setAlignmentFilter: (key, value) =>

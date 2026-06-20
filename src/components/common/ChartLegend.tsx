@@ -1,4 +1,6 @@
 import type { ReactNode } from 'react';
+import type { Actor } from '../../data/types';
+import { ActorSearch } from './ActorSearch';
 import './ChartLegend.css';
 
 export interface ChartLegendItem {
@@ -13,6 +15,7 @@ interface ChartLegendProps {
 
 interface GenreColorLegendProps {
   genres: string[];
+  actors?: Actor[];
   linkedQueueSlot?: ReactNode;
 }
 
@@ -29,11 +32,12 @@ export function ChartLegend({ items }: ChartLegendProps) {
   );
 }
 
-export function GenreColorLegend({ genres, linkedQueueSlot }: GenreColorLegendProps) {
+export function GenreColorLegend({ genres, actors, linkedQueueSlot }: GenreColorLegendProps) {
   return (
     <section className="genre-legend-block" aria-label="Genre color legend">
       <div className="genre-legend-header">
         <h3 className="genre-legend-title">Genre Color Map (A/B Shared)</h3>
+        {actors && actors.length > 0 && <ActorSearch actors={actors} />}
       </div>
       <div className="genre-legend-grid">
         {genres.map((genre, index) => (

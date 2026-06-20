@@ -54,6 +54,7 @@ export function ClusterView({ actors, genres }: ClusterViewProps) {
   const clearBrush = useVizStore((state) => state.clearBrush);
   const selectedActorId = useVizStore((state) => state.selectedActorId);
   const selectActor = useVizStore((state) => state.selectActor);
+  const selectActorSingle = useVizStore((state) => state.selectActorSingle);
   const selectSpike = useVizStore((state) => state.selectSpike);
   const closeDetails = useVizStore((state) => state.closeDetails);
 
@@ -240,12 +241,10 @@ export function ClusterView({ actors, genres }: ClusterViewProps) {
   };
 
   // 单击命中演员点（链路 2 起点）：清掉 brush，让单选明确成为 active 状态。
+  // 与图例搜索栏共用 store 的 selectActorSingle，确保两处选择逻辑一致。
   const handleSelectPoint = (actorId: string) => {
     setSelectedCompositionClusterId(null);
-    clearBrush();
-    selectActor(actorId);
-    selectSpike(null);
-    closeDetails();
+    selectActorSingle(actorId);
   };
 
   const handleSelectCluster = (summary: ClusterSummaryItem) => {

@@ -280,6 +280,7 @@ export function App() {
       {loadState.status === 'ready' && (
         <GenreColorLegend
           genres={loadState.bundle.genres}
+          actors={loadState.bundle.actors}
           linkedQueueSlot={readyInteraction && <InteractionGuide {...readyInteraction} />}
         />
       )}
