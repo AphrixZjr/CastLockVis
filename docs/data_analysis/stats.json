@@ -1,0 +1,1592 @@
+{
+  "clusters": {
+    "k": 7,
+    "totalActors": 1157,
+    "perCluster": [
+      {
+        "clusterId": 0,
+        "size": 149,
+        "topGenres": [
+          [
+            "Horror",
+            0.208
+          ],
+          [
+            "Mystery",
+            0.124
+          ],
+          [
+            "Thriller",
+            0.09
+          ]
+        ],
+        "label": "Horror/Mystery",
+        "outcomePct": {
+          "success": 0.745,
+          "snapback": 0.107,
+          "none": 0.148
+        },
+        "successRate": 0.745,
+        "snapbackRate": 0.107,
+        "noneRate": 0.148
+      },
+      {
+        "clusterId": 1,
+        "size": 81,
+        "topGenres": [
+          [
+            "Musical",
+            0.307
+          ],
+          [
+            "Romance",
+            0.193
+          ],
+          [
+            "Drama",
+            0.107
+          ]
+        ],
+        "label": "Musical/Romance",
+        "outcomePct": {
+          "success": 0.827,
+          "snapback": 0.062,
+          "none": 0.111
+        },
+        "successRate": 0.827,
+        "snapbackRate": 0.062,
+        "noneRate": 0.111
+      },
+      {
+        "clusterId": 2,
+        "size": 181,
+        "topGenres": [
+          [
+            "Adventure",
+            0.198
+          ],
+          [
+            "Action",
+            0.188
+          ],
+          [
+            "Comedy",
+            0.108
+          ]
+        ],
+        "label": "Adventure/Action",
+        "outcomePct": {
+          "success": 0.68,
+          "snapback": 0.144,
+          "none": 0.177
+        },
+        "successRate": 0.68,
+        "snapbackRate": 0.144,
+        "noneRate": 0.177
+      },
+      {
+        "clusterId": 3,
+        "size": 289,
+        "topGenres": [
+          [
+            "Romance",
+            0.282
+          ],
+          [
+            "Comedy",
+            0.257
+          ],
+          [
+            "Drama",
+            0.133
+          ]
+        ],
+        "label": "Romance/Comedy",
+        "outcomePct": {
+          "success": 0.744,
+          "snapback": 0.156,
+          "none": 0.1
+        },
+        "successRate": 0.744,
+        "snapbackRate": 0.156,
+        "noneRate": 0.1
+      },
+      {
+        "clusterId": 4,
+        "size": 67,
+        "topGenres": [
+          [
+            "Western",
+            0.33
+          ],
+          [
+            "Drama",
+            0.106
+          ],
+          [
+            "Adventure",
+            0.095
+          ]
+        ],
+        "label": "Western/Drama",
+        "outcomePct": {
+          "success": 0.851,
+          "snapback": 0.075,
+          "none": 0.075
+        },
+        "successRate": 0.851,
+        "snapbackRate": 0.075,
+        "noneRate": 0.075
+      },
+      {
+        "clusterId": 5,
+        "size": 141,
+        "topGenres": [
+          [
+            "Music",
+            0.262
+          ],
+          [
+            "Comedy",
+            0.15
+          ],
+          [
+            "Romance",
+            0.129
+          ]
+        ],
+        "label": "Music/Comedy",
+        "outcomePct": {
+          "success": 0.794,
+          "snapback": 0.106,
+          "none": 0.099
+        },
+        "successRate": 0.794,
+        "snapbackRate": 0.106,
+        "noneRate": 0.099
+      },
+      {
+        "clusterId": 6,
+        "size": 249,
+        "topGenres": [
+          [
+            "Crime",
+            0.247
+          ],
+          [
+            "Drama",
+            0.143
+          ],
+          [
+            "Thriller",
+            0.131
+          ]
+        ],
+        "label": "Crime/Drama",
+        "outcomePct": {
+          "success": 0.687,
+          "snapback": 0.165,
+          "none": 0.149
+        },
+        "successRate": 0.687,
+        "snapbackRate": 0.165,
+        "noneRate": 0.149
+      }
+    ]
+  },
+  "entropy": {
+    "nMax": 30,
+    "overall": {
+      "n1": 0.944,
+      "peak": 2.592,
+      "n30": 2.581,
+      "earlySlope": 0.3035,
+      "lateSlope": 0.0033
+    },
+    "perCluster": {
+      "0": {
+        "label": "Horror/Mystery",
+        "earlySlope": 0.3469,
+        "lateSlope": 0.0029,
+        "peak": 2.724,
+        "n30": 2.615
+      },
+      "1": {
+        "label": "Musical/Romance",
+        "earlySlope": 0.3231,
+        "lateSlope": -0.0039,
+        "peak": 2.555,
+        "n30": 2.448
+      },
+      "2": {
+        "label": "Adventure/Action",
+        "earlySlope": 0.3029,
+        "lateSlope": 0.0105,
+        "peak": 2.621,
+        "n30": 2.569
+      },
+      "3": {
+        "label": "Romance/Comedy",
+        "earlySlope": 0.2443,
+        "lateSlope": 0.0043,
+        "peak": 2.581,
+        "n30": 2.564
+      },
+      "4": {
+        "label": "Western/Drama",
+        "earlySlope": 0.3781,
+        "lateSlope": 0.0088,
+        "peak": 2.722,
+        "n30": 2.642
+      },
+      "5": {
+        "label": "Music/Comedy",
+        "earlySlope": 0.3365,
+        "lateSlope": 0.0177,
+        "peak": 2.645,
+        "n30": 2.645
+      },
+      "6": {
+        "label": "Crime/Drama",
+        "earlySlope": 0.3018,
+        "lateSlope": -0.009,
+        "peak": 2.634,
+        "n30": 2.591
+      }
+    },
+    "t0": {
+      "onsetActors": 1009,
+      "totalActors": 1157,
+      "onsetRate": 0.872,
+      "atFloor6": 734,
+      "floorShare": 0.727,
+      "median": 6,
+      "max": 38
+    }
+  },
+  "markov": {
+    "stages": [
+      "early",
+      "mid",
+      "late"
+    ],
+    "perCluster": {
+      "0": {
+        "label": "Horror/Mystery",
+        "early": 0.112,
+        "offdiag_early": 0.562,
+        "mid": 0.124,
+        "offdiag_mid": 0.538,
+        "late": 0.125,
+        "offdiag_late": 0.49,
+        "deepenEarlyToLate": 0.013,
+        "monotonic": true
+      },
+      "1": {
+        "label": "Musical/Romance",
+        "early": 0.114,
+        "offdiag_early": 0.418,
+        "mid": 0.119,
+        "offdiag_mid": 0.367,
+        "late": 0.137,
+        "offdiag_late": 0.4,
+        "deepenEarlyToLate": 0.023,
+        "monotonic": true
+      },
+      "2": {
+        "label": "Adventure/Action",
+        "early": 0.149,
+        "offdiag_early": 0.457,
+        "mid": 0.163,
+        "offdiag_mid": 0.471,
+        "late": 0.154,
+        "offdiag_late": 0.448,
+        "deepenEarlyToLate": 0.005,
+        "monotonic": false
+      },
+      "3": {
+        "label": "Romance/Comedy",
+        "early": 0.119,
+        "offdiag_early": 0.376,
+        "mid": 0.129,
+        "offdiag_mid": 0.476,
+        "late": 0.118,
+        "offdiag_late": 0.462,
+        "deepenEarlyToLate": -0.001,
+        "monotonic": false
+      },
+      "4": {
+        "label": "Western/Drama",
+        "early": 0.1,
+        "offdiag_early": 0.526,
+        "mid": 0.128,
+        "offdiag_mid": 0.448,
+        "late": 0.129,
+        "offdiag_late": 0.438,
+        "deepenEarlyToLate": 0.029,
+        "monotonic": true
+      },
+      "5": {
+        "label": "Music/Comedy",
+        "early": 0.088,
+        "offdiag_early": 0.448,
+        "mid": 0.114,
+        "offdiag_mid": 0.448,
+        "late": 0.102,
+        "offdiag_late": 0.505,
+        "deepenEarlyToLate": 0.014,
+        "monotonic": false
+      },
+      "6": {
+        "label": "Crime/Drama",
+        "early": 0.091,
+        "offdiag_early": 0.457,
+        "mid": 0.103,
+        "offdiag_mid": 0.476,
+        "late": 0.105,
+        "offdiag_late": 0.495,
+        "deepenEarlyToLate": 0.014,
+        "monotonic": true
+      }
+    },
+    "meanByStage": {
+      "early": 0.11,
+      "mid": 0.126,
+      "late": 0.124
+    },
+    "monotonicClusters": 4,
+    "k": 7,
+    "representativeCluster": 4
+  },
+  "outcome": {
+    "distribution": {
+      "success": {
+        "n": 856,
+        "pct": 0.74
+      },
+      "snapback": {
+        "n": 153,
+        "pct": 0.132
+      },
+      "none": {
+        "n": 148,
+        "pct": 0.128
+      }
+    },
+    "distByTau": {
+      "taus": [
+        -3,
+        -2,
+        -1,
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "success": [
+        0.052,
+        0.125,
+        0.205,
+        0.286,
+        0.363,
+        0.447,
+        0.462,
+        0.471,
+        0.479
+      ],
+      "snapback": [
+        0.089,
+        0.188,
+        0.303,
+        0.4,
+        0.46,
+        0.479,
+        0.42,
+        0.37,
+        0.337
+      ],
+      "none": [
+        0.164,
+        0.231,
+        0.278,
+        0.309,
+        0.336,
+        0.378,
+        0.375,
+        0.369,
+        0.377
+      ]
+    },
+    "covariatesT0": {
+      "directorHeterogeneity": {
+        "label": "导演异质性",
+        "success": {
+          "n": 856,
+          "median": 5.0,
+          "mean": 4.689
+        },
+        "snapback": {
+          "n": 153,
+          "median": 5.0,
+          "mean": 4.516
+        },
+        "mannwhitney_p": 0.0037572322719723263,
+        "cliffs_delta": 0.113
+      },
+      "rating": {
+        "label": "IMDb 评分",
+        "success": {
+          "n": 856,
+          "median": 6.5,
+          "mean": 6.49
+        },
+        "snapback": {
+          "n": 153,
+          "median": 6.5,
+          "mean": 6.35
+        },
+        "mannwhitney_p": 0.21121351439511282,
+        "cliffs_delta": 0.063
+      },
+      "numVotes": {
+        "label": "投票数(人气)",
+        "success": {
+          "n": 856,
+          "median": 20626.5,
+          "mean": 99237.012
+        },
+        "snapback": {
+          "n": 153,
+          "median": 19067.0,
+          "mean": 76542.346
+        },
+        "mannwhitney_p": 0.341898856774953,
+        "cliffs_delta": 0.048
+      }
+    },
+    "goodButUnpopular": {
+      "baselineSnapback": 0.152,
+      "ratingMedian": 6.5,
+      "votesMedian": 20494.0,
+      "quadrants": {
+        "高评分_高人气": {
+          "n": 331,
+          "snapbackRate": 0.151
+        },
+        "高评分_低人气": {
+          "n": 210,
+          "snapbackRate": 0.133
+        },
+        "低评分_高人气": {
+          "n": 174,
+          "snapbackRate": 0.149
+        },
+        "低评分_低人气": {
+          "n": 294,
+          "snapbackRate": 0.167
+        }
+      }
+    }
+  },
+  "cases": {
+    "perGroup": 3,
+    "success": [
+      {
+        "actorId": "nm0000130",
+        "name": "Jamie Lee Curtis",
+        "clusterId": 0,
+        "clusterLabel": "Horror/Mystery",
+        "dominantEarlyGenre": "Horror",
+        "filmCount": 36,
+        "t0Index": 6,
+        "outcome": "success",
+        "covariatesAtT0": {
+          "numVotes": 10957,
+          "rating": 6.6,
+          "directorHeterogeneity": 5
+        },
+        "distByTau": {
+          "-3": 0.0,
+          "-2": 0.027,
+          "-1": 0.065,
+          "0": 0.099,
+          "1": 0.213,
+          "2": 0.604,
+          "3": 1.0,
+          "4": 1.0,
+          "5": 1.0
+        },
+        "neighborhoodFilms": [
+          {
+            "seqIndex": 4,
+            "title": "Terror Train",
+            "year": 1980,
+            "genres": [
+              "Horror",
+              "Mystery",
+              "Thriller"
+            ],
+            "dominantGenre": "Mystery",
+            "rating": 5.8,
+            "numVotes": 15487,
+            "directorName": "Roger Spottiswoode",
+            "directorHet": 5
+          },
+          {
+            "seqIndex": 5,
+            "title": "Halloween II",
+            "year": 1981,
+            "genres": [
+              "Horror"
+            ],
+            "dominantGenre": "Horror",
+            "rating": 6.5,
+            "numVotes": 112181,
+            "directorName": "Rick Rosenthal",
+            "directorHet": 5
+          },
+          {
+            "seqIndex": 6,
+            "title": "Road Games",
+            "year": 1981,
+            "genres": [
+              "Mystery",
+              "Thriller"
+            ],
+            "dominantGenre": "Mystery",
+            "rating": 6.6,
+            "numVotes": 10957,
+            "directorName": "Richard Franklin",
+            "directorHet": 5
+          },
+          {
+            "seqIndex": 7,
+            "title": "Grandview, U.S.A.",
+            "year": 1984,
+            "genres": [
+              "Drama"
+            ],
+            "dominantGenre": "Drama",
+            "rating": 5.5,
+            "numVotes": 2539,
+            "directorName": "Randal Kleiser",
+            "directorHet": 5
+          },
+          {
+            "seqIndex": 8,
+            "title": "Perfect",
+            "year": 1985,
+            "genres": [
+              "Drama",
+              "Romance"
+            ],
+            "dominantGenre": "Romance",
+            "rating": 4.8,
+            "numVotes": 6651,
+            "directorName": "James Bridges",
+            "directorHet": 5
+          },
+          {
+            "seqIndex": 9,
+            "title": "Dominick and Eugene",
+            "year": 1988,
+            "genres": [
+              "Drama"
+            ],
+            "dominantGenre": "Drama",
+            "rating": 7.0,
+            "numVotes": 3435,
+            "directorName": "Robert M. Young",
+            "directorHet": 5
+          }
+        ]
+      },
+      {
+        "actorId": "nm0005251",
+        "name": "Carrie-Anne Moss",
+        "clusterId": 2,
+        "clusterLabel": "Adventure/Action",
+        "dominantEarlyGenre": "Sci-Fi",
+        "filmCount": 21,
+        "t0Index": 6,
+        "outcome": "success",
+        "covariatesAtT0": {
+          "numVotes": 575811,
+          "rating": 6.7,
+          "directorHeterogeneity": 4
+        },
+        "distByTau": {
+          "-3": 0.0,
+          "-2": 0.027,
+          "-1": 0.064,
+          "0": 0.192,
+          "1": 0.312,
+          "2": 0.539,
+          "3": 0.933,
+          "4": 0.923,
+          "5": 0.905
+        },
+        "neighborhoodFilms": [
+          {
+            "seqIndex": 4,
+            "title": "Memento",
+            "year": 2000,
+            "genres": [
+              "Mystery",
+              "Thriller"
+            ],
+            "dominantGenre": "Mystery",
+            "rating": 8.4,
+            "numVotes": 1436572,
+            "directorName": "Christopher Nolan",
+            "directorHet": 3
+          },
+          {
+            "seqIndex": 5,
+            "title": "The Matrix Reloaded",
+            "year": 2003,
+            "genres": [
+              "Action",
+              "Sci-Fi"
+            ],
+            "dominantGenre": "Sci-Fi",
+            "rating": 7.2,
+            "numVotes": 671071,
+            "directorName": "Lana Wachowski, Lilly Wachowski",
+            "directorHet": 4
+          },
+          {
+            "seqIndex": 6,
+            "title": "The Matrix Revolutions",
+            "year": 2003,
+            "genres": [
+              "Action",
+              "Sci-Fi"
+            ],
+            "dominantGenre": "Sci-Fi",
+            "rating": 6.7,
+            "numVotes": 575811,
+            "directorName": "Lana Wachowski, Lilly Wachowski",
+            "directorHet": 4
+          },
+          {
+            "seqIndex": 7,
+            "title": "Suspect Zero",
+            "year": 2004,
+            "genres": [
+              "Crime",
+              "Horror",
+              "Mystery"
+            ],
+            "dominantGenre": "Mystery",
+            "rating": 5.8,
+            "numVotes": 24040,
+            "directorName": "E. Elias Merhige",
+            "directorHet": 3
+          },
+          {
+            "seqIndex": 8,
+            "title": "Mini's First Time",
+            "year": 2006,
+            "genres": [
+              "Comedy",
+              "Crime",
+              "Drama"
+            ],
+            "dominantGenre": "Crime",
+            "rating": 5.8,
+            "numVotes": 9090,
+            "directorName": "Nick Guthe",
+            "directorHet": 4
+          },
+          {
+            "seqIndex": 9,
+            "title": "Mini's First Time",
+            "year": 2006,
+            "genres": [
+              "Comedy",
+              "Crime",
+              "Drama"
+            ],
+            "dominantGenre": "Crime",
+            "rating": 5.8,
+            "numVotes": 9090,
+            "directorName": "Nick Guthe",
+            "directorHet": 4
+          }
+        ]
+      },
+      {
+        "actorId": "nm0352032",
+        "name": "Kamal Haasan",
+        "clusterId": 1,
+        "clusterLabel": "Musical/Romance",
+        "dominantEarlyGenre": "Romance",
+        "filmCount": 52,
+        "t0Index": 6,
+        "outcome": "success",
+        "covariatesAtT0": {
+          "numVotes": 3867,
+          "rating": 8.3,
+          "directorHeterogeneity": 3
+        },
+        "distByTau": {
+          "-3": 0.0,
+          "-2": 0.039,
+          "-1": 0.163,
+          "0": 0.209,
+          "1": 0.265,
+          "2": 0.393,
+          "3": 0.582,
+          "4": 0.875,
+          "5": 0.905
+        },
+        "neighborhoodFilms": [
+          {
+            "seqIndex": 4,
+            "title": "Moondram Pirai",
+            "year": 1982,
+            "genres": [
+              "Drama",
+              "Romance"
+            ],
+            "dominantGenre": "Romance",
+            "rating": 8.6,
+            "numVotes": 3664,
+            "directorName": "Balu Mahendra",
+            "directorHet": 3
+          },
+          {
+            "seqIndex": 5,
+            "title": "Moondram Pirai",
+            "year": 1982,
+            "genres": [
+              "Drama",
+              "Romance"
+            ],
+            "dominantGenre": "Romance",
+            "rating": 8.6,
+            "numVotes": 3664,
+            "directorName": "Balu Mahendra",
+            "directorHet": 3
+          },
+          {
+            "seqIndex": 6,
+            "title": "Sadma",
+            "year": 1983,
+            "genres": [
+              "Drama",
+              "Romance"
+            ],
+            "dominantGenre": "Romance",
+            "rating": 8.3,
+            "numVotes": 3867,
+            "directorName": "Balu Mahendra",
+            "directorHet": 3
+          },
+          {
+            "seqIndex": 7,
+            "title": "Sagara Sangamam",
+            "year": 1983,
+            "genres": [
+              "Drama",
+              "Music",
+              "Musical"
+            ],
+            "dominantGenre": "Musical",
+            "rating": 8.7,
+            "numVotes": 6205,
+            "directorName": "K. Viswanath",
+            "directorHet": 4
+          },
+          {
+            "seqIndex": 8,
+            "title": "Nayakan",
+            "year": 1987,
+            "genres": [
+              "Crime",
+              "Drama"
+            ],
+            "dominantGenre": "Crime",
+            "rating": 8.6,
+            "numVotes": 27888,
+            "directorName": "Mani Ratnam",
+            "directorHet": 4
+          },
+          {
+            "seqIndex": 9,
+            "title": "Pushpaka Vimana",
+            "year": 1987,
+            "genres": [
+              "Comedy",
+              "Drama"
+            ],
+            "dominantGenre": "Comedy",
+            "rating": 8.6,
+            "numVotes": 4436,
+            "directorName": "Singeetam Srinivasa Rao",
+            "directorHet": 3
+          }
+        ]
+      }
+    ],
+    "snapback": [
+      {
+        "actorId": "nm0000101",
+        "name": "Dan Aykroyd",
+        "clusterId": 2,
+        "clusterLabel": "Adventure/Action",
+        "dominantEarlyGenre": "Comedy",
+        "filmCount": 40,
+        "t0Index": 7,
+        "outcome": "snapback",
+        "covariatesAtT0": {
+          "numVotes": 43750,
+          "rating": 6.4,
+          "directorHeterogeneity": 3
+        },
+        "distByTau": {
+          "-3": 0.029,
+          "-2": 0.361,
+          "-1": 0.671,
+          "0": 0.844,
+          "1": 0.821,
+          "2": 0.764,
+          "3": 0.556,
+          "4": 0.31,
+          "5": 0.154
+        },
+        "neighborhoodFilms": [
+          {
+            "seqIndex": 5,
+            "title": "Doctor Detroit",
+            "year": 1983,
+            "genres": [
+              "Comedy"
+            ],
+            "dominantGenre": "Comedy",
+            "rating": 5.3,
+            "numVotes": 6539,
+            "directorName": "Michael Pressman",
+            "directorHet": 4
+          },
+          {
+            "seqIndex": 6,
+            "title": "Trading Places",
+            "year": 1983,
+            "genres": [
+              "Comedy"
+            ],
+            "dominantGenre": "Comedy",
+            "rating": 7.5,
+            "numVotes": 182861,
+            "directorName": "John Landis",
+            "directorHet": 3
+          },
+          {
+            "seqIndex": 7,
+            "title": "Twilight Zone: The Movie",
+            "year": 1983,
+            "genres": [
+              "Horror",
+              "Sci-Fi"
+            ],
+            "dominantGenre": "Sci-Fi",
+            "rating": 6.4,
+            "numVotes": 43750,
+            "directorName": "Joe Dante, John Landis, George Miller, Steven Spielberg",
+            "directorHet": 3
+          },
+          {
+            "seqIndex": 8,
+            "title": "Twilight Zone: The Movie",
+            "year": 1983,
+            "genres": [
+              "Horror",
+              "Sci-Fi"
+            ],
+            "dominantGenre": "Sci-Fi",
+            "rating": 6.4,
+            "numVotes": 43750,
+            "directorName": "Joe Dante, John Landis, George Miller, Steven Spielberg",
+            "directorHet": 3
+          },
+          {
+            "seqIndex": 9,
+            "title": "Twilight Zone: The Movie",
+            "year": 1983,
+            "genres": [
+              "Horror",
+              "Sci-Fi"
+            ],
+            "dominantGenre": "Sci-Fi",
+            "rating": 6.4,
+            "numVotes": 43750,
+            "directorName": "Joe Dante, John Landis, George Miller, Steven Spielberg",
+            "directorHet": 3
+          },
+          {
+            "seqIndex": 10,
+            "title": "Ghostbusters",
+            "year": 1984,
+            "genres": [
+              "Action",
+              "Comedy",
+              "Fantasy"
+            ],
+            "dominantGenre": "Fantasy",
+            "rating": 7.8,
+            "numVotes": 487242,
+            "directorName": "Ivan Reitman",
+            "directorHet": 4
+          }
+        ]
+      },
+      {
+        "actorId": "nm0005460",
+        "name": "Mary Steenburgen",
+        "clusterId": 4,
+        "clusterLabel": "Western/Drama",
+        "dominantEarlyGenre": "Western",
+        "filmCount": 33,
+        "t0Index": 6,
+        "outcome": "snapback",
+        "covariatesAtT0": {
+          "numVotes": 5450,
+          "rating": 6.2,
+          "directorHeterogeneity": 3
+        },
+        "distByTau": {
+          "-3": 0.0,
+          "-2": 0.322,
+          "-1": 0.64,
+          "0": 0.759,
+          "1": 0.814,
+          "2": 0.886,
+          "3": 0.627,
+          "4": 0.324,
+          "5": 0.265
+        },
+        "neighborhoodFilms": [
+          {
+            "seqIndex": 4,
+            "title": "Cross Creek",
+            "year": 1983,
+            "genres": [
+              "Drama",
+              "Romance"
+            ],
+            "dominantGenre": "Romance",
+            "rating": 6.9,
+            "numVotes": 2383,
+            "directorName": "Martin Ritt",
+            "directorHet": 5
+          },
+          {
+            "seqIndex": 5,
+            "title": "One Magic Christmas",
+            "year": 1985,
+            "genres": [
+              "Fantasy"
+            ],
+            "dominantGenre": "Fantasy",
+            "rating": 6.4,
+            "numVotes": 5103,
+            "directorName": "Phillip Borsos",
+            "directorHet": 4
+          },
+          {
+            "seqIndex": 6,
+            "title": "Dead of Winter",
+            "year": 1987,
+            "genres": [
+              "Drama",
+              "Horror",
+              "Thriller"
+            ],
+            "dominantGenre": "Horror",
+            "rating": 6.2,
+            "numVotes": 5450,
+            "directorName": "Arthur Penn",
+            "directorHet": 3
+          },
+          {
+            "seqIndex": 7,
+            "title": "Dead of Winter",
+            "year": 1987,
+            "genres": [
+              "Drama",
+              "Horror",
+              "Thriller"
+            ],
+            "dominantGenre": "Horror",
+            "rating": 6.2,
+            "numVotes": 5450,
+            "directorName": "Arthur Penn",
+            "directorHet": 3
+          },
+          {
+            "seqIndex": 8,
+            "title": "Dead of Winter",
+            "year": 1987,
+            "genres": [
+              "Drama",
+              "Horror",
+              "Thriller"
+            ],
+            "dominantGenre": "Horror",
+            "rating": 6.2,
+            "numVotes": 5450,
+            "directorName": "Arthur Penn",
+            "directorHet": 3
+          },
+          {
+            "seqIndex": 9,
+            "title": "Miss Firecracker",
+            "year": 1989,
+            "genres": [
+              "Comedy",
+              "Drama"
+            ],
+            "dominantGenre": "Comedy",
+            "rating": 6.1,
+            "numVotes": 2530,
+            "directorName": "Thomas Schlamme",
+            "directorHet": 4
+          }
+        ]
+      },
+      {
+        "actorId": "nm0124930",
+        "name": "Gerard Butler",
+        "clusterId": 2,
+        "clusterLabel": "Adventure/Action",
+        "dominantEarlyGenre": "Fantasy",
+        "filmCount": 40,
+        "t0Index": 6,
+        "outcome": "snapback",
+        "covariatesAtT0": {
+          "numVotes": 23105,
+          "rating": 7.6,
+          "directorHeterogeneity": 5
+        },
+        "distByTau": {
+          "-3": 0.0,
+          "-2": 0.047,
+          "-1": 0.136,
+          "0": 0.207,
+          "1": 0.622,
+          "2": 0.78,
+          "3": 0.311,
+          "4": 0.196,
+          "5": 0.281
+        },
+        "neighborhoodFilms": [
+          {
+            "seqIndex": 4,
+            "title": "Lara Croft: Tomb Raider - The Cradle of Life",
+            "year": 2003,
+            "genres": [
+              "Action",
+              "Adventure",
+              "Fantasy"
+            ],
+            "dominantGenre": "Fantasy",
+            "rating": 5.5,
+            "numVotes": 151392,
+            "directorName": "Jan de Bont",
+            "directorHet": 5
+          },
+          {
+            "seqIndex": 5,
+            "title": "The Phantom of the Opera",
+            "year": 2004,
+            "genres": [
+              "Drama",
+              "Musical",
+              "Romance"
+            ],
+            "dominantGenre": "Musical",
+            "rating": 7.2,
+            "numVotes": 138588,
+            "directorName": "Joel Schumacher",
+            "directorHet": 5
+          },
+          {
+            "seqIndex": 6,
+            "title": "Dear Frankie",
+            "year": 2004,
+            "genres": [
+              "Drama",
+              "Romance"
+            ],
+            "dominantGenre": "Romance",
+            "rating": 7.6,
+            "numVotes": 23105,
+            "directorName": "Shona Auerbach",
+            "directorHet": 5
+          },
+          {
+            "seqIndex": 7,
+            "title": "The Game of Their Lives",
+            "year": 2005,
+            "genres": [
+              "Drama"
+            ],
+            "dominantGenre": "Drama",
+            "rating": 6.1,
+            "numVotes": 3705,
+            "directorName": "David Anspaugh",
+            "directorHet": 5
+          },
+          {
+            "seqIndex": 8,
+            "title": "300",
+            "year": 2006,
+            "genres": [
+              "Action",
+              "Drama"
+            ],
+            "dominantGenre": "Action",
+            "rating": 7.6,
+            "numVotes": 913633,
+            "directorName": "Zack Snyder",
+            "directorHet": 5
+          },
+          {
+            "seqIndex": 9,
+            "title": "P.S. I Love You",
+            "year": 2007,
+            "genres": [
+              "Comedy",
+              "Drama",
+              "Romance"
+            ],
+            "dominantGenre": "Romance",
+            "rating": 7.0,
+            "numVotes": 225870,
+            "directorName": "Richard LaGravenese",
+            "directorHet": 5
+          }
+        ]
+      }
+    ],
+    "none": [
+      {
+        "actorId": "nm0853301",
+        "name": "Veronica Taylor",
+        "clusterId": 2,
+        "clusterLabel": "Adventure/Action",
+        "dominantEarlyGenre": "Adventure",
+        "filmCount": 27,
+        "t0Index": -1,
+        "outcome": "none",
+        "covariatesAtT0": {},
+        "distByTau": {
+          "-3": 0.0,
+          "-2": 0.0,
+          "-1": 0.0,
+          "0": 0.0,
+          "1": 0.0,
+          "2": 0.0,
+          "3": 0.0,
+          "4": 0.0,
+          "5": 0.0
+        },
+        "neighborhoodFilms": [
+          {
+            "seqIndex": 1,
+            "title": "Pokémon: The First Movie - Mewtwo Strikes Back",
+            "year": 1998,
+            "genres": [
+              "Action",
+              "Adventure"
+            ],
+            "dominantGenre": "Adventure",
+            "rating": 6.4,
+            "numVotes": 50165,
+            "directorName": "Kunihiko Yuyama",
+            "directorHet": 1
+          },
+          {
+            "seqIndex": 2,
+            "title": "Pokémon: The First Movie - Mewtwo Strikes Back",
+            "year": 1998,
+            "genres": [
+              "Action",
+              "Adventure"
+            ],
+            "dominantGenre": "Adventure",
+            "rating": 6.4,
+            "numVotes": 50165,
+            "directorName": "Kunihiko Yuyama",
+            "directorHet": 1
+          },
+          {
+            "seqIndex": 3,
+            "title": "Pokémon: The First Movie - Mewtwo Strikes Back",
+            "year": 1998,
+            "genres": [
+              "Action",
+              "Adventure"
+            ],
+            "dominantGenre": "Adventure",
+            "rating": 6.4,
+            "numVotes": 50165,
+            "directorName": "Kunihiko Yuyama",
+            "directorHet": 1
+          },
+          {
+            "seqIndex": 4,
+            "title": "Pokémon: The First Movie - Mewtwo Strikes Back",
+            "year": 1998,
+            "genres": [
+              "Action",
+              "Adventure"
+            ],
+            "dominantGenre": "Adventure",
+            "rating": 6.4,
+            "numVotes": 50165,
+            "directorName": "Kunihiko Yuyama",
+            "directorHet": 1
+          },
+          {
+            "seqIndex": 5,
+            "title": "Pokémon the Movie 2000",
+            "year": 1999,
+            "genres": [
+              "Action",
+              "Adventure"
+            ],
+            "dominantGenre": "Adventure",
+            "rating": 6.1,
+            "numVotes": 25987,
+            "directorName": "Kunihiko Yuyama",
+            "directorHet": 1
+          },
+          {
+            "seqIndex": 6,
+            "title": "Pokémon the Movie 2000",
+            "year": 1999,
+            "genres": [
+              "Action",
+              "Adventure"
+            ],
+            "dominantGenre": "Adventure",
+            "rating": 6.1,
+            "numVotes": 25987,
+            "directorName": "Kunihiko Yuyama",
+            "directorHet": 1
+          },
+          {
+            "seqIndex": 7,
+            "title": "Pokémon the Movie 2000",
+            "year": 1999,
+            "genres": [
+              "Action",
+              "Adventure"
+            ],
+            "dominantGenre": "Adventure",
+            "rating": 6.1,
+            "numVotes": 25987,
+            "directorName": "Kunihiko Yuyama",
+            "directorHet": 1
+          },
+          {
+            "seqIndex": 8,
+            "title": "Pokémon the Movie 2000",
+            "year": 1999,
+            "genres": [
+              "Action",
+              "Adventure"
+            ],
+            "dominantGenre": "Adventure",
+            "rating": 6.1,
+            "numVotes": 25987,
+            "directorName": "Kunihiko Yuyama",
+            "directorHet": 1
+          }
+        ]
+      },
+      {
+        "actorId": "nm0947447",
+        "name": "Donnie Yen",
+        "clusterId": 2,
+        "clusterLabel": "Adventure/Action",
+        "dominantEarlyGenre": "Action",
+        "filmCount": 33,
+        "t0Index": -1,
+        "outcome": "none",
+        "covariatesAtT0": {},
+        "distByTau": {
+          "-3": 0.0,
+          "-2": 0.024,
+          "-1": 0.032,
+          "0": 0.052,
+          "1": 0.07,
+          "2": 0.071,
+          "3": 0.078,
+          "4": 0.131,
+          "5": 0.191
+        },
+        "neighborhoodFilms": [
+          {
+            "seqIndex": 1,
+            "title": "In the Line of Duty IV",
+            "year": 1989,
+            "genres": [
+              "Action",
+              "Comedy",
+              "Crime"
+            ],
+            "dominantGenre": "Crime",
+            "rating": 7.1,
+            "numVotes": 2073,
+            "directorName": "Yuen Woo-Ping",
+            "directorHet": 2
+          },
+          {
+            "seqIndex": 2,
+            "title": "Dragon Inn",
+            "year": 1992,
+            "genres": [
+              "Action",
+              "Thriller"
+            ],
+            "dominantGenre": "Thriller",
+            "rating": 7.2,
+            "numVotes": 5270,
+            "directorName": "Raymond Lee, Siu-Tung Ching, Hark Tsui",
+            "directorHet": 2
+          },
+          {
+            "seqIndex": 3,
+            "title": "Iron Monkey",
+            "year": 1993,
+            "genres": [
+              "Action",
+              "Crime",
+              "Drama"
+            ],
+            "dominantGenre": "Crime",
+            "rating": 7.5,
+            "numVotes": 18141,
+            "directorName": "Yuen Woo-Ping",
+            "directorHet": 3
+          },
+          {
+            "seqIndex": 4,
+            "title": "Wing Chun",
+            "year": 1994,
+            "genres": [
+              "Action",
+              "Comedy",
+              "Drama"
+            ],
+            "dominantGenre": "Action",
+            "rating": 6.9,
+            "numVotes": 3753,
+            "directorName": "Yuen Woo-Ping",
+            "directorHet": 4
+          },
+          {
+            "seqIndex": 5,
+            "title": "Seven Swords",
+            "year": 2005,
+            "genres": [
+              "Action",
+              "Adventure",
+              "Fantasy"
+            ],
+            "dominantGenre": "Fantasy",
+            "rating": 6.1,
+            "numVotes": 10213,
+            "directorName": "Hark Tsui",
+            "directorHet": 3
+          },
+          {
+            "seqIndex": 6,
+            "title": "Kill Zone",
+            "year": 2005,
+            "genres": [
+              "Action",
+              "Crime",
+              "Thriller"
+            ],
+            "dominantGenre": "Thriller",
+            "rating": 6.9,
+            "numVotes": 13947,
+            "directorName": "Wilson Yip",
+            "directorHet": 4
+          },
+          {
+            "seqIndex": 7,
+            "title": "Flash Point",
+            "year": 2007,
+            "genres": [
+              "Action",
+              "Crime",
+              "Thriller"
+            ],
+            "dominantGenre": "Thriller",
+            "rating": 6.7,
+            "numVotes": 14565,
+            "directorName": "Wilson Yip",
+            "directorHet": 4
+          },
+          {
+            "seqIndex": 8,
+            "title": "Painted Skin",
+            "year": 2008,
+            "genres": [
+              "Action",
+              "Drama",
+              "Fantasy"
+            ],
+            "dominantGenre": "Fantasy",
+            "rating": 6.3,
+            "numVotes": 5558,
+            "directorName": "Gordon Chan, Andy Wing-Keung Chin, Danny Ko",
+            "directorHet": 3
+          }
+        ]
+      },
+      {
+        "actorId": "nm2516299",
+        "name": "Sarah Natochenny",
+        "clusterId": 2,
+        "clusterLabel": "Adventure/Action",
+        "dominantEarlyGenre": "Adventure",
+        "filmCount": 26,
+        "t0Index": -1,
+        "outcome": "none",
+        "covariatesAtT0": {},
+        "distByTau": {
+          "-3": 0.0,
+          "-2": 0.0,
+          "-1": 0.0,
+          "0": 0.009,
+          "1": 0.038,
+          "2": 0.062,
+          "3": 0.116
+        },
+        "neighborhoodFilms": [
+          {
+            "seqIndex": 1,
+            "title": "Pokémon Ranger and the Temple of the Sea",
+            "year": 2006,
+            "genres": [
+              "Action",
+              "Adventure"
+            ],
+            "dominantGenre": "Adventure",
+            "rating": 5.9,
+            "numVotes": 3393,
+            "directorName": "Kunihiko Yuyama",
+            "directorHet": 1
+          },
+          {
+            "seqIndex": 2,
+            "title": "Pokémon Ranger and the Temple of the Sea",
+            "year": 2006,
+            "genres": [
+              "Action",
+              "Adventure"
+            ],
+            "dominantGenre": "Adventure",
+            "rating": 5.9,
+            "numVotes": 3393,
+            "directorName": "Kunihiko Yuyama",
+            "directorHet": 1
+          },
+          {
+            "seqIndex": 3,
+            "title": "Pokémon Ranger and the Temple of the Sea",
+            "year": 2006,
+            "genres": [
+              "Action",
+              "Adventure"
+            ],
+            "dominantGenre": "Adventure",
+            "rating": 5.9,
+            "numVotes": 3393,
+            "directorName": "Kunihiko Yuyama",
+            "directorHet": 1
+          },
+          {
+            "seqIndex": 4,
+            "title": "Pokémon Ranger and the Temple of the Sea",
+            "year": 2006,
+            "genres": [
+              "Action",
+              "Adventure"
+            ],
+            "dominantGenre": "Adventure",
+            "rating": 5.9,
+            "numVotes": 3393,
+            "directorName": "Kunihiko Yuyama",
+            "directorHet": 1
+          },
+          {
+            "seqIndex": 5,
+            "title": "Pokémon: Arceus and the Jewel of Life",
+            "year": 2009,
+            "genres": [
+              "Action",
+              "Adventure"
+            ],
+            "dominantGenre": "Adventure",
+            "rating": 6.3,
+            "numVotes": 3460,
+            "directorName": "Kunihiko Yuyama",
+            "directorHet": 1
+          },
+          {
+            "seqIndex": 6,
+            "title": "Pokémon: Arceus and the Jewel of Life",
+            "year": 2009,
+            "genres": [
+              "Action",
+              "Adventure"
+            ],
+            "dominantGenre": "Adventure",
+            "rating": 6.3,
+            "numVotes": 3460,
+            "directorName": "Kunihiko Yuyama",
+            "directorHet": 1
+          },
+          {
+            "seqIndex": 7,
+            "title": "Pokémon: Arceus and the Jewel of Life",
+            "year": 2009,
+            "genres": [
+              "Action",
+              "Adventure"
+            ],
+            "dominantGenre": "Adventure",
+            "rating": 6.3,
+            "numVotes": 3460,
+            "directorName": "Kunihiko Yuyama",
+            "directorHet": 1
+          },
+          {
+            "seqIndex": 8,
+            "title": "Pokémon: Arceus and the Jewel of Life",
+            "year": 2009,
+            "genres": [
+              "Action",
+              "Adventure"
+            ],
+            "dominantGenre": "Adventure",
+            "rating": 6.3,
+            "numVotes": 3460,
+            "directorName": "Kunihiko Yuyama",
+            "directorHet": 1
+          }
+        ]
+      }
+    ]
+  }
+}
