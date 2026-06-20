@@ -5,6 +5,7 @@
   height: 100%;
   min-height: 0;
   min-width: 0;
+  font-family: var(--font-label);
 }
 
 /* 带纵轴切换控件的图（视图 C）：控件行 / 图 / 脚注 三行。 */
@@ -54,7 +55,7 @@
   gap: var(--space-2);
   min-width: 0;
   color: var(--color-text-dim);
-  font-family: var(--font-mono);
+  font-family: var(--font-label);
   font-size: calc(var(--fs-sm) * 1.25);
 }
 
@@ -74,7 +75,7 @@
   border-radius: var(--radius-sm);
   background: color-mix(in srgb, var(--color-paper) 12%, var(--color-surface));
   color: var(--color-text);
-  font-family: var(--font-mono);
+  font-family: var(--font-label);
   font-size: calc(var(--fs-sm) * 1.25);
   cursor: pointer;
 }
@@ -130,7 +131,7 @@
 
 .cluster-composition__label {
   color: var(--color-text);
-  font-family: var(--font-mono);
+  font-family: var(--font-label);
   font-size: calc(var(--fs-sm) * 1.25);
   text-align: center;
 }
@@ -196,7 +197,7 @@
   min-width: 0;
   min-height: 100px;
   color: var(--color-text-dim);
-  font-family: var(--font-mono);
+  font-family: var(--font-label);
   font-size: calc(var(--fs-sm) * 1.25);
 }
 
@@ -264,7 +265,7 @@
 
 .view-chart__controls-label {
   color: var(--color-text-dim);
-  font-family: var(--font-mono);
+  font-family: var(--font-label);
   font-size: var(--fs-lg);
 }
 
@@ -274,7 +275,7 @@
   border-radius: var(--radius-sm);
   background: linear-gradient(180deg, var(--color-surface-raised), var(--color-surface));
   color: var(--color-text-dim);
-  font-family: var(--font-mono);
+  font-family: var(--font-label);
   font-size: var(--fs-lg);
   cursor: pointer;
 }
@@ -315,7 +316,7 @@
   border-radius: var(--radius-sm);
   background: color-mix(in srgb, var(--color-chart-bg) 78%, var(--color-surface));
   color: var(--color-text-dim);
-  font-family: var(--font-mono);
+  font-family: var(--font-label);
   font-size: var(--fs-sm);
 }
 
@@ -367,12 +368,13 @@
 
 .view-axis-label {
   fill: var(--color-text-dim);
+  font-family: var(--font-label);
   font-size: var(--fs-md);
   letter-spacing: 0.01em;
 }
 
 .view-axis-label--river {
-  font-family: var(--font-mono);
+  font-family: var(--font-label);
   font-size: 10px;
   letter-spacing: 0;
 }
@@ -495,7 +497,7 @@
 
 .view-peak-label {
   fill: var(--color-text);
-  font-family: var(--font-mono);
+  font-family: var(--font-label);
   font-size: var(--fs-sm);
   pointer-events: none;
 }
@@ -516,7 +518,7 @@
 
 .view-t0-label {
   fill: var(--color-accent);
-  font-family: var(--font-mono);
+  font-family: var(--font-label);
   font-size: var(--fs-sm);
 }
 
@@ -611,7 +613,7 @@
 
 .view-markov-cell-tooltip text {
   fill: var(--color-text);
-  font-family: var(--font-mono);
+  font-family: var(--font-label);
   font-size: 10px;
 }
 
@@ -640,7 +642,7 @@
 
 .view-markov-empty-overlay__text {
   fill: var(--color-text);
-  font-family: var(--font-mono);
+  font-family: var(--font-label);
   font-size: var(--fs-sm);
 }
 

@@ -7,6 +7,7 @@
   box-shadow:
     inset 0 0 0 1px rgba(255, 255, 255, 0.3),
     0 14px 36px rgba(0, 0, 0, 0.22);
+  font-family: var(--font-label);
   padding: var(--space-3) calc(var(--space-4) + 22px);
   overflow: hidden;
 }
@@ -84,7 +85,7 @@
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2) var(--space-3);
-  font-family: var(--font-mono);
+  font-family: var(--font-label);
   font-size: calc(var(--fs-sm) * 1.25);
 }
 

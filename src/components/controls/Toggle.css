@@ -33,3 +33,12 @@
   color: var(--color-text);
   outline: none;
 }
+
+.toggle--stage button {
+  width: 58px;
+  min-height: 34px;
+  padding: var(--space-1) var(--space-2);
+  font-family: var(--font-label);
+  font-size: calc(var(--fs-sm) * 1.25);
+  text-align: center;
+}

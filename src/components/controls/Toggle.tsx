@@ -10,6 +10,7 @@ interface ToggleProps<T extends string> {
   value: T;
   onChange: (next: T) => void;
   ariaLabel: string;
+  className?: string;
 }
 
 export function Toggle<T extends string>({
@@ -17,9 +18,12 @@ export function Toggle<T extends string>({
   value,
   onChange,
   ariaLabel,
+  className,
 }: ToggleProps<T>) {
+  const rootClassName = className ? `toggle ${className}` : 'toggle';
+
   return (
-    <div className="toggle" role="group" aria-label={ariaLabel}>
+    <div className={rootClassName} role="group" aria-label={ariaLabel}>
       {options.map((option) => (
         <button
           key={option.value}

@@ -63,6 +63,7 @@ function StageToggle() {
   return (
     <Toggle<MarkovStage>
       ariaLabel="Markov stage switch"
+      className="toggle--stage"
       value={stage}
       onChange={setMarkovStage}
       options={[

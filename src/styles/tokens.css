@@ -96,6 +96,7 @@
   /* 字体：优先匹配 Cinemetrics；未安装时回落到本地相近字体。 */
   --font-sans: 'Alata', 'Avenir Next', 'Trebuchet MS', 'Gill Sans', sans-serif;
   --font-display: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-label: 'Alata', 'Avenir Next', 'Trebuchet MS', 'Gill Sans', sans-serif;
   --font-mono: 'DIN Alternate', 'Roboto Mono', 'SF Mono', ui-monospace, monospace;
   --fs-sm: 12px;
   --fs-md: 14px;
