@@ -468,6 +468,12 @@
   stroke-dasharray: 2 2;
 }
 
+.view-peak-ring--onset {
+  stroke: var(--color-entropy-line);
+  stroke-width: 1.25;
+  stroke-dasharray: none;
+}
+
 .view-spike-hit {
   cursor: pointer;
   outline: none;

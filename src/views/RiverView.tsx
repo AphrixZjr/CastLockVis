@@ -37,6 +37,9 @@ const MARGIN = { top: 16, right: 16, bottom: 22, left: 32 };
 const WINDOW_SIZE = 3;
 const MAX_COHORT_N = 30;
 const CORE_GENRE_COUNT = 6;
+const SPIKE_LIMIT = 5;
+const SPIKE_BASELINE_WINDOW = 4;
+const ONSET_SCORE_BONUS = 1.2;
 
 export function RiverView({
   bundle,
@@ -179,14 +182,17 @@ export function RiverView({
           );
         })}
 
-        {chart.spikes.map(({ id, actorId, seqIndex, x, y }) => {
+        {chart.spikes.map(({ id, actorId, seqIndex, x, y, kind }) => {
           const isActive = selectedActorId === actorId && selectedFilmIndex === seqIndex;
+          const markerLabel = kind === 'onset' ? 'T0' : `N${seqIndex}`;
           return (
             <g
               key={`peak-${id}`}
               className="view-spike-hit"
               role="button"
-              aria-label={`Select entropy spike N${seqIndex}`}
+              aria-label={`Select ${
+                kind === 'onset' ? 'transition onset' : 'entropy spike'
+              } N${seqIndex}`}
               tabIndex={0}
               onClick={() => onSpikeSelect(actorId, seqIndex)}
               onKeyDown={(event) => {
@@ -200,11 +206,13 @@ export function RiverView({
                 cx={x}
                 cy={y}
                 r={7.5}
-                className={`view-peak-ring ${isActive ? 'view-peak-ring--active' : ''}`}
+                className={`view-peak-ring ${
+                  kind === 'onset' ? 'view-peak-ring--onset' : ''
+                } ${isActive ? 'view-peak-ring--active' : ''}`}
               />
               <circle cx={x} cy={y} r={2.6} className="view-peak-core" />
               <text x={x} y={y - 11} className="view-peak-label" textAnchor="middle">
-                N{seqIndex}
+                {markerLabel}
               </text>
             </g>
           );
@@ -264,6 +272,7 @@ interface RiverHighlight {
   seqIndex: number;
   x: number;
   y: number;
+  kind: 'onset' | 'spike';
 }
 
 interface RiverChart {
@@ -395,10 +404,15 @@ function buildSingleActorChart(
       y: linearScale(point.entropy, 0, maxEntropy, streamBottom, streamTop),
     })),
   );
-  const spikes = pickEntropySpikes(entropyPoints, sampleActor.id, (point) => ({
-    x: linearScale(point.n, 1, maxN, innerLeft, innerRight),
-    y: linearScale(point.entropy, 0, maxEntropy, streamBottom, streamTop),
-  }));
+  const spikes = pickEntropySpikes(
+    entropyPoints,
+    sampleActor.id,
+    (point) => ({
+      x: linearScale(point.n, 1, maxN, innerLeft, innerRight),
+      y: linearScale(point.entropy, 0, maxEntropy, streamBottom, streamTop),
+    }),
+    { t0Index: sampleActor.t0Index },
+  );
 
   const voteValues = films.map((film) => film.numVotes);
   const voteMin = Math.min(...voteValues);
@@ -621,39 +635,82 @@ function pickEntropySpikes(
   points: EntropyPoint[],
   actorId: string | null,
   positionForPoint: (point: EntropyPoint) => { x: number; y: number },
+  options: { t0Index?: number } = {},
   actorForPoint?: (point: EntropyPoint) => string | null,
 ): RiverHighlight[] {
   if (points.length === 0) {
     return [];
   }
 
-  const candidates = points
-    .map((point, index) => {
-      const previous = points[index - 1];
-      const next = points[index + 1];
-      if (!previous || !next) {
-        return null;
-      }
+  const entropyValues = points.map((point) => point.entropy);
+  const entropyMin = Math.min(...entropyValues);
+  const entropyMax = Math.max(...entropyValues);
+  const entropyRange = Math.max(0.001, entropyMax - entropyMin);
+  const candidateByN = new Map<
+    number,
+    { point: EntropyPoint; score: number; kind: RiverHighlight['kind'] }
+  >();
 
-      const isLocalPeak = point.entropy > previous.entropy && point.entropy >= next.entropy;
-      if (!isLocalPeak) {
-        return null;
-      }
+  points.forEach((point, index) => {
+    const previous = points[index - 1];
+    const next = points[index + 1];
+    if (!previous || !next) {
+      return;
+    }
 
-      return {
-        point,
-        prominence: point.entropy - Math.max(previous.entropy, next.entropy),
-      };
-    })
-    .filter(
-      (candidate): candidate is { point: EntropyPoint; prominence: number } => candidate !== null,
-    )
-    .filter((candidate) => candidate.prominence > 0)
-    .sort((left, right) => right.prominence - left.prominence)
-    .slice(0, 3);
+    const isPeakOrPlateau =
+      point.entropy >= previous.entropy &&
+      point.entropy >= next.entropy &&
+      (point.entropy > previous.entropy || point.entropy > next.entropy);
+    if (!isPeakOrPlateau) {
+      return;
+    }
 
-  return candidates
-    .map(({ point }) => {
+    const baselineStart = Math.max(0, index - SPIKE_BASELINE_WINDOW);
+    const baseline = points.slice(baselineStart, index);
+    const baselineMean =
+      baseline.reduce((sum, entry) => sum + entry.entropy, 0) / Math.max(1, baseline.length);
+    const localProminence = point.entropy - Math.max(previous.entropy, next.entropy);
+    const baselineLift = point.entropy - baselineMean;
+    const normalizedHeight = (point.entropy - entropyMin) / entropyRange;
+    const score = baselineLift * 1.5 + localProminence + normalizedHeight * 0.25;
+
+    if (baselineLift <= 0 && localProminence <= 0) {
+      return;
+    }
+
+    candidateByN.set(point.n, { point, score, kind: 'spike' });
+  });
+
+  const onsetPoint =
+    options.t0Index !== undefined && options.t0Index > 0
+      ? points.find((point) => point.n === options.t0Index)
+      : undefined;
+  if (onsetPoint) {
+    const existing = candidateByN.get(onsetPoint.n);
+    candidateByN.set(onsetPoint.n, {
+      point: onsetPoint,
+      score: (existing?.score ?? 0) + ONSET_SCORE_BONUS,
+      kind: 'onset',
+    });
+  }
+
+  const sortedCandidates = [...candidateByN.values()].sort(
+    (left, right) => right.score - left.score,
+  );
+  const onsetCandidate = onsetPoint ? candidateByN.get(onsetPoint.n) : undefined;
+  const selectedCandidates = onsetCandidate
+    ? [
+        onsetCandidate,
+        ...sortedCandidates
+          .filter((candidate) => candidate.point.n !== onsetCandidate.point.n)
+          .slice(0, SPIKE_LIMIT - 1),
+      ]
+    : sortedCandidates.slice(0, SPIKE_LIMIT);
+
+  return selectedCandidates
+    .sort((left, right) => left.point.n - right.point.n)
+    .map(({ point, kind }) => {
       const resolvedActorId = actorForPoint?.(point) ?? actorId;
       if (!resolvedActorId) {
         return null;
@@ -665,6 +722,7 @@ function pickEntropySpikes(
         seqIndex: point.n,
         x,
         y,
+        kind,
       };
     })
     .filter((entry): entry is RiverHighlight => entry !== null);
