@@ -21,9 +21,9 @@
 
 .range-slider__value {
   color: var(--color-text);
-  font-family: var(--font-mono);
+  font-family: var(--font-numeric);
   font-size: var(--fs-lg);
-  font-variant-numeric: tabular-nums;
+  font-variant-numeric: var(--numeric-variant);
 }
 
 .range-slider__inputs {

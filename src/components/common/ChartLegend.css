@@ -138,8 +138,9 @@
 .actor-search__option-meta {
   flex-shrink: 0;
   color: var(--color-paper-dim);
-  font-family: var(--font-mono);
+  font-family: var(--font-numeric);
   font-size: var(--fs-sm);
+  font-variant-numeric: var(--numeric-variant);
 }
 
 .genre-legend-title {

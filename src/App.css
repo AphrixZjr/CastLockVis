@@ -101,9 +101,10 @@
   border-radius: var(--radius-sm);
   background: rgba(255, 245, 220, 0.1);
   color: #fff7e8;
-  font-family: var(--font-mono);
+  font-family: var(--font-numeric);
   font-size: var(--fs-sm);
   font-weight: var(--fw-semibold);
+  font-variant-numeric: var(--numeric-variant);
   text-transform: uppercase;
 }
 
@@ -122,7 +123,8 @@
   padding: 2px var(--space-2);
   border-left: 3px solid rgba(255, 245, 220, 0.42);
   background: rgba(0, 0, 0, 0.12);
-  font-family: var(--font-mono);
+  font-family: var(--font-numeric);
+  font-variant-numeric: var(--numeric-variant);
   line-height: var(--lh-normal);
   white-space: nowrap;
 }
