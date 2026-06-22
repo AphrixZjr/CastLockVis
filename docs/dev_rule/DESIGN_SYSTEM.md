@@ -233,7 +233,14 @@
 - 克制、信息导向：联动切换（cohort 重聚合、矩阵阶段切换、对齐重分层）用 150–250ms 过渡，强调“数据在变”而非装饰。
 - **现状**：已落地点/轨迹 hover、Markov 单元格等 140–180ms 过渡，B 熵线有 `entropy-glow` 入场动画；尚未集中过渡时长 token，且**未接入 `prefers-reduced-motion`**（S6 F9.5 待办）。
 
-### 2.7 各视图视觉规范（已落地）
+### 2.7 S6 / TODO 回填核对
+
+- `F9.1`：色值、分类色、语义色、交互色已回填至 §1.1 / §2.2。
+- `F9.2 / F9.3`：版式与字体角色已回填至 §2.3 / §2.4；未完成项仍按 TODO 保留为 type scale、行高/字重 token、数字位全局 `tabular-nums`。
+- `F9.4 / F9.5`：图标/坐标轴/T=0 与现有动效已回填至 §2.5 / §2.6 / §2.8；未完成项仍按 TODO 保留为 motion token 与 `prefers-reduced-motion`。
+- `F9.6 / F9.7`：四视图视觉规范与 token/字体文档同步见 §2.8 与本文件色值表。
+
+### 2.8 各视图视觉规范（已落地）
 
 - **A Genre-Space Cluster**：点按 `dominantEarlyGenre` 着色、hover 放大 + `--color-accent` 描边、brush 选区外降明度；每簇凸包 hull（85 分位裁离群、最小半径保小簇可见）+ 簇符号图标；下方 cluster composition 摘要柱（点击柱进入该 cluster cohort，可下钻该簇 dominantEarlyGenre 构成）。**待补**：密度底纹（F3.5）。
 - **B Career River Chronology**：滑窗（3 片）类型占比堆叠流，top 6 genre + `--color-river-other` 聚合带；白色 `--color-entropy-line` 熵线 + 入场动画；每部电影圆点按评分（y）/票数（半径）编码、可点击触发 B→C；熵尖峰环（最多 5 个）。
