@@ -56,12 +56,12 @@
   min-width: 0;
   color: var(--color-text-dim);
   font-family: var(--font-label);
-  font-size: calc(var(--fs-sm) * 1.25);
+  font-size: var(--fs-lg);
 }
 
 .cluster-composition__header strong {
   color: var(--color-text);
-  font-size: calc(var(--fs-sm) * 1.4);
+  font-size: var(--fs-xl);
 }
 
 .cluster-composition__eyebrow {
@@ -76,7 +76,7 @@
   background: color-mix(in srgb, var(--color-paper) 12%, var(--color-surface));
   color: var(--color-text);
   font-family: var(--font-label);
-  font-size: calc(var(--fs-sm) * 1.25);
+  font-size: var(--fs-lg);
   cursor: pointer;
 }
 
@@ -132,7 +132,7 @@
 .cluster-composition__label {
   color: var(--color-text);
   font-family: var(--font-label);
-  font-size: calc(var(--fs-sm) * 1.25);
+  font-size: var(--fs-lg);
   text-align: center;
 }
 
@@ -159,14 +159,14 @@
   gap: 2px;
   color: var(--color-text-dim);
   font-family: var(--font-mono);
-  font-size: calc(var(--fs-sm) * 1.25);
+  font-size: var(--fs-lg);
   white-space: normal;
   text-align: center;
 }
 
 .cluster-composition__metric strong {
   color: var(--color-text);
-  font-size: calc(var(--fs-sm) * 1.4);
+  font-size: var(--fs-xl);
 }
 
 .cluster-composition__detail {
@@ -198,7 +198,7 @@
   min-height: 100px;
   color: var(--color-text-dim);
   font-family: var(--font-label);
-  font-size: calc(var(--fs-sm) * 1.25);
+  font-size: var(--fs-lg);
 }
 
 .cluster-composition__genre-label {
@@ -237,7 +237,7 @@
 
 .cluster-composition__genre-metric strong {
   color: var(--color-text);
-  font-size: calc(var(--fs-sm) * 1.4);
+  font-size: var(--fs-xl);
 }
 
 .view-chart__controls {
@@ -363,7 +363,7 @@
 .view-axis-tick {
   fill: var(--color-text-dim);
   font-family: var(--font-mono);
-  font-size: 10px;
+  font-size: var(--fs-xs);
 }
 
 .view-axis-label {
@@ -375,7 +375,7 @@
 
 .view-axis-label--river {
   font-family: var(--font-label);
-  font-size: 10px;
+  font-size: var(--fs-xs);
   letter-spacing: 0;
 }
 
@@ -614,7 +614,7 @@
 .view-markov-cell-tooltip text {
   fill: var(--color-text);
   font-family: var(--font-label);
-  font-size: 10px;
+  font-size: var(--fs-xs);
 }
 
 .view-markov-cell--diag {
@@ -648,7 +648,7 @@
 
 .view-matrix-label {
   fill: var(--color-text-dim);
-  font-size: 10px;
+  font-size: var(--fs-xs);
   font-family: var(--font-mono);
 }
 
@@ -692,11 +692,11 @@
   }
 
   .cluster-composition__metric {
-    font-size: calc(var(--fs-sm) * 1.25);
+    font-size: var(--fs-lg);
   }
 
   .cluster-composition__metric strong {
-    font-size: calc(var(--fs-sm) * 1.4);
+    font-size: var(--fs-xl);
   }
 
   .cluster-composition__genre-list {
@@ -713,11 +713,11 @@
   }
 
   .cluster-composition__genre-metric {
-    font-size: calc(var(--fs-sm) * 1.25);
+    font-size: var(--fs-lg);
   }
 
   .cluster-composition__genre-metric strong {
-    font-size: calc(var(--fs-sm) * 1.4);
+    font-size: var(--fs-xl);
   }
 
   .view-chart__filters {
