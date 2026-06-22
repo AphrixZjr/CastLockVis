@@ -45,9 +45,24 @@
 }
 
 .actor-search {
-  position: relative;
-  flex: 0 1 260px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 0 1 320px;
   min-width: 180px;
+}
+
+.actor-search__label {
+  flex-shrink: 0;
+  color: var(--color-paper-text);
+  font-family: var(--font-label);
+  font-size: var(--fs-2xl);
+}
+
+.actor-search__control {
+  position: relative;
+  flex: 1;
+  min-width: 0;
 }
 
 .actor-search__input {
@@ -59,7 +74,7 @@
   background: color-mix(in srgb, var(--color-paper) 92%, #ffffff);
   color: var(--color-paper-text);
   font-family: var(--font-label);
-  font-size: calc(var(--fs-sm) * 1.2);
+  font-size: var(--fs-md);
 }
 
 .actor-search__input::placeholder {
@@ -101,7 +116,7 @@
   background: transparent;
   color: var(--color-paper-text);
   font-family: var(--font-label);
-  font-size: calc(var(--fs-sm) * 1.2);
+  font-size: var(--fs-md);
   text-align: left;
   cursor: pointer;
 }
@@ -111,7 +126,7 @@
 }
 
 .actor-search__option.is-selected .actor-search__option-name {
-  font-weight: 700;
+  font-weight: var(--fw-bold);
 }
 
 .actor-search__option-name {
@@ -123,16 +138,17 @@
 .actor-search__option-meta {
   flex-shrink: 0;
   color: var(--color-paper-dim);
-  font-family: var(--font-mono);
+  font-family: var(--font-numeric);
   font-size: var(--fs-sm);
+  font-variant-numeric: var(--numeric-variant);
 }
 
 .genre-legend-title {
   margin: 0;
   color: var(--color-paper-text);
   font-family: var(--font-display);
-  font-size: calc(var(--fs-sm) * 1.4);
-  font-weight: 700;
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-bold);
 }
 
 .genre-legend-grid {
@@ -162,7 +178,7 @@
 
 .genre-legend-name {
   color: var(--color-paper-dim);
-  font-size: calc(var(--fs-sm) * 1.25);
+  font-size: var(--fs-lg);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -174,7 +190,7 @@
   align-items: center;
   gap: var(--space-2) var(--space-3);
   font-family: var(--font-label);
-  font-size: calc(var(--fs-sm) * 1.25);
+  font-size: var(--fs-lg);
 }
 
 .chart-legend__item {
