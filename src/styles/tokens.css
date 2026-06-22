@@ -98,6 +98,8 @@
   --font-display: 'Playfair Display', Georgia, 'Times New Roman', serif;
   --font-label: 'Alata', 'Avenir Next', 'Trebuchet MS', 'Gill Sans', sans-serif;
   --font-mono: 'DIN Alternate', 'Roboto Mono', 'SF Mono', ui-monospace, monospace;
+  --font-numeric: var(--font-mono);
+  --numeric-variant: tabular-nums lining-nums;
 
   /* 字号阶：覆盖图表微标注、正文、标题与品牌展示字。 */
   --fs-xs: 10px;

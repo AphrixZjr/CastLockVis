@@ -45,3 +45,13 @@ body::before {
     );
   opacity: 0.7;
 }
+
+/* 数字工具类：等宽字面宽度用于动态计数，mono 仅用于代码式数值。 */
+.numeric {
+  font-variant-numeric: var(--numeric-variant);
+}
+
+.numeric-mono {
+  font-family: var(--font-numeric);
+  font-variant-numeric: var(--numeric-variant);
+}
