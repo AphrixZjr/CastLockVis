@@ -57,6 +57,7 @@
   color: var(--color-text-dim);
   font-family: var(--font-label);
   font-size: var(--fs-lg);
+  font-variant-numeric: var(--numeric-variant);
 }
 
 .cluster-composition__header strong {
@@ -133,6 +134,7 @@
   color: var(--color-text);
   font-family: var(--font-label);
   font-size: var(--fs-lg);
+  font-variant-numeric: var(--numeric-variant);
   text-align: center;
 }
 
@@ -158,8 +160,9 @@
   justify-items: center;
   gap: 2px;
   color: var(--color-text-dim);
-  font-family: var(--font-mono);
+  font-family: var(--font-numeric);
   font-size: var(--fs-lg);
+  font-variant-numeric: var(--numeric-variant);
   white-space: normal;
   text-align: center;
 }
@@ -231,6 +234,7 @@
   justify-items: center;
   gap: 2px;
   color: var(--color-text-dim);
+  font-variant-numeric: var(--numeric-variant);
   text-align: center;
   white-space: normal;
 }
@@ -362,8 +366,9 @@
 
 .view-axis-tick {
   fill: var(--color-text-dim);
-  font-family: var(--font-mono);
+  font-family: var(--font-numeric);
   font-size: var(--fs-xs);
+  font-variant-numeric: var(--numeric-variant);
 }
 
 .view-axis-label {
@@ -499,6 +504,7 @@
   fill: var(--color-text);
   font-family: var(--font-label);
   font-size: var(--fs-sm);
+  font-variant-numeric: var(--numeric-variant);
   pointer-events: none;
 }
 
@@ -520,6 +526,7 @@
   fill: var(--color-accent);
   font-family: var(--font-label);
   font-size: var(--fs-sm);
+  font-variant-numeric: var(--numeric-variant);
 }
 
 .view-track {
@@ -615,6 +622,7 @@
   fill: var(--color-text);
   font-family: var(--font-label);
   font-size: var(--fs-xs);
+  font-variant-numeric: var(--numeric-variant);
 }
 
 .view-markov-cell--diag {
@@ -649,7 +657,8 @@
 .view-matrix-label {
   fill: var(--color-text-dim);
   font-size: var(--fs-xs);
-  font-family: var(--font-mono);
+  font-family: var(--font-numeric);
+  font-variant-numeric: var(--numeric-variant);
 }
 
 @keyframes entropy-glow {
