@@ -19,17 +19,17 @@
   padding: calc(var(--space-6) * 0.85);
   transform: translate(var(--details-panel-x), var(--details-panel-y));
   transition:
-    border-color 160ms ease,
-    box-shadow 160ms ease,
-    transform 120ms ease;
+    border-color var(--motion-normal) var(--ease-standard),
+    box-shadow var(--motion-normal) var(--ease-standard),
+    transform var(--motion-fast) var(--ease-standard);
 }
 
 .details-panel--dragging {
   cursor: grabbing;
   user-select: none;
   transition:
-    border-color 160ms ease,
-    box-shadow 160ms ease;
+    border-color var(--motion-normal) var(--ease-standard),
+    box-shadow var(--motion-normal) var(--ease-standard);
 }
 
 .details-panel:focus-within,

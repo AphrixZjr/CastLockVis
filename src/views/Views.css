@@ -397,8 +397,8 @@
   stroke: var(--color-chart-bg);
   stroke-width: 0.9;
   transition:
-    opacity 180ms ease,
-    stroke-width 180ms ease;
+    opacity var(--motion-normal) var(--ease-standard),
+    stroke-width var(--motion-normal) var(--ease-standard);
 }
 
 .view-point:hover,
@@ -444,7 +444,7 @@
   stroke-width: 2.1;
   stroke-linejoin: round;
   stroke-linecap: round;
-  animation: entropy-glow 1200ms ease-out;
+  animation: entropy-glow var(--motion-slow) var(--ease-enter);
 }
 
 .view-film-dot {
@@ -535,8 +535,8 @@
   stroke-linecap: round;
   opacity: 0.4;
   transition:
-    opacity 180ms ease,
-    stroke-width 180ms ease;
+    opacity var(--motion-normal) var(--ease-standard),
+    stroke-width var(--motion-normal) var(--ease-standard);
 }
 
 .view-track--success {
@@ -600,7 +600,7 @@
   fill: var(--color-markov-cell);
   stroke: var(--color-chart-bg);
   stroke-width: 0.55;
-  transition: opacity 140ms ease;
+  transition: opacity var(--motion-fast) var(--ease-standard);
 }
 
 .view-markov-cell:hover {
