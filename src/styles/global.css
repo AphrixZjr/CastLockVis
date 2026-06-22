@@ -22,6 +22,8 @@ body {
   color: var(--color-text);
   font-family: var(--font-sans);
   font-size: var(--fs-md);
+  font-weight: var(--fw-regular);
+  line-height: var(--lh-normal);
 }
 
 body::before {

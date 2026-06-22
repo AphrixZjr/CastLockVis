@@ -66,9 +66,9 @@
   margin: 0;
   color: #fff7e8;
   font-family: var(--font-display);
-  font-size: 45px;
-  font-weight: 700;
-  line-height: 0.96;
+  font-size: var(--fs-display-lg);
+  font-weight: var(--fw-bold);
+  line-height: var(--lh-tight);
   letter-spacing: 0;
   text-shadow: 0 2px 0 rgba(0, 0, 0, 0.18);
 }
@@ -76,8 +76,8 @@
 .app-subtitle {
   margin: 0;
   color: color-mix(in srgb, #fff5dc 82%, var(--color-ui-accent-dark));
-  font-size: 19.2px;
-  line-height: 1.45;
+  font-size: var(--fs-2xl);
+  line-height: var(--lh-relaxed);
 }
 
 .app-meta {
@@ -103,7 +103,7 @@
   color: #fff7e8;
   font-family: var(--font-mono);
   font-size: var(--fs-sm);
-  font-weight: 600;
+  font-weight: var(--fw-semibold);
   text-transform: uppercase;
 }
 
@@ -123,7 +123,7 @@
   border-left: 3px solid rgba(255, 245, 220, 0.42);
   background: rgba(0, 0, 0, 0.12);
   font-family: var(--font-mono);
-  line-height: 1.35;
+  line-height: var(--lh-normal);
   white-space: nowrap;
 }
 
@@ -252,10 +252,10 @@
   }
 
   .app-title {
-    font-size: 36px;
+    font-size: var(--fs-display-sm);
   }
 
   .app-subtitle {
-    font-size: calc(var(--fs-md) * 1.2);
+    font-size: var(--fs-xl);
   }
 }
