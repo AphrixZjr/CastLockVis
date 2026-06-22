@@ -93,57 +93,62 @@ export function ActorSearch({ actors }: ActorSearchProps) {
 
   return (
     <div className="actor-search">
-      <input
-        ref={inputRef}
-        type="search"
-        className="actor-search__input"
-        placeholder=""
-        aria-label="按姓名搜索演员（等同于在视图 A 单击选择）"
-        autoComplete="off"
-        role="combobox"
-        aria-expanded={showSuggestions}
-        aria-controls="actor-search-listbox"
-        value={query}
-        onChange={(event) => {
-          setQuery(event.target.value);
-          setOpen(true);
-          setActiveIndex(0);
-        }}
-        onFocus={() => {
-          setFocused(true);
-          setOpen(true);
-        }}
-        onBlur={() => {
-          setFocused(false);
-          setOpen(false);
-        }}
-        onKeyDown={handleKeyDown}
-      />
-      {showSuggestions && (
-        <ul className="actor-search__list" id="actor-search-listbox" role="listbox">
-          {matches.map((actor, index) => (
-            <li key={actor.id} role="presentation">
-              <button
-                type="button"
-                role="option"
-                aria-selected={index === activeIndex}
-                className={`actor-search__option${index === activeIndex ? ' is-active' : ''}${
-                  actor.id === selectedActorId ? ' is-selected' : ''
-                }`}
-                // mousedown 抢在 input blur 之前，确保点击能选中。
-                onMouseDown={(event) => {
-                  event.preventDefault();
-                  commitSelection(actor);
-                }}
-                onMouseEnter={() => setActiveIndex(index)}
-              >
-                <span className="actor-search__option-name">{actor.name}</span>
-                <span className="actor-search__option-meta">C{actor.clusterId}</span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
+      <label className="actor-search__label" htmlFor="actor-search-input">
+        Search
+      </label>
+      <div className="actor-search__control">
+        <input
+          ref={inputRef}
+          id="actor-search-input"
+          type="search"
+          className="actor-search__input"
+          placeholder=""
+          autoComplete="off"
+          role="combobox"
+          aria-expanded={showSuggestions}
+          aria-controls="actor-search-listbox"
+          value={query}
+          onChange={(event) => {
+            setQuery(event.target.value);
+            setOpen(true);
+            setActiveIndex(0);
+          }}
+          onFocus={() => {
+            setFocused(true);
+            setOpen(true);
+          }}
+          onBlur={() => {
+            setFocused(false);
+            setOpen(false);
+          }}
+          onKeyDown={handleKeyDown}
+        />
+        {showSuggestions && (
+          <ul className="actor-search__list" id="actor-search-listbox" role="listbox">
+            {matches.map((actor, index) => (
+              <li key={actor.id} role="presentation">
+                <button
+                  type="button"
+                  role="option"
+                  aria-selected={index === activeIndex}
+                  className={`actor-search__option${index === activeIndex ? ' is-active' : ''}${
+                    actor.id === selectedActorId ? ' is-selected' : ''
+                  }`}
+                  // mousedown 抢在 input blur 之前，确保点击能选中。
+                  onMouseDown={(event) => {
+                    event.preventDefault();
+                    commitSelection(actor);
+                  }}
+                  onMouseEnter={() => setActiveIndex(index)}
+                >
+                  <span className="actor-search__option-name">{actor.name}</span>
+                  <span className="actor-search__option-meta">C{actor.clusterId}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   );
 }

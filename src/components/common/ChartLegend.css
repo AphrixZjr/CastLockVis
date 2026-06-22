@@ -45,9 +45,24 @@
 }
 
 .actor-search {
-  position: relative;
-  flex: 0 1 260px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 0 1 320px;
   min-width: 180px;
+}
+
+.actor-search__label {
+  flex-shrink: 0;
+  color: var(--color-paper-text);
+  font-family: var(--font-label);
+  font-size: calc(var(--fs-sm) * 1.5);
+}
+
+.actor-search__control {
+  position: relative;
+  flex: 1;
+  min-width: 0;
 }
 
 .actor-search__input {
