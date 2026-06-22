@@ -79,6 +79,10 @@
   font-size: var(--fs-lg);
 }
 
+.details-panel__neighbor {
+  font-variant-numeric: var(--numeric-variant);
+}
+
 .details-panel__close {
   border: 1.5px solid color-mix(in srgb, var(--color-border) 66%, var(--color-bg));
   border-radius: var(--radius-sm);
@@ -133,7 +137,8 @@
 }
 
 .details-grid__value--code {
-  font-family: var(--font-mono);
+  font-family: var(--font-numeric);
+  font-variant-numeric: var(--numeric-variant);
 }
 
 .signal-grid {
@@ -158,11 +163,16 @@
   font-size: var(--fs-lg);
 }
 
+.signal-card__delta {
+  font-variant-numeric: var(--numeric-variant);
+}
+
 .signal-card__value {
   overflow-wrap: anywhere;
   color: var(--color-text);
-  font-family: var(--font-mono);
+  font-family: var(--font-numeric);
   font-size: var(--fs-xl);
+  font-variant-numeric: var(--numeric-variant);
 }
 
 .signal-card__delta--up {
