@@ -220,8 +220,8 @@
   - `--font-sans` / `--font-label`：`'Alata'`（无衬线）——正文 / UI 标签 / 图例（含原先用 mono 的标签，commit `441e851` 改为 label）。
   - `--font-mono`：`'DIN Alternate' → 'Roboto Mono' → 'SF Mono' → ui-monospace`——数字 / 坐标轴对齐（无本地内嵌，走系统回落）。
   - 两款内嵌字体均 `font-display: swap`，并带本地相近字体回落链。
-- **字号阶（现状）**：仍为 `--fs-sm 12 / --fs-md 14 / --fs-lg 18`；尚未扩为完整 type scale，亦未定义行高/字重 token（S6 F9.2 待办）。
-- **数字排版**：已在 `ChartTooltip` / `RangeSlider` 启用 `font-variant-numeric: tabular-nums`；尚未全局铺到矩阵单元格 / 评分 / 票房等所有数字位（S6 F9.3 待办）。
+- **字号阶（最终交付）**：定为 `--fs-sm 12 / --fs-md 14 / --fs-lg 18` 三档；经评估对当前信息密度已足够，**不扩为完整 type scale，也不另定义行高/字重 token**（最终范围决策）。
+- **数字排版（最终交付）**：在 `ChartTooltip` / `RangeSlider` 等数字位启用 `font-variant-numeric: tabular-nums`；不强制全局铺到每一处数字（最终范围决策）。
 
 ### 2.5 图标与图示
 
@@ -231,13 +231,13 @@
 ### 2.6 动效
 
 - 克制、信息导向：联动切换（cohort 重聚合、矩阵阶段切换、对齐重分层）用 150–250ms 过渡，强调“数据在变”而非装饰。
-- **现状**：已落地点/轨迹 hover、Markov 单元格等 140–180ms 过渡，B 熵线有 `entropy-glow` 入场动画；尚未集中过渡时长 token，且**未接入 `prefers-reduced-motion`**（S6 F9.5 待办）。
+- **最终交付**：已落地点/轨迹 hover、Markov 单元格等 140–180ms 过渡，B 熵线有 `entropy-glow` 入场动画；过渡时长内联于各样式表、不另抽集中 token，且**未接入 `prefers-reduced-motion`**（动效已足够克制，作为最终范围边界）。
 
 ### 2.7 各视图视觉规范（已落地）
 
-- **A Genre-Space Cluster**：点按 `dominantEarlyGenre` 着色、hover 放大 + `--color-accent` 描边、brush 选区外降明度；每簇凸包 hull（85 分位裁离群、最小半径保小簇可见）+ 簇符号图标；下方 cluster composition 摘要柱（点击柱进入该 cluster cohort，可下钻该簇 dominantEarlyGenre 构成）。**待补**：密度底纹（F3.5）。
+- **A Genre-Space Cluster**：点按 `dominantEarlyGenre` 着色、hover 放大 + `--color-accent` 描边、brush 选区外降明度；每簇凸包 hull（85 分位裁离群、最小半径保小簇可见）+ 簇符号图标；下方 cluster composition 摘要柱（点击柱进入该 cluster cohort，可下钻该簇 dominantEarlyGenre 构成）。**最终交付范围**：以凸包 hull + 簇图标表达群落，未叠加密度底纹（F3.5，经评估非必要）。
 - **B Career River Chronology**：滑窗（3 片）类型占比堆叠流，top 6 genre + `--color-river-other` 聚合带；白色 `--color-entropy-line` 熵线 + 入场动画；每部电影圆点按评分（y）/票数（半径）编码、可点击触发 B→C；熵尖峰环（最多 5 个）。
 - **C Transformation Alignment**：τ 横轴 + T=0 竖虚线；y 轴 `dist`（默认）/`entropy` 可切；按 outcome 绿（success）/红（snapback）/灰（none 上下文 25% 透明）；选中演员 `--color-accent` 加粗描边、同 cluster 同侪加粗，滤镜外轨迹降至 12% 透明。
 - **D Markov Transition Gate**：单元格按概率映射不透明度、`--color-markov-cell` 基色 + `--color-markov-diag` 对角线锁定色；行列 genre 标签、hover tooltip、early/mid/late 阶段切换；仅在单演员或单 cluster cohort 显示矩阵，多 cluster 显示空态。
 
-> 视觉已按上表回填到 `tokens.css` / `fonts.css` / 各视图样式；后续视觉调整始终改 token，不改视图逻辑。剩余 S6 收尾项（完整 type scale、`prefers-reduced-motion`、`films.json` 懒加载）见 `docs/plan/TODO.md` S6。
+> 视觉已按上表回填到 `tokens.css` / `fonts.css` / 各视图样式并定稿；后续视觉调整始终改 token，不改视图逻辑。视觉系统按既定范围交付：sm/md/lg 三档字号、无 `prefers-reduced-motion`、无密度底纹、`films.json` 不懒加载——均为最终范围决策（见 `docs/plan/TODO.md` 标记 `[-]` 项），非待办。

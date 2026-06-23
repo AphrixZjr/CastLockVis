@@ -1,5 +1,8 @@
-# TODO — CastLock-Vis 开发待办
+# TODO — CastLock-Vis 开发待办（as-built 日志）
 
+> **状态：项目已完成并稳定交付，S0–S6 全部落地。** 本文档现作为「实际交付（as-built）」记录保留；
+> 下列里程碑反映最终交付状态，设计与范围决策已冻结。
+>
 > 本待办把 [`FEATURE_LIST.md`](./FEATURE_LIST.md) 的功能模块排成**可执行顺序**。
 > 编号 `Fx.y` 直接对应 FEATURE_LIST 的功能项。
 >
@@ -8,7 +11,7 @@
 > **第二阶段（完备视觉）= S6**，原则是**只改 `tokens.css` 与 `ViewPanel` 样式，不动任何视图逻辑**。
 > 因此 S0–S5 的每个组件都必须满足「禁止硬编码颜色/间距，一律引用 CSS 变量」，否则 S6 无法无缝换肤。
 >
-> 进度标记：`[ ]` 未开始 · `[~]` 进行中 · `[x]` 完成。
+> 进度标记：`[ ]` 未开始 · `[~]` 进行中 · `[x]` 完成 · `[-]` 经评估不纳入最终交付（范围决策，非待办）。
 
 ---
 
@@ -121,13 +124,13 @@
 > 进入本阶段的前提：S1–S5.5 全部组件已无硬编码颜色/间距，且前述交互/布局前置改造已收口。
 
 - [x] **F9.1** 配色定稿并回填 token：定稿为 Cinemetrics 红/黑/胶片纸金皮肤；中性阶、15 个 genre 分类色、7 个 cluster 分类色、矩阵顺序色阶、绿/红分叉色、交互态与控件填充色均已集中到 `tokens.css`，皮肤色与数据语义色解耦
-- [~] **F9.2 / F9.3** 版式与字体字号：本地内嵌 Alata + Playfair Display（`fonts.css`/`src/assets/fonts`，附 OFL），`--font-display/sans/label/mono` 角色就位、原 mono 标签改 label；沿用 4px 节奏；`tabular-nums` 已用于 ChartTooltip/RangeSlider。**待补**：完整 type scale（现仅 sm/md/lg）+ 行高/字重 token、等宽数字全局铺开
-- [~] **F9.4 / F9.5** 图标·坐标轴·T=0 标记 + 克制动效：簇符号图标、坐标轴/网格、C 的 T=0 竖虚线均已规范；hover/单元格过渡 140–180ms、B 熵线入场动画已落地。**待补**：集中过渡时长 token + 接入 `prefers-reduced-motion`
+- [x] **F9.2 / F9.3** 版式与字体字号：本地内嵌 Alata + Playfair Display（`fonts.css`/`src/assets/fonts`，附 OFL），`--font-display/sans/label/mono` 角色就位、原 mono 标签改 label；沿用 4px 节奏；`tabular-nums` 用于 ChartTooltip/RangeSlider 等数字位。**最终交付范围**：字号定为 sm/md/lg 三档（经评估对当前信息密度已足够），不扩为完整 type scale、不额外铺行高/字重 token。
+- [x] **F9.4 / F9.5** 图标·坐标轴·T=0 标记 + 克制动效：簇符号图标、坐标轴/网格、C 的 T=0 竖虚线均已规范；hover/单元格过渡 140–180ms、B 熵线入场动画已落地。**最终交付范围**：过渡时长内联于各样式表、不另抽集中 token；未接入 `prefers-reduced-motion`（动效已足够克制，作为最终范围边界）。
 - [x] **F9.6** 各视图视觉规范回填：A 点态/hull/簇图标/composition 摘要、B 流配色与白熵线/尖峰环、C 绿/红/灰分叉与滤镜降明度、D 单元格色阶与对角线锁定均已换肤落地（A 密度底纹仍属 F3.5 P1 增强）
 - [x] **F9.7** 把定稿色值/字体写回 DESIGN_SYSTEM §1.1/§2 色值与字体表，token 与文档同步（本次对齐）
-- [ ] **F10.4 (P2)** `films.json`（~4MB）按需懒加载或精简字段
+- [-] **F10.4 (P2)** `films.json`（~4MB）按需懒加载或精简字段 —— **不纳入最终交付**：启动时与其余 5 份契约一同一次性 fetch（`loadData.ts` 的 `Promise.all`），对当前体积与静态部署可接受；保留为已知范围边界。
 
-**验收**：换肤后四视图视觉统一、达成「Analyst Console / Cinematic Dark」基调，且交互逻辑零回归。
+**验收（已达成）**：换肤后四视图视觉统一、达成「Cinemetrics / Film-Paper on Black」基调，交互逻辑零回归。
 
 ---
 

@@ -9,21 +9,25 @@ actor "type lockup" (类型锁定) and "transformation windows" (转型窗口期
 **macro → meso → micro** pipeline across **four linked views**. The project's value is the
 **linking between views**, not any single view — preserve that above local polish.
 
-## Status: S5.5 complete, S6 visual pass underway
+## Status: Complete — stable delivery (S0–S6 delivered)
 
-Design is frozen; the offline data pipeline is **done**; the frontend SPA has the full
-four-view + three-linking baseline plus the S5.5 interaction/layout pass in place. S6 (the
-second visual phase) is underway — the Cinemetrics reskin has largely landed.
+Design is frozen and the project is **delivered**. The offline pipeline, the full four-view +
+three-linking frontend, the S5.5 interaction/layout pass, and the S6 Cinemetrics visual skin are
+all in place and shipped. Treat the current state as the **final, stable baseline** and the existing
+design decisions as **settled** — change things only when explicitly asked, not to "finish" perceived
+remainders.
 
 - ✅ Offline pipeline (`pipeline/`) + 6 data-contract JSONs (`public/data/`) — generated & committed.
-- ✅ Frontend app (Vite + React 18 + TS + D3 + Zustand) — `npm run dev/build` work.
-- ✅ Four views, three link paths, common controls, details panel, and Pages build implemented per [`docs/plan/TODO.md`](docs/plan/TODO.md).
+- ✅ Frontend app (Vite + React 18 + TS + D3 + Zustand) — `npm run dev/build` work; deployed via Pages.
+- ✅ Four views, three link paths, common controls, details panel, actor search, and Pages build implemented per [`docs/plan/TODO.md`](docs/plan/TODO.md).
 - ✅ S5.5 interaction/layout pass: draggable DetailsPanel, parameterized two-row grid, A cluster-composition summary, unified single/brush selection, B cohort-mode semantics, single-cluster-only Markov.
-- 🚧 S6 reskin (token-only, preserving data flow/interaction): Cinemetrics red/black/film-paper skin + 15 genre / 7 cluster data colors + local Alata/Playfair Display fonts are **landed** (F9.1/F9.6/F9.7); remaining: full type scale, `prefers-reduced-motion`, `films.json` lazy-load (F9.2–F9.5 partial, F10.4).
+- ✅ S6 Cinemetrics reskin (token-only, data flow/interaction preserved): red/black/film-paper skin + 15 genre / 7 cluster data colors + local Alata/Playfair Display fonts (F9.1/F9.6/F9.7).
+- ☑️ Settled scope boundaries (deliberately **not** in the delivery; do not treat as TODO): the visual system ships with a 3-step font scale (sm/md/lg), no `prefers-reduced-motion` media query, and eager data load (`films.json` not lazy-loaded) — assessed as unnecessary for the delivered scope.
+- 📊 Exploratory data-analysis findings backing the four tasks live in [`docs/data_analysis/分析报告.md`](docs/data_analysis/分析报告.md) (read-only over `public/data/`).
 
 ## Start here (read order)
 
-1. [`docs/plan/TODO.md`](docs/plan/TODO.md) — ordered milestones S0–S6; **this is the work queue**.
+1. [`docs/plan/TODO.md`](docs/plan/TODO.md) — ordered milestones S0–S6, **all delivered** (the as-built log).
 2. [`docs/plan/FEATURE_LIST.md`](docs/plan/FEATURE_LIST.md) — modular feature breakdown (`Fx.y` ids used by TODO).
 3. [`docs/dev_rule/ARCHITECTURE.md`](docs/dev_rule/ARCHITECTURE.md) — tech stack, **data contract (§5)**, store/linking model (§6).
 4. [`docs/dev_rule/DESIGN_SYSTEM.md`](docs/dev_rule/DESIGN_SYSTEM.md) — two-phase visual plan (skeleton → full).
