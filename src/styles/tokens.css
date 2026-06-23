@@ -28,6 +28,13 @@
   /* 浮层阴影（details-on-demand 面板等） */
   --shadow-panel: 0 18px 48px rgba(0, 0, 0, 0.5);
 
+  /* 动效：快速反馈、常规状态切换、克制的入场强调。 */
+  --motion-fast: 140ms;
+  --motion-normal: 180ms;
+  --motion-slow: 1200ms;
+  --ease-standard: ease;
+  --ease-enter: ease-out;
+
   /* 电影资料库皮肤：从参考图提炼的红 / 黑 / 胶片纸色。 */
   --color-bg: #10100e;
   --color-surface: #171715;
@@ -98,7 +105,28 @@
   --font-display: 'Playfair Display', Georgia, 'Times New Roman', serif;
   --font-label: 'Alata', 'Avenir Next', 'Trebuchet MS', 'Gill Sans', sans-serif;
   --font-mono: 'DIN Alternate', 'Roboto Mono', 'SF Mono', ui-monospace, monospace;
+  --font-numeric: var(--font-mono);
+  --numeric-variant: tabular-nums lining-nums;
+
+  /* 字号阶：覆盖图表微标注、正文、标题与品牌展示字。 */
+  --fs-xs: 10px;
   --fs-sm: 12px;
   --fs-md: 14px;
-  --fs-lg: 18px;
+  --fs-lg: 15px;
+  --fs-xl: 17px;
+  --fs-2xl: 18px;
+  --fs-3xl: 22px;
+  --fs-display-sm: 36px;
+  --fs-display-lg: 45px;
+
+  /* 行高：图表标签紧凑，正文保持可读，说明文案适度舒展。 */
+  --lh-tight: 1;
+  --lh-snug: 1.2;
+  --lh-normal: 1.4;
+  --lh-relaxed: 1.5;
+
+  /* 字重：集中管理 UI 层级，避免组件内散落裸数值。 */
+  --fw-regular: 400;
+  --fw-semibold: 600;
+  --fw-bold: 700;
 }

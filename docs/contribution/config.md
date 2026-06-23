@@ -84,12 +84,15 @@ CastLockVis/
 ├── eslint.config.js        # ESLint 扁平配置
 ├── .prettierrc.json        # 格式化规则
 ├── .gitignore              # node_modules / dist / 原始数据 / py 缓存
+├── .github/workflows/      # Pages 构建与部署
+├── docs/                   # 设计、计划、分析与报告文档
 ├── src/                    # 前端源码（四视图、联动 store、通用控件与样式）
 │   ├── main.tsx · App.tsx
-│   ├── data/ · store/ · lib/
-│   ├── components/
+│   ├── assets/fonts/       # 本地字体
+│   ├── data/ · store/ · lib/ · types/
+│   ├── components/{common,controls}/
 │   ├── views/              # 四个真实数据视图 + 图例与图表工具
-│   └── styles/tokens.css   # 设计 token（第一阶段占位，S6 换肤主入口）
+│   └── styles/{fonts,tokens,global}.css
 ├── public/data/*.json      # 数据契约（已提交，构建时拷入 dist/data/）
 └── pipeline/               # 离线流水线 + requirements.txt
 ```

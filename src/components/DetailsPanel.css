@@ -19,17 +19,17 @@
   padding: calc(var(--space-6) * 0.85);
   transform: translate(var(--details-panel-x), var(--details-panel-y));
   transition:
-    border-color 160ms ease,
-    box-shadow 160ms ease,
-    transform 120ms ease;
+    border-color var(--motion-normal) var(--ease-standard),
+    box-shadow var(--motion-normal) var(--ease-standard),
+    transform var(--motion-fast) var(--ease-standard);
 }
 
 .details-panel--dragging {
   cursor: grabbing;
   user-select: none;
   transition:
-    border-color 160ms ease,
-    box-shadow 160ms ease;
+    border-color var(--motion-normal) var(--ease-standard),
+    box-shadow var(--motion-normal) var(--ease-standard);
 }
 
 .details-panel:focus-within,
@@ -69,14 +69,18 @@
 
 .details-panel__title {
   font-family: var(--font-display);
-  font-size: calc(var(--fs-md) * 1.25);
+  font-size: var(--fs-xl);
 }
 
 .details-panel__subtitle,
 .details-panel__empty,
 .details-panel__neighbor {
   color: var(--color-text-dim);
-  font-size: calc(var(--fs-lg) * 0.85);
+  font-size: var(--fs-lg);
+}
+
+.details-panel__neighbor {
+  font-variant-numeric: var(--numeric-variant);
 }
 
 .details-panel__close {
@@ -85,7 +89,7 @@
   background: color-mix(in srgb, var(--color-paper) 8%, transparent);
   color: var(--color-text-dim);
   font: inherit;
-  font-size: calc(var(--fs-lg) * 0.85);
+  font-size: var(--fs-lg);
   padding: var(--space-2) var(--space-3);
   cursor: pointer;
   flex: 0 0 auto;
@@ -109,7 +113,7 @@
 .details-panel__section-title {
   color: var(--color-text);
   font-family: var(--font-display);
-  font-size: calc(var(--fs-lg) * 0.85);
+  font-size: var(--fs-lg);
 }
 
 .details-grid {
@@ -121,7 +125,7 @@
 
 .details-grid dt {
   color: var(--color-text-dim);
-  font-size: calc(var(--fs-lg) * 0.85);
+  font-size: var(--fs-lg);
 }
 
 .details-grid dd {
@@ -129,11 +133,12 @@
   margin: 0;
   overflow-wrap: anywhere;
   color: var(--color-text);
-  font-size: calc(var(--fs-lg) * 0.85);
+  font-size: var(--fs-lg);
 }
 
 .details-grid__value--code {
-  font-family: var(--font-mono);
+  font-family: var(--font-numeric);
+  font-variant-numeric: var(--numeric-variant);
 }
 
 .signal-grid {
@@ -155,14 +160,19 @@
 .signal-card__label,
 .signal-card__delta {
   color: var(--color-text-dim);
-  font-size: calc(var(--fs-lg) * 0.85);
+  font-size: var(--fs-lg);
+}
+
+.signal-card__delta {
+  font-variant-numeric: var(--numeric-variant);
 }
 
 .signal-card__value {
   overflow-wrap: anywhere;
   color: var(--color-text);
-  font-family: var(--font-mono);
-  font-size: calc(var(--fs-md) * 1.25);
+  font-family: var(--font-numeric);
+  font-size: var(--fs-xl);
+  font-variant-numeric: var(--numeric-variant);
 }
 
 .signal-card__delta--up {
